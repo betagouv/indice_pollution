@@ -4,8 +4,11 @@ import Search from './components/Search.vue'
 Vue.config.productionTip = false
 
 new Vue({
-  el: 'body',
-  components: [Search],
+  el: '#app',
+  components: {
+    search: Search
+  },
+  template: `<search></search>`,
   mounted() {
     console.log('mounted')
   },
