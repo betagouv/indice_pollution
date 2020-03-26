@@ -4,7 +4,7 @@ import Search from './components/Search.vue'
 Vue.config.productionTip = false
 
 new Vue({
-  el: 'body',
+  el: '#app',
   components: [Search],
   mounted() {
     console.log('mounted')
