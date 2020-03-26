@@ -5,7 +5,10 @@ Vue.config.productionTip = false
 
 new Vue({
   el: '#app',
-  components: [Search],
+  components: {
+    search: Search
+  },
+  template: `<search></search>`,
   mounted() {
     console.log('mounted')
   },
