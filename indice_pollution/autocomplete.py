@@ -8,7 +8,8 @@ def autocomplete(query_string):
     params = {
         'nom': query_string,
         'fields': 'nom,code,codesPostaux',
-        'format': 'json'
+        'format': 'json',
+        'boost': 'population'
     }
     r = requests.get(
         "https://geo.api.gouv.fr/communes",
@@ -19,8 +20,6 @@ def autocomplete(query_string):
     r.raise_for_status()
 
     insee_list_cache = insee_list()
-    print(insee_list_cache)
-    print([v['code'] for v in r.json()])
     return list(filter(
         lambda v: v['code'] in insee_list_cache,
         r.json()

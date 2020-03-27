@@ -25,3 +25,7 @@ class ForecastMixin(object):
     @classmethod
     def getter(cls, feature):
         pass
+
+    @classmethod
+    def insee_list(cls):
+        return []

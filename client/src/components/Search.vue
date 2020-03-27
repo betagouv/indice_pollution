@@ -3,6 +3,9 @@
 <autocomplete
   :search="search"
   :get-result-value="getResultValue"
+  @submit="onSubmit"
+  placeholder="Recherchez une ville"
+  aria-label="Recherchez une ville"
   ></autocomplete>
 
 </template>
@@ -36,6 +39,9 @@ export default {
         },
         getResultValue(result) {
           return result.nom
+        },
+        onSubmit(result) {
+          window.location = `/ville/${encodeURI(result.code)}`
         },
     }
 }
