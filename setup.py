@@ -4,6 +4,7 @@ DEPENDENCIES = [
     'flask',
     'Flask-Manage-Webpack',
     'requests',
+    'python-dateutil'
 ]
 
 setup(
