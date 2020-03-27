@@ -13,7 +13,7 @@
 <script>
 import Autocomplete from '@trevoreyre/autocomplete-vue'
 import '@trevoreyre/autocomplete-vue/dist/style.css'
-const apiUrl = 'http://localhost:5000/autocomplete'
+const apiUrl = '/autocomplete'
 
 export default {
     name: 'Search',
