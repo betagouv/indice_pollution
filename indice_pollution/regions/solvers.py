@@ -17,13 +17,13 @@ def epci_list():
 
 def insee_list():
     return list(chain(*[
-        import_module(f'.{region_name}', 'indice_pollution.regions').Forecast.insee_epci.keys()
+        import_module(f'.{region_name}', 'indice_pollution.regions').Forecast.insee_list()
         for region_name in regions
     ]))
 
 def forecast(epci=None, insee=None):
     for region_name in regions:
         region = import_module(f'.{region_name}', 'indice_pollution.regions').Forecast
-        if epci in region.epci_list or insee in region.insee_epci:
+        if epci in region.epci_list or insee in region.insee_list():
             return region.get
     raise KeyError("Unable to find epci")

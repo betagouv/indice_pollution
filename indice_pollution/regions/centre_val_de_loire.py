@@ -28,6 +28,10 @@ class Forecast(ForecastMixin):
             'date': str(dt.date())
         }
 
+    @classmethod
+    def insee_list(cls):
+        return cls.insee_epci.keys()
+
     insee_epci = {
         "18033": "241800507",
         "18205": "241800507",

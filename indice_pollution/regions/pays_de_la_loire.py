@@ -10,7 +10,7 @@ class Forecast(ForecastMixin):
     @classmethod
     def params(cls, date, epci=None, insee=None):
         if insee:
-            epci = cls.insee_epci[epci]
+            epci = cls.insee_epci[insee]
         tomorrow = (parse(date) + timedelta(hours=24)).date()
 
         return {
@@ -26,6 +26,10 @@ class Forecast(ForecastMixin):
             'indice': feature['properties']['valeur'],
             'date': feature['properties']['date']
         }
+
+    @classmethod
+    def insee_list(cls):
+        return cls.insee_epci.keys()
 
     insee_epci = {
         "49007": "244900015",

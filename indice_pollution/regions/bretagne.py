@@ -40,6 +40,9 @@ class Forecast(ForecastMixin):
             'date':str(parse(feature['properties']['date_ech']).date())
         }
 
+    @classmethod
+    def insee_list(cls):
+        return cls.insee_epci.keys()
     
     insee_epci = {
         "29019": "242900314",
