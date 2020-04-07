@@ -12,7 +12,6 @@ class ForecastMixin(object):
             cls.url,
             params=cls.params(date=date, epci=epci, insee=insee)
         )
-        print(r.url)
 
         r.raise_for_status()
 

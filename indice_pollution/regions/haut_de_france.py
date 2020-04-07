@@ -1,10 +1,10 @@
 from . import ForecastMixin
-from datetime import timedelta
+from datetime import datetime, timedelta
 from dateutil.parser import parse
 
 class Forecast(ForecastMixin):
-    date_format = '%Y-%m-%dT00:00:00.000Z'
-    url = 'https://opendata.arcgis.com/datasets/411398950a544bcbbcdd4ef12ef07a1b_0.geojson'
+    date_format = '%Y-%m-%d'
+    url = 'https://services8.arcgis.com/rxZzohbySMKHTNcy/arcgis/rest/services/ind_hdf_agglo/FeatureServer/0/query'
 
     @classmethod
     def insee_list(cls):
@@ -22,16 +22,17 @@ class Forecast(ForecastMixin):
         day_after = (parsed_date + timedelta(hours=24)).strftime(cls.date_format)
         day_after = (parsed_date + timedelta(hours=24)).timestamp()
         return {
-            'outFields': 'date_ech, valeur',
-            'where': f"(code_zone={insee}) AND ((date_ech={str_parsed_date}) OR (date_ech={day_after}))",
+            'outFields': 'date_ech,code_zone,valeur',
+            'where': f"(date_ech>= '{date}') AND code_zone={insee}",
             'outSR': 4326,
             'f': 'json'
         }
 
     @classmethod
     def getter(cls, feature):
-        dt = parse(feature['attributes']['date_ech']).strftime(cls.date_format)
+        attributes = feature['attributes']
+        dt = datetime.fromtimestamp(attributes['date_ech']/1000).strftime(cls.date_format)
         return {
             'indice': feature['attributes']['valeur'],
-            'date': dt.date()
+            'date': dt
         }

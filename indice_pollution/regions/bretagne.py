@@ -18,7 +18,6 @@ class Forecast(ForecastMixin):
 
     @classmethod
     def params(cls, date, epci=None, insee=None):
-        print(f'bretagne date:{date} epci:{epci} insee:{insee}')
         if insee:
             epci = cls.insee_epci[insee]
         agglo = cls.epci_agglo[epci]
@@ -31,7 +30,6 @@ class Forecast(ForecastMixin):
             'outputFormat': 'application/json',
             'CQL_FILTER': f"date_ech>'{date}'"
         }
-
 
     @classmethod
     def getter(cls, feature):

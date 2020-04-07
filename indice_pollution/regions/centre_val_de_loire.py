@@ -10,7 +10,7 @@ class Forecast(ForecastMixin):
     @classmethod
     def params(cls, date, epci=None, insee=None):
         if insee:
-            epci = cls.insee_epci[epci]
+            epci = cls.insee_epci[insee]
 
         day_after = str(parse(date).date() + timedelta(hours=24))
         return {
