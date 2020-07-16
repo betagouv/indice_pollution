@@ -13,6 +13,7 @@ def create_app(test_config=None):
         SECRET_KEY='dev',
     )
     CORS(app)
+    CORS(app, send_wildcard=True)
 
     manage_webpack = FlaskManageWebpack()
     manage_webpack.init_app(app)
