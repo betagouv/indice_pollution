@@ -1,5 +1,6 @@
 from flask import Flask
 from flask_manage_webpack import FlaskManageWebpack
+from flask_cors import CORS
 
 
 def create_app(test_config=None):
@@ -11,6 +12,7 @@ def create_app(test_config=None):
     app.config.from_mapping(
         SECRET_KEY='dev',
     )
+    CORS(app)
 
     manage_webpack = FlaskManageWebpack()
     manage_webpack.init_app(app)

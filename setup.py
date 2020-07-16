@@ -3,6 +3,7 @@ from setuptools import find_packages, setup
 DEPENDENCIES = [
     'flask',
     'Flask-Manage-Webpack',
+    'flask-cors',
     'requests',
     'python-dateutil'
 ]
