@@ -1,23 +1,20 @@
 from importlib import import_module
 from itertools import chain
+import requests
 
 regions = [
-    'auvergne-rhone-alpes',
-    'bretagne',
-    'corse',
-    'pays_de_la_loire',
-    'centre_val_de_loire',
-    'nouvelle_aquitaine',
-    'haut_de_france',
-    'grand-est',
-    'occitanie'
+    'Auvergne-Rhône-Alpes',
+    'Bretagne',
+    'Corse',
+    'Pays De La Loire',
+    'Centre-Val de Loire',
+    'Nouvelle-Aquitaine',
+    'Hauts-De-France',
+    'Grand Est',
+    'Occitanie',
+    'Île-de-France',
+    'Sud'
 ]
-
-def epci_list():
-    return list(chain(*[
-        import_module(f'.{region_name}', 'indice_pollution.regions').Forecast.epci_list
-        for region_name in regions
-    ]))
 
 def insee_list():
     return list(chain(*[
@@ -25,9 +22,10 @@ def insee_list():
         for region_name in regions
     ]))
 
-def forecast(epci=None, insee=None):
-    for region_name in regions:
-        region = import_module(f'.{region_name}', 'indice_pollution.regions').Forecast
-        if epci in region.epci_list or insee in region.insee_list():
-            return region.get
-    raise KeyError("Unable to find epci")
+def forecast(insee):
+    r = requests.get(f'https://geo.api.gouv.fr/communes/{insee}', params={"fields": "region"})
+    r.raise_for_status()
+    region_name = r.json()['region']['nom']
+    region = import_module(f'.{region_name}', 'indice_pollution.regions').Forecast
+
+    return region.get

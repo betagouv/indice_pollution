@@ -12,11 +12,7 @@ class Forecast(ForecastMixin):
 
 
     @classmethod
-    def params(cls, date, epci=None, insee=None):
-        #Pas trouvé comment filtrer par code insee ni par date
-        if epci:
-            raise ValueError()
-
+    def params(cls, date, insee=None):
         return {
             'f': 'json',
             'outFields': 'code_zone,date_ech,valeur',

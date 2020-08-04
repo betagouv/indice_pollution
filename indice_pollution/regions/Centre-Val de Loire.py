@@ -4,13 +4,10 @@ from dateutil.parser import parse
 
 class Forecast(ForecastMixin):
     url = 'https://services1.arcgis.com/HzzPcgRsxxyIZdlU/arcgis/rest/services/ind_centre_val_de_loire_agglo_1/FeatureServer/0/query'
-    epci_list = ['241800507', '243600327', '200040277', '244500203', '243700754', '200033181',
-        '244500468', '200030385']
 
     @classmethod
-    def params(cls, date, epci=None, insee=None):
-        if insee:
-            epci = cls.insee_epci[insee]
+    def params(cls, date, insee):
+        epci = cls.insee_epci[insee]
 
         day_after = str(parse(date).date() + timedelta(hours=24))
         return {

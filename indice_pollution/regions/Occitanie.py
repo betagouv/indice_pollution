@@ -2,21 +2,14 @@ from . import ForecastMixin
 from datetime import datetime
 
 class Forecast(ForecastMixin):
-    epci_list = [
-        '241200187', '200027183', '244800405', '243000643', '241200567',
-        '200066926', '248200099', '243400017', '243400769', '200066918', '200069300',
-        '200035715', '243100518', '248100737', '200067791', '200023737', '248100430'    
-    ]
-
     url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/indice_occitanie_agglo/FeatureServer/0/query'
     @classmethod
     def insee_list(cls):
         return cls.insee_epci.keys()
 
     @classmethod
-    def params(cls, date, epci=None, insee=None):
-        if insee:
-            epci = cls.insee_epci[insee]
+    def params(cls, date, insee):
+        epci = cls.insee_epci[insee]
 
         return {
             'f': 'json',

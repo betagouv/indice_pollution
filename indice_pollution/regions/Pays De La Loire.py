@@ -4,13 +4,10 @@ from datetime import timedelta
 
 class Forecast(ForecastMixin):
     url = 'https://data.airpl.org/api/v1/indice/atmo/'
-    zone_type = 'epci'
-    epci_list = ['244900015', '248500589', '245300330', '200071678', '247200132', '244400404']
 
     @classmethod
-    def params(cls, date, epci=None, insee=None):
-        if insee:
-            epci = cls.insee_epci[insee]
+    def params(cls, date, insee):
+        epci = cls.insee_epci[insee]
         tomorrow = (parse(date) + timedelta(hours=24)).date()
 
         return {
@@ -19,8 +16,8 @@ class Forecast(ForecastMixin):
             'date_fin': str(tomorrow),
             'date_deb': date
         }
-    
-    @classmethod 
+
+    @classmethod
     def getter(cls, feature):
         return {
             'indice': feature['properties']['valeur'],

@@ -9,9 +9,7 @@ class Forecast(ForecastMixin):
         return ['2B096', '2B033', '2A004']
 
     @classmethod
-    def params(cls, date, epci=None, insee=None):
-        if epci:
-            raise ValueError()
+    def params(cls, date, insee):
         return {
             'where': f"(date_ech >= '{date}') AND (code_zone='{insee}')",
             'outFields': 'valeur, date_ech',

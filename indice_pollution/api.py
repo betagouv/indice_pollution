@@ -5,20 +5,16 @@ from .autocomplete import autocomplete as autocomplete_
 
 @current_app.route('/forecast')
 def forecast():
-    epci = request.args.get('epci')
     insee = request.args.get('insee')
     date = request.args.get('date') or str(datetime.today().date())
 
     try:
-        forecast_getter = forecast_(epci=epci, insee=insee)
+        forecast_getter = forecast_(insee)
     except KeyError:
-        if epci:
-            current_app.logger.error(f'EPCI {epci} not found')
-        elif insee:
-            current_app.logger.error(f'INSEE {insee} not found')
+        current_app.logger.error(f'INSEE {insee} not found')
         abort(404)
 
-    return jsonify(forecast_getter(date=date, epci=epci, insee=insee))
+    return jsonify(forecast_getter(date=date, insee=insee))
 
 @current_app.route('/autocomplete')
 def autocomplete():

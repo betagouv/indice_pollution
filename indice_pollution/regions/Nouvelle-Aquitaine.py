@@ -14,9 +14,7 @@ class Forecast(ForecastMixin):
         ]
 
     @classmethod
-    def params(cls, date, epci=None, insee=None):
-        if epci:
-            raise ValueError()
+    def params(cls, date, insee):
         tomorrow = (parse(date) + timedelta(hours=24)).date()
 
         return {
@@ -26,7 +24,7 @@ class Forecast(ForecastMixin):
             'date_deb': date
         }
 
-    @classmethod 
+    @classmethod
     def getter(cls, feature):
         return {
             'indice': feature['properties']['valeur'],

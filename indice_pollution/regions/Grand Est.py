@@ -9,10 +9,7 @@ class Forecast(ForecastMixin):
             '68297', '57227', '68066', '52448', '51454', '54395', '51108']
 
     @classmethod
-    def params(cls, date, epci=None, insee=None):
-        if epci:
-            raise ValueError()
-
+    def params(cls, date, insee):
         return {
             'f': 'json',
             'outFields': 'code_zone,date_ech,valeur',

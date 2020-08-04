@@ -14,12 +14,9 @@ class Forecast(ForecastMixin):
         '200067932': 'ind_bretagne_agglo_VANNES',
     }
 
-    epci_list = epci_agglo.keys()
-
     @classmethod
-    def params(cls, date, epci=None, insee=None):
-        if insee:
-            epci = cls.insee_epci[insee]
+    def params(cls, date, insee):
+        epci = cls.insee_epci[insee]
         agglo = cls.epci_agglo[epci]
 
         return {
@@ -41,7 +38,7 @@ class Forecast(ForecastMixin):
     @classmethod
     def insee_list(cls):
         return cls.insee_epci.keys()
-    
+
     insee_epci = {
         "29019": "242900314",
         "29075": "242900314",

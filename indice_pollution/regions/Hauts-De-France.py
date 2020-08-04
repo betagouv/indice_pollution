@@ -12,10 +12,7 @@ class Forecast(ForecastMixin):
         '60175', '62765', '62193', '59392', '80021', '62119']
 
     @classmethod
-    def params(cls, date, epci=None, insee=None):
-        if epci:
-            raise ValueError()
-
+    def params(cls, date, insee):
         parsed_date = parse(date)
         str_parsed_date = parsed_date.strftime(cls.date_format)
         str_parsed_date = parsed_date.timestamp()

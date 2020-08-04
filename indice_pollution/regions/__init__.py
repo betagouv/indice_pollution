@@ -6,19 +6,22 @@ class ForecastMixin(object):
     insee_epci = dict()
 
     @classmethod
-    def get(cls, date, epci=None, insee=None):
-        print(f'date:{date} epci:{epci} insee:{insee}')
+    def get(cls, date, insee=None):
         r = requests.get(
             cls.url,
-            params=cls.params(date=date, epci=epci, insee=insee)
+            params=cls.params(date=date, insee=insee)
         )
 
         r.raise_for_status()
 
-        return list(map(cls.getter, r.json()['features']))
+        return list(filter(lambda s: s is not None, map(cls.getter, cls.features(r))))
 
     @classmethod
-    def params(cls, date, epci=None, insee=None):
+    def features(cls, r):
+        return r.json()['features']
+
+    @classmethod
+    def params(cls, date, insee):
         pass
 
     @classmethod
