@@ -6,7 +6,7 @@ regions = [
     'Auvergne-Rhône-Alpes',
     'Bretagne',
     'Corse',
-    'Pays De La Loire',
+    'Pays de la Loire',
     'Centre-Val de Loire',
     'Nouvelle-Aquitaine',
     'Hauts-De-France',
