@@ -11,18 +11,19 @@ DEPENDENCIES = [
 
 setup(
     name='indice_pollution',
-    version='0.0.1',
-    description='API giving pollution level in France',
-    url='https://beta.gouv.fr',
+    version='0.1.1',
+    description='API giving air pollution level in France',
+    url='https://github.com/l-vincent-l/indice_pollution',
+    download_url='https://github.com/l-vincent-l/indice_pollution/archive/0.1.1.tar.gz',
     author='Vincent Lara',
     author_email='vincent.lara@beta.gouv.fr',
     license='MIT',
     classifiers=[
-        'Development Status :: 4 Beta',
-        'Intended Audience :: Developpers',
-        'Programming Language :: Python :: 3'
+        'Development Status :: 3 - Alpha',
+        'Intended Audience :: Developers'
+        'Programming Language :: Python :: 3.8'
     ],
-    keywords='taxi transportation',
+    keywords='air quality aasqa atmo iqa',
     packages=find_packages(),
     install_requires=DEPENDENCIES
 )
