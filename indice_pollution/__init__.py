@@ -1,6 +1,8 @@
 from flask import Flask
 from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
+from .regions.solvers import forecast as forecast_
+from datetime import date as date_
 
 
 def create_app(test_config=None):
@@ -23,4 +25,8 @@ def create_app(test_config=None):
         import indice_pollution.web
 
     return app
-        
+
+def forecast(insee, date=None):
+    date = date or date_.today().isoformat()
+    forecast_getter = forecast_(insee)
+    return forecast_getter(date=date, insee=insee)
