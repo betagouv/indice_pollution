@@ -13,7 +13,8 @@ regions = [
     'Grand Est',
     'Occitanie',
     'Île-de-France',
-    'Sud'
+    'Sud',
+    'Normandie'
 ]
 
 def insee_list():
@@ -26,6 +27,6 @@ def forecast(insee):
     r = requests.get(f'https://geo.api.gouv.fr/communes/{insee}', params={"fields": "region"})
     r.raise_for_status()
     region_name = r.json()['region']['nom']
-    region = import_module(f'.{region_name}', 'indice_pollution.regions').Forecast
+    region = import_module(f'.{region_name}', 'indice_pollution.regions').Forecast()
 
     return region.get

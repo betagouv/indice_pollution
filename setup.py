@@ -5,7 +5,8 @@ DEPENDENCIES = [
     'Flask-Manage-Webpack',
     'flask-cors',
     'requests',
-    'python-dateutil'
+    'python-dateutil',
+    'orjson'
 ]
 
 setup(
