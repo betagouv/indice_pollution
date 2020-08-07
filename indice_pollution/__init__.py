@@ -1,9 +1,15 @@
 from flask import Flask
+from flask_caching import Cache
 from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
 from .regions.solvers import forecast as forecast_
 from datetime import date as date_
+import os
 
+
+cache = Cache(config={
+    'CACHE_TYPE': 'uwsgi' if os.getenv('FLASK_ENV') in [None, 'production'] else 'simple'
+    })
 
 def create_app(test_config=None):
     app = Flask(
@@ -12,13 +18,14 @@ def create_app(test_config=None):
         static_url_path=''
     )
     app.config.from_mapping(
-        SECRET_KEY='dev',
+        SECRET_KEY=os.getenv('SECRET_KEY', 'dev'),
     )
-    CORS(app)
     CORS(app, send_wildcard=True)
 
     manage_webpack = FlaskManageWebpack()
     manage_webpack.init_app(app)
+
+    cache.init_app(app)
 
     with app.app_context():
         import indice_pollution.api
