@@ -1,5 +1,4 @@
 from . import ForecastMixin
-from .. import cache
 from dateutil.parser import parse
 from json.decoder import JSONDecodeError
 import orjson as json
@@ -8,10 +7,6 @@ from string import printable
 
 class Forecast(ForecastMixin):
     url = 'https://dservices7.arcgis.com/FPRT1cIkPKcq73uN/arcgis/services/ind_normandie_agglo/WFSServer?service=wfs&request=getcapabilities'
-
-    @cache.cached(timeout=5000, key_prefix='Normandie')
-    def get(self, date, insee=None):
-        return super().get(date, insee)
 
     def params(self, date, insee):
         self.date = date
@@ -25,6 +20,7 @@ class Forecast(ForecastMixin):
 
     @classmethod
     def features(cls, r):
+        r.encoding = 'utf8'
         try:
             return r.json()['features']
         except JSONDecodeError:
@@ -40,10 +36,10 @@ class Forecast(ForecastMixin):
             return None
         return {
             **{
-                'indice': feature['attributes']['valeur'],
+                'indice': feature['properties']['valeur'],
                 'date': str_date
             },
-            **{k: feature['attributes'][k] for k in cls.outfields if k in feature}
+            **{k: feature['properties'][k] for k in self.outfields if k in feature}
         }
 
     @classmethod

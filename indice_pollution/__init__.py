@@ -1,15 +1,11 @@
 from flask import Flask
-from flask_caching import Cache
 from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
 from .regions.solvers import forecast as forecast_
 from datetime import date as date_
+import requests_cache
 import os
 
-
-cache = Cache(config={
-    'CACHE_TYPE': 'uwsgi' if os.getenv('FLASK_ENV') in [None, 'production'] else 'simple'
-    })
 
 def create_app(test_config=None):
     app = Flask(
@@ -25,7 +21,7 @@ def create_app(test_config=None):
     manage_webpack = FlaskManageWebpack()
     manage_webpack.init_app(app)
 
-    cache.init_app(app)
+    requests_cache.install_cache(expire_after=3600)
 
     with app.app_context():
         import indice_pollution.api

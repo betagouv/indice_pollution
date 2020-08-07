@@ -3,11 +3,11 @@ from setuptools import find_packages, setup
 DEPENDENCIES = [
     'flask',
     'Flask-Manage-Webpack',
-    'Flask-Caching',
     'flask-cors',
     'requests',
+    'requests-cache',
     'python-dateutil',
-    'orjson'
+    'orjson',
 ]
 
 setup(
