@@ -10,7 +10,7 @@ class Forecast(ForecastMixin):
 
     @classmethod
     def insee_list(cls):
-        return ['75056', '95394']
+        return ['75056']
 
     @classmethod
     def params(cls, date, insee):
@@ -36,3 +36,6 @@ class Forecast(ForecastMixin):
             },
             **{k: feature['attributes'][k] for k in cls.outfields if k in feature}
         }
+    
+    def get_close_insee(self, insee):
+        return insee
