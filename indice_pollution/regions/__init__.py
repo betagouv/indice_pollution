@@ -1,4 +1,5 @@
 import requests
+import logging
 
 class ForecastMixin(object):
     url = ""
@@ -35,4 +36,8 @@ class ForecastMixin(object):
 
     def get_close_insee(self, insee):
         departement = insee[:2]
-        return next(pref_insee for pref_insee in self.insee_list() if pref_insee[:2] == departement)
+        try:
+            return next(pref_insee for pref_insee in self.insee_list() if pref_insee[:2] == departement)
+        except StopIteration:
+            logging.error(f'Impossible de trouver le code insee de la préfecture de {insee}')
+            raise KeyError
