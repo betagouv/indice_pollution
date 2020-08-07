@@ -19,8 +19,4 @@ def autocomplete(query_string):
 
     r.raise_for_status()
 
-    insee_list_cache = insee_list()
-    return list(filter(
-        lambda v: v['code'] in insee_list_cache,
-        r.json()
-    ))
+    return r.json()

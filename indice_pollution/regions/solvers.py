@@ -1,6 +1,7 @@
 from importlib import import_module
 from itertools import chain
 import requests
+import logging
 
 regions = [
     'Auvergne-Rhône-Alpes',
@@ -9,7 +10,7 @@ regions = [
     'Pays de la Loire',
     'Centre-Val de Loire',
     'Nouvelle-Aquitaine',
-    'Hauts-De-France',
+    'Hauts-de-France',
     'Grand Est',
     'Occitanie',
     'Île-de-France',
@@ -27,6 +28,10 @@ def forecast(insee):
     r = requests.get(f'https://geo.api.gouv.fr/communes/{insee}', params={"fields": "region"})
     r.raise_for_status()
     region_name = r.json()['region']['nom']
-    region = import_module(f'.{region_name}', 'indice_pollution.regions').Forecast()
+    try:
+        region = import_module(f'.{region_name}', 'indice_pollution.regions').Forecast()
+    except ModuleNotFoundError:
+        logging.error(f'Region {region_name} not found INSEE: {insee}')
+        raise KeyError
 
     return region.get
