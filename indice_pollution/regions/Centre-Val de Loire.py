@@ -11,7 +11,7 @@ class Forecast(ForecastMixin):
 
         day_after = str(parse(date).date() + timedelta(hours=24))
         return {
-            'outFields': 'date_ech, valeur',
+            'outFields': ",".join(cls.outfields),
             'where': f"(code_zone={epci}) AND ((date_ech=DATE '{date}') OR (date_ech= DATE '{day_after}'))",
             'outSR': 4326,
             'f': 'json'
@@ -21,8 +21,11 @@ class Forecast(ForecastMixin):
     def getter(cls, feature):
         dt = datetime.utcfromtimestamp(feature['attributes']['date_ech']/1000)
         return {
-            'indice': feature['attributes']['valeur'],
-            'date': str(dt.date())
+            **{
+                'indice': feature['attributes']['valeur'],
+               'date': str(dt.date())
+            },
+            **{k: feature['attributes'][k] for k in cls.outfields if k in feature}
         }
 
     @classmethod

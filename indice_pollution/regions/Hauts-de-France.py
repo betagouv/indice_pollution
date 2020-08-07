@@ -19,7 +19,7 @@ class Forecast(ForecastMixin):
         day_after = (parsed_date + timedelta(hours=24)).strftime(cls.date_format)
         day_after = (parsed_date + timedelta(hours=24)).timestamp()
         return {
-            'outFields': 'date_ech,code_zone,valeur',
+            'outFields': ",".join(cls.outfields),
             'where': f"(date_ech>= '{date}') AND code_zone={insee}",
             'outSR': 4326,
             'f': 'json'
@@ -30,6 +30,9 @@ class Forecast(ForecastMixin):
         attributes = feature['attributes']
         dt = datetime.fromtimestamp(attributes['date_ech']/1000).strftime(cls.date_format)
         return {
-            'indice': feature['attributes']['valeur'],
-            'date': dt
+            **{
+                'indice': feature['attributes']['valeur'],
+                'date': dt
+            },
+            **{k: feature['attributes'][k] for k in cls.outfields if k in feature}
         }

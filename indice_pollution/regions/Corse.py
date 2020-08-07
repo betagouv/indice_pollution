@@ -12,7 +12,7 @@ class Forecast(ForecastMixin):
     def params(cls, date, insee):
         return {
             'where': f"(date_ech >= '{date}') AND (code_zone='{insee}')",
-            'outFields': 'valeur, date_ech',
+            'outFields': ",".join(cls.outfields),
             'f': 'json',
             'outSR': '4326'
         }
@@ -21,6 +21,9 @@ class Forecast(ForecastMixin):
     def getter(cls, feature):
         dt = datetime.utcfromtimestamp(feature['attributes']['date_ech']/1000)
         return {
-            'indice': feature['attributes']['valeur'],
-            'date': str(dt.date())
+            **{
+                'indice': feature['attributes']['valeur'],
+                'date': str(dt.date())
+            },
+            **{k: feature['attributes'][k] for k in cls.outfields if k in feature}
         }

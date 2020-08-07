@@ -34,8 +34,11 @@ class Forecast(ForecastMixin):
         if str(feature['properties']['code_zone']) != self.insee:
             return None
         return {
-            'indice': feature['properties']['valeur'],
-            'date': str_date
+            **{
+                'indice': feature['attributes']['valeur'],
+                'date': str_date
+            },
+            **{k: feature['attributes'][k] for k in cls.outfields if k in feature}
         }
 
     @classmethod

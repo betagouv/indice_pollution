@@ -20,7 +20,7 @@ class Forecast(ForecastMixin):
 
         return {
             'where': f"date_ech >= DATE '{day_before}'",
-            'outFields': 'valeur, date_ech, code_zone',
+            'outFields': ",".join(cls.outfields),
             'f': 'json',
             'outSR': '4326'
         }
@@ -30,6 +30,9 @@ class Forecast(ForecastMixin):
         attributes = feature['attributes']
         dt = datetime.fromtimestamp(attributes['date_ech']/1000).strftime(cls.date_format)
         return {
-            'indice': feature['attributes']['valeur'],
-            'date': dt
+            **{
+                'indice': feature['attributes']['valeur'],
+                'date': dt
+            },
+            **{k: feature['attributes'][k] for k in cls.outfields if k in feature}
         }
