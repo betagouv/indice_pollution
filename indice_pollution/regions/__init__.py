@@ -1,5 +1,5 @@
 import requests
-from requests_cache.core import CachedSessions
+from requests_cache.core import CachedSession
 import logging
 import time
 
