@@ -33,10 +33,17 @@ class Forecast(ForecastMixin):
         feature_dict = {f.tag: f.text for f in feature}
 
         return {
+            **{
             'indice': feature_dict['{http://ind_sudpaca}valeur'],
             'date': datetime.strptime(
                     feature_dict['{http://ind_sudpaca}date_ech'], cls.fr_date_format
                 ).strftime('%Y-%m-%d')
+            },
+            **{
+                k: feature_dict[f'{{http://ind_sudpaca}}{k}']
+                for k in cls.outfields
+                if f'{{http://ind_sudpaca}}{k}' in feature_dict
+            }
         }
 
     @classmethod
