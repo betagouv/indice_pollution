@@ -1,5 +1,7 @@
 import requests
+from requests_cache.core import CachedSessions
 import logging
+import time
 
 class ForecastMixin(object):
     url = ""
@@ -9,18 +11,33 @@ class ForecastMixin(object):
      'val_o3', 'val_pm10', 'val_pm25'
     ]
 
-    def get(self, date, insee=None):
+    def get(self, date, insee=None, attempts=0):
         if insee not in self.insee_list():
             insee = self.get_close_insee(insee)
 
-        r = requests.get(
-            self.url,
-            params=self.params(date=date, insee=insee)
-        )
+        if attempts == 0:
+            r = requests.get(
+                self.url,
+                params=self.params(date=date, insee=insee)
+            )
+        else:
+            s = CachedSession()
+            with s.cache_disabled():
+                r = requests.get(
+                    self.url,
+                    params=self.params(date=date, insee=insee)
+                )
+
 
         r.raise_for_status()
 
-        return list(filter(lambda s: s is not None, map(self.getter, self.features(r))))
+        to_return = list(filter(lambda s: s is not None, map(self.getter, self.features(r))))
+
+        if attempts >= 3 or len(to_return) > 0:
+            return to_return
+        else:
+            time.sleep(0.5 * (attempts + 1))
+            return self.get(date, insee, attempts+1)
 
     def features(self, r):
         return r.json()['features']
