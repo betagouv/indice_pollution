@@ -39,7 +39,7 @@ class Forecast(ForecastMixin):
                 'indice': feature['properties']['valeur'],
                 'date': str_date
             },
-            **{k: feature['properties'][k] for k in self.outfields if k in feature}
+            **{k: feature['properties'][k] for k in self.outfields if k in feature['properties']}
         }
 
     @classmethod

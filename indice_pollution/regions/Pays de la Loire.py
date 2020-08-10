@@ -20,10 +20,12 @@ class Forecast(ForecastMixin):
     @classmethod
     def getter(cls, feature):
         return {
-            'indice': feature['properties']['valeur'],
-            'date': feature['properties']['date']
+            **{
+                'indice': feature['properties']['valeur'],
+                'date': feature['properties']['date']
+            },
+            **{k: feature['properties'][k] for k in cls.outfields if k in feature['properties']}
         }
-
     @classmethod
     def insee_list(cls):
         return cls.insee_epci.keys()

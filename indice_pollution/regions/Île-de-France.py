@@ -34,7 +34,7 @@ class Forecast(ForecastMixin):
                 'indice': feature['attributes']['valeur'],
                 'date': dt
             },
-            **{k: feature['attributes'][k] for k in cls.outfields if k in feature}
+            **{k: feature['attributes'][k] for k in cls.outfields if k in feature['attributes']}
         }
     
     def get_close_insee(self, insee):

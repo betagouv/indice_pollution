@@ -35,7 +35,7 @@ class Forecast(ForecastMixin):
                 'indice': feature['properties']['valeur'],
                 'date':str(parse(feature['properties']['date_ech']).date())
             },
-            **{k: feature['attributes'][k] for k in cls.outfields}
+            **{k: feature['attributes'][k] for k in cls.outfields if k in feature['attributes']}
         }
 
     @classmethod

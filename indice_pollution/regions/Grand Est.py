@@ -20,10 +20,11 @@ class Forecast(ForecastMixin):
     @classmethod
     def getter(cls, feature):
         dt = datetime.utcfromtimestamp(feature['attributes']['date_ech']/1000)
-        return {
+        to_return = {
             **{
                 'indice': feature['attributes']['valeur'],
                 'date': str(dt.date())
             },
-            **{k: feature['attributes'][k] for k in cls.outfields if k in feature}
+            **{k: feature['attributes'][k] for k in cls.outfields if k in feature['attributes']}
         }
+        return to_return

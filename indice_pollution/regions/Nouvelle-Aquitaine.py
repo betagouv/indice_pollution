@@ -27,6 +27,9 @@ class Forecast(ForecastMixin):
     @classmethod
     def getter(cls, feature):
         return {
-            'indice': feature['properties']['valeur'],
-            'date': str(parse(feature['properties']['date_ech']).date())
+            **{
+                'indice': feature['properties']['valeur'],
+                'date': str(parse(feature['properties']['date_ech']).date())
+            },
+            **{k: feature['properties'][k] for k in cls.outfields if k in feature['properties']}
         }
