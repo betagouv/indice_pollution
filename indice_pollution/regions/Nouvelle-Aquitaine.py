@@ -3,8 +3,7 @@ from datetime import timedelta
 from . import ForecastMixin
 
 class Forecast(ForecastMixin):
-    url = 'https://opendata.atmo-na.org/api/v1/indice/atmo/'
-    zone_type = 'insee'
+    url = 'https://opendata.atmo-na.org/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
 
     @classmethod
     def insee_list(cls):
@@ -17,11 +16,16 @@ class Forecast(ForecastMixin):
     def params(cls, date, insee):
         tomorrow = (parse(date) + timedelta(hours=24)).date()
 
+        filter_zone = f'<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{insee}</Literal></PropertyIsEqualTo>'
+        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Function name="dateParse"><Literal>yyyy-MM-dd</Literal><Literal>{date}</Literal></Function></PropertyIsGreaterThanOrEqualTo>'
+
         return {
-            'format': 'json',
-            'zone': insee,
-            'date_fin': str(tomorrow),
-            'date_deb': date
+            'request': 'GetFeature',
+            'service': 'WFS',
+            'version': '1.1',
+            'typeName': 'ind_nouvelle_aquitaine_agglo:ind_nouvelle_aquitaine_agglo',
+            'Filter': f"<Filter><And>{filter_zone}{filter_date}</And></Filter>",
+            'outputFormat': 'json',
         }
 
     @classmethod
