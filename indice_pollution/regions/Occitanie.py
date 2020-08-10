@@ -13,7 +13,7 @@ class Forecast(ForecastMixin):
 
         return {
             'f': 'json',
-            'outFields': 'code_zone,date_ech,valeur',
+            'outFields': cls.outfields,
             'outSR': '4326',
             'where': f"(code_zone={epci}) AND (date_ech >= DATE '{date}')"
         }
