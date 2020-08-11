@@ -1,5 +1,11 @@
 from . import ForecastMixin
 from dateutil.parser import parse
+import requests as requests_
+from requests import adapters
+import ssl
+from urllib3 import poolmanager
+
+
 
 class Forecast(ForecastMixin):
     url = 'https://data.airbreizh.asso.fr/geoserver/ind_bretagne_agglo/ows'
@@ -13,6 +19,12 @@ class Forecast(ForecastMixin):
         '243500782': 'ind_bretagne_agglo_SAINT_MALO',
         '200067932': 'ind_bretagne_agglo_VANNES',
     }
+
+    @property
+    def requests(self):
+        session = requests_.session()
+        session.mount('https://', TLSAdapter())
+        return session
 
     @classmethod
     def params(cls, date, insee):
@@ -35,7 +47,7 @@ class Forecast(ForecastMixin):
                 'indice': feature['properties']['valeur'],
                 'date':str(parse(feature['properties']['date_ech']).date())
             },
-            **{k: feature['attributes'][k] for k in cls.outfields if k in feature['attributes']}
+            **{k: feature['properties'][k] for k in cls.outfields if k in feature['properties']}
         }
 
     @classmethod
@@ -218,3 +230,16 @@ class Forecast(ForecastMixin):
         "56087": "200067932",
         "56088": "200067932",
         }
+
+class TLSAdapter(adapters.HTTPAdapter):
+
+    def init_poolmanager(self, connections, maxsize, block=False):
+        """Create and initialize the urllib3 PoolManager."""
+        ctx = ssl.create_default_context()
+        ctx.set_ciphers('DEFAULT@SECLEVEL=1')
+        self.poolmanager = poolmanager.PoolManager(
+                num_pools=connections,
+                maxsize=maxsize,
+                block=block,
+                ssl_version=ssl.PROTOCOL_TLS,
+                ssl_context=ctx)

@@ -1,4 +1,4 @@
-import requests
+import requests as requests_
 from requests_cache.core import CachedSession
 import logging
 import time
@@ -11,23 +11,26 @@ class ForecastMixin(object):
      'val_o3', 'val_pm10', 'val_pm25'
     ]
 
+    @property
+    def requests(self):
+        return requests_
+
     def get(self, date, insee=None, attempts=0):
         if insee not in self.insee_list():
             insee = self.get_close_insee(insee)
 
         if attempts == 0:
-            r = requests.get(
+            r = self.requests.get(
                 self.url,
                 params=self.params(date=date, insee=insee)
             )
         else:
             s = CachedSession()
             with s.cache_disabled():
-                r = requests.get(
+                r = self.requests.get(
                     self.url,
                     params=self.params(date=date, insee=insee)
                 )
-
 
         r.raise_for_status()
 
