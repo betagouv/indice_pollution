@@ -3,18 +3,21 @@ from dateutil.parser import parse
 from datetime import timedelta
 
 class Forecast(ForecastMixin):
-    url = 'https://data.airpl.org/api/v1/indice/atmo/'
+    url = 'https://data.airpl.org/geoserver/ind_pays_de_la_loire/wfs'
 
     @classmethod
     def params(cls, date, insee):
         epci = cls.insee_epci[insee]
-        tomorrow = (parse(date) + timedelta(hours=24)).date()
+        filter_zone = f'<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{epci}</Literal></PropertyIsEqualTo>'
+        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Function name="dateParse"><Literal>yyyy-MM-dd</Literal><Literal>{date}</Literal></Function></PropertyIsGreaterThanOrEqualTo>'
 
         return {
-            'format': 'json',
-            'zone': epci,
-            'date_fin': str(tomorrow),
-            'date_deb': date
+            'request': 'GetFeature',
+            'service': 'WFS',
+            'version': '1.1',
+            'typeName': 'ind_pays_de_la_loire:ind_pays_de_la_loire_agglo',
+            'Filter': f"<Filter><And>{filter_zone}{filter_date}</And></Filter>",
+            'outputFormat': 'json',
         }
 
     @classmethod
@@ -22,10 +25,11 @@ class Forecast(ForecastMixin):
         return {
             **{
                 'indice': feature['properties']['valeur'],
-                'date': feature['properties']['date']
+                'date': str(parse(feature['properties']['date_ech']).date())
             },
             **{k: feature['properties'][k] for k in cls.outfields if k in feature['properties']}
         }
+
     @classmethod
     def insee_list(cls):
         return cls.insee_epci.keys()
