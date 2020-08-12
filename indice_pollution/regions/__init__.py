@@ -13,33 +13,27 @@ class ForecastMixin(object):
 
     HTTPAdapter = requests.adapters.HTTPAdapter
 
-    def get(self, date, insee, attempts=0):
-        if insee not in self.insee_list():
-            insee = self.get_close_insee(insee)
-
+    def get_multiple_attempts(self, url, params, attempts=0):
         s = CachedSession()
         s.mount('https://', self.HTTPAdapter())
         if attempts == 0:
-            r = s.get(
-                self.url,
-                params=self.params(date=date, insee=insee)
-            )
+            r = s.get(url, params=params)
         else:
             with s.cache_disabled():
-                r = s.get(
-                    self.url,
-                    params=self.params(date=date, insee=insee)
-                )
-
+                r = s.get(url, params=params)
         r.raise_for_status()
-
-        to_return = list(filter(lambda s: s is not None, map(self.getter, self.features(r))))
-
-        if attempts >= 3 or len(to_return) > 0:
-            return to_return
+        features = self.features(r)
+        if attempts >= 3 or len(features) > 0:
+            return features
         else:
             time.sleep(0.5 * (attempts + 1))
-            return self.get(date, insee, attempts+1, url)
+            return self.get_multiple_attempts(url, params, attempts+1)
+
+    def get(self, date, insee, attempts=0):
+        if insee not in self.insee_list():
+            insee = self.get_close_insee(insee)
+        features = self.get_multiple_attempts(self.url, self.params(date, insee))
+        return list(filter(lambda s: s is not None, map(self.getter, features)))
 
     def features(self, r):
         return r.json()['features']

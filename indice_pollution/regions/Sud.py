@@ -25,7 +25,7 @@ class Forecast(ForecastMixin):
     @classmethod
     def features(cls, r):
         root = ET.fromstring(r.text)
-        return filter(lambda el: el.tag == '{http://ind_sudpaca}ind_sudpaca_agglo', root[0])
+        return list(filter(lambda el: el.tag == '{http://ind_sudpaca}ind_sudpaca_agglo', root[0]))
 
 
     @classmethod
