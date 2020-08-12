@@ -36,7 +36,7 @@ export default {
             fetch(`/forecast?insee=${this.insee}`)
                 .then(response => response.json())
                 .then(data => {
-                    this.indices = data
+                    this.indices = data.data
                 })
 
             fetch(`https://geo.api.gouv.fr/communes/${this.insee}?fields=nom&format=json&geometry=centre`)

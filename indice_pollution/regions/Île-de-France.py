@@ -6,6 +6,7 @@ import requests
 
 class Forecast(ForecastMixin):
     date_format = '%Y-%m-%d'
+    website = 'https://www.airparif.asso.fr/'
     url = 'https://services8.arcgis.com/gtmasQsdfwbDAQSQ/arcgis/rest/services/ind_idf_agglo/FeatureServer/0/query'
 
     @classmethod

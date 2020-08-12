@@ -3,6 +3,7 @@ from datetime import timedelta
 from . import ForecastMixin
 
 class Forecast(ForecastMixin):
+    website = 'https://www.atmo-nouvelleaquitaine.org/'
     url = 'https://opendata.atmo-na.org/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
 
     @classmethod

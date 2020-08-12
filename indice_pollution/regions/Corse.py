@@ -2,6 +2,7 @@ from . import ForecastMixin
 from datetime import datetime
 
 class Forecast(ForecastMixin):
+    website =  'https://www.qualitaircorse.org/'
     url = 'https://services9.arcgis.com/VQopoXNvUqHYZHjY/arcgis/rest/services/ind_atmo_corse/FeatureServer/0/query'
 
     @classmethod

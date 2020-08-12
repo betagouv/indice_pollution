@@ -20,6 +20,7 @@ class TLSAdapter(adapters.HTTPAdapter):
 
 
 class Forecast(ForecastMixin):
+    website = 'https://www.airbreizh.asso.fr/'
     url = 'https://data.airbreizh.asso.fr/geoserver/ind_bretagne_agglo/ows'
 
     epci_agglo = {

@@ -6,6 +6,7 @@ from itertools import takewhile
 from string import printable
 
 class Forecast(ForecastMixin):
+    website = 'http://www.atmonormandie.fr/'
     url = 'https://dservices7.arcgis.com/FPRT1cIkPKcq73uN/arcgis/services/ind_normandie_agglo/WFSServer?service=wfs&request=getcapabilities'
 
     @classmethod

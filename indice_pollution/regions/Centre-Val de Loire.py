@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from dateutil.parser import parse
 
 class Forecast(ForecastMixin):
+    website = 'http://www.ligair.fr/'
     url = 'https://services1.arcgis.com/HzzPcgRsxxyIZdlU/arcgis/rest/services/ind_centre_val_de_loire_agglo_1/FeatureServer/0/query'
 
     @classmethod

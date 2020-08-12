@@ -2,6 +2,7 @@ from . import ForecastMixin
 from datetime import datetime
 
 class Forecast(ForecastMixin):
+    website = 'https://www.atmo-occitanie.org/'
     url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/indice_occitanie_agglo/FeatureServer/0/query'
     @classmethod
     def insee_list(cls):

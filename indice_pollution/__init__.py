@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
-from .regions.solvers import forecast as forecast_
+from .regions.solvers import region
 from datetime import date as date_
 import requests_cache
 import os
@@ -31,5 +31,10 @@ def create_app(test_config=None):
 
 def forecast(insee, date=None):
     date = date or date_.today().isoformat()
-    forecast_getter = forecast_(insee)
-    return forecast_getter(date=date, insee=insee)
+    r = region(insee)
+    return {
+        "data": r.get(date=date, insee=insee),
+        "metadata": {
+            "website": r.website
+        }
+    }

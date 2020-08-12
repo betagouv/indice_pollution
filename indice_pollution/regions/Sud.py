@@ -3,6 +3,7 @@ from datetime import timedelta, datetime
 import xml.etree.ElementTree as ET
 
 class Forecast(ForecastMixin):
+    website = 'https://www.atmosud.org/'
     url = 'https://geoservices.atmosud.org/geoserver/ind_sudpaca/ows?service=WFS&version=1.1.0'
     fr_date_format = '%d-%m-%Y 00:00:00'
 

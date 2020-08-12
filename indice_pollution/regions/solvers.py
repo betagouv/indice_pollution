@@ -24,7 +24,7 @@ def insee_list():
         for region_name in regions
     ]))
 
-def forecast(insee):
+def region(insee):
     r = requests.get(f'https://geo.api.gouv.fr/communes/{insee}', params={"fields": "region"})
     r.raise_for_status()
     region_name = r.json()['region']['nom']
@@ -34,4 +34,4 @@ def forecast(insee):
         logging.error(f'Region {region_name} not found INSEE: {insee}')
         raise KeyError
 
-    return region.get
+    return region

@@ -4,6 +4,7 @@ from dateutil.parser import parse
 
 class Forecast(ForecastMixin):
     date_format = '%Y-%m-%d'
+    website = 'https://www.atmo-hdf.fr/'
     url = 'https://services8.arcgis.com/rxZzohbySMKHTNcy/arcgis/rest/services/ind_hdf_agglo/FeatureServer/0/query'
 
     @classmethod
