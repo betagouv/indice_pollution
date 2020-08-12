@@ -14,13 +14,9 @@ class Forecast(ForecastMixin):
 
     @classmethod
     def params(cls, date, insee):
-        day_before = (
-                datetime.strptime(date, '%Y-%m-%d') - timedelta(days=1)
-            ).strftime('%Y-%m-%d')
-
         return {
-            'where': f"date_ech >= DATE '{day_before}'",
-            'outFields': ",".join(cls.outfields),
+            'where': f"date_ech >= CURRENT_DATE - INTERVAL '1' DAY",
+            'outFields': "*",
             'f': 'json',
             'outSR': '4326'
         }
