@@ -1,4 +1,4 @@
-import requests as requests_
+import requests
 from requests_cache.core import CachedSession
 import logging
 import time
@@ -11,23 +11,22 @@ class ForecastMixin(object):
      'val_o3', 'val_pm10', 'val_pm25'
     ]
 
-    @property
-    def requests(self):
-        return requests_
+    HTTPAdapter = requests.adapters.HTTPAdapter
 
-    def get(self, date, insee=None, attempts=0):
+    def get(self, date, insee, attempts=0):
         if insee not in self.insee_list():
             insee = self.get_close_insee(insee)
 
+        s = CachedSession()
+        s.mount('https://', self.HTTPAdapter())
         if attempts == 0:
-            r = self.requests.get(
+            r = s.get(
                 self.url,
                 params=self.params(date=date, insee=insee)
             )
         else:
-            s = CachedSession()
             with s.cache_disabled():
-                r = self.requests.get(
+                r = s.get(
                     self.url,
                     params=self.params(date=date, insee=insee)
                 )
@@ -40,7 +39,7 @@ class ForecastMixin(object):
             return to_return
         else:
             time.sleep(0.5 * (attempts + 1))
-            return self.get(date, insee, attempts+1)
+            return self.get(date, insee, attempts+1, url)
 
     def features(self, r):
         return r.json()['features']
