@@ -35,6 +35,7 @@ def forecast(insee, date=None):
     return {
         "data": r.get(date=date, insee=insee),
         "metadata": {
+            "nom": r.__module__.split(".")[-1],
             "website": r.website
         }
     }
