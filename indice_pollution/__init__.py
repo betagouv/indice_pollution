@@ -22,6 +22,7 @@ def create_app(test_config=None):
     manage_webpack.init_app(app)
 
     requests_cache.install_cache(expire_after=3600)
+    requests_cache.clear()
 
     with app.app_context():
         import indice_pollution.api
