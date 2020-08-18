@@ -1,5 +1,4 @@
 import requests
-from requests_cache.core import CachedSession
 import logging
 import time
 
@@ -14,13 +13,9 @@ class ForecastMixin(object):
     HTTPAdapter = requests.adapters.HTTPAdapter
 
     def get_multiple_attempts(self, url, params, attempts=0):
-        s = CachedSession()
+        s = requests.Session()
         s.mount('https://', self.HTTPAdapter())
-        if attempts == 0:
-            r = s.get(url, params=params)
-        else:
-            with s.cache_disabled():
-                r = s.get(url, params=params)
+        r = s.get(url, params=params)
         r.raise_for_status()
         features = self.features(r)
         if attempts >= 3 or len(features) > 0:
