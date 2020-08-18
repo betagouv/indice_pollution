@@ -30,8 +30,9 @@ def region(insee):
     region_name = r.json()['region']['nom']
     try:
         region = import_module(f'.{region_name}', 'indice_pollution.regions').Forecast()
-    except ModuleNotFoundError:
+    except ModuleNotFoundError as e:
         logging.error(f'Region {region_name} not found INSEE: {insee}')
+        logging.error(e)
         raise KeyError
 
     return region

@@ -7,6 +7,7 @@ DEPENDENCIES = [
     'requests',
     'python-dateutil',
     'orjson',
+    'pytz'
 ]
 
 setup(
