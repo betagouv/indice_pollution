@@ -27,7 +27,7 @@ class Forecast(ForecastMixin):
         attributes = feature['attributes']
         zone = pytz.timezone('Europe/Paris')
         
-        dt = str(zone.localize(datetime.fromtimestamp(attributes['date_ech']/1000)).date())
+        dt = str(datetime.fromtimestamp(attributes['date_ech']/1000, tz=zone).date())
         return {
             **{
                 'indice': feature['attributes']['valeur'],
