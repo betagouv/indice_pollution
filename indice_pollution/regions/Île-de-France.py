@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from dateutil.parser import parse
 import requests
 import pytz
+from flask import current_app
 
 class Forecast(ForecastMixin):
     website = 'https://www.airparif.asso.fr/'
@@ -25,6 +26,7 @@ class Forecast(ForecastMixin):
     def getter(cls, feature):
         attributes = feature['attributes']
         zone = pytz.timezone('Europe/Paris')
+        
         dt = str(zone.localize(datetime.fromtimestamp(attributes['date_ech']/1000)).date())
         return {
             **{

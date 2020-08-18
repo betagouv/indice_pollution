@@ -10,8 +10,9 @@ def forecast():
 
     try:
         result = forecast_(insee, date)
-    except KeyError:
+    except KeyError as e:
         current_app.logger.error(f'INSEE {insee} not found')
+        current_app.logger.error(e)
         abort(404)
 
     return jsonify(result)
