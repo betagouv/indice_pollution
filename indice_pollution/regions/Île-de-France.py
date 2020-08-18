@@ -2,10 +2,9 @@ from . import ForecastMixin
 from datetime import datetime, timedelta
 from dateutil.parser import parse
 import requests
-
+import pytz
 
 class Forecast(ForecastMixin):
-    date_format = '%Y-%m-%d'
     website = 'https://www.airparif.asso.fr/'
     url = 'https://services8.arcgis.com/gtmasQsdfwbDAQSQ/arcgis/rest/services/ind_idf_agglo/FeatureServer/0/query'
 
@@ -25,7 +24,8 @@ class Forecast(ForecastMixin):
     @classmethod
     def getter(cls, feature):
         attributes = feature['attributes']
-        dt = datetime.fromtimestamp(attributes['date_ech']/1000).strftime(cls.date_format)
+        zone = pytz.timezone('Europe/Paris')
+        dt = str(zone.localize(datetime.fromtimestamp(attributes['date_ech']/1000)).date())
         return {
             **{
                 'indice': feature['attributes']['valeur'],
