@@ -7,7 +7,8 @@ DEPENDENCIES = [
     'requests',
     'python-dateutil',
     'orjson',
-    'pytz'
+    'pytz',
+    'beautifulsoup4'
 ]
 
 setup(
