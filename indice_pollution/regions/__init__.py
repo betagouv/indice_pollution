@@ -12,11 +12,15 @@ class ForecastMixin(object):
 
     HTTPAdapter = requests.adapters.HTTPAdapter
 
-    def get_multiple_attempts(self, url, params, attempts=0):
+    def get_one_attempt(self, url, params):
         s = requests.Session()
         s.mount('https://', self.HTTPAdapter())
         r = s.get(url, params=params)
         r.raise_for_status()
+        return r
+
+    def get_multiple_attempts(self, url, params, attempts=0):
+        r = self.get_one_attempt(url, params)
         features = self.features(r)
         if attempts >= 3 or len(features) > 0:
             return features
