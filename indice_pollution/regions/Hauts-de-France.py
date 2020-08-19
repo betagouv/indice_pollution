@@ -13,15 +13,15 @@ class Forecast(ForecastMixin):
         '60175', '62765', '62193', '59392', '80021', '62119']
 
     @classmethod
-    def params(cls, date, insee):
-        parsed_date = parse(date)
+    def params(cls, date_, insee):
+        parsed_date = parse(date_)
         str_parsed_date = parsed_date.strftime(cls.date_format)
         str_parsed_date = parsed_date.timestamp()
         day_after = (parsed_date + timedelta(hours=24)).strftime(cls.date_format)
         day_after = (parsed_date + timedelta(hours=24)).timestamp()
         return {
             'outFields': ",".join(cls.outfields),
-            'where': f"(date_ech>= '{date}') AND code_zone={insee}",
+            'where': f"(date_ech>= '{date_}') AND code_zone={insee}",
             'outSR': 4326,
             'f': 'json'
         }

@@ -8,8 +8,8 @@ class Forecast(ForecastMixin):
     fr_date_format = '%d-%m-%Y 00:00:00'
 
     @classmethod
-    def params(cls, date, insee):
-        parsed_date = datetime.strptime(date, '%Y-%m-%d')
+    def params(cls, date_, insee):
+        parsed_date = datetime.strptime(date_, '%Y-%m-%d')
         tomorrow_date = parsed_date + timedelta(days=1)
 
         fr_date = parsed_date.strftime(cls.fr_date_format)

@@ -14,7 +14,7 @@ class Forecast(ForecastMixin):
         return ['75056']
 
     @classmethod
-    def params(cls, date, insee):
+    def params(cls, date_, insee):
         return {
             'where': f"date_ech >= CURRENT_DATE - INTERVAL '2' DAY",
             'outFields': "*",

@@ -10,12 +10,12 @@ class Forecast(ForecastMixin):
             '68297', '57227', '68066', '52448', '51454', '54395', '51108']
 
     @classmethod
-    def params(cls, date, insee):
+    def params(cls, date_, insee):
         return {
             'f': 'json',
             'outFields': ",".join(cls.outfields),
             'outSR': '4326',
-            'where': f"(code_zone={insee}) AND (date_ech >= DATE '{date}')"
+            'where': f"(code_zone={insee}) AND (date_ech >= DATE '{date_}')"
         }
 
     @classmethod

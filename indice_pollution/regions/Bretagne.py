@@ -36,7 +36,7 @@ class Forecast(ForecastMixin):
     HTTPAdapter = TLSAdapter
 
     @classmethod
-    def params(cls, date, insee):
+    def params(cls, date_, insee):
         epci = cls.insee_epci[insee]
         agglo = cls.epci_agglo[epci]
 
@@ -46,7 +46,7 @@ class Forecast(ForecastMixin):
             'request': 'GetFeature',
             'typeName': f'ind_bretagne_agglo:{agglo}',
             'outputFormat': 'application/json',
-            'CQL_FILTER': f"date_ech>'{date}'"
+            'CQL_FILTER': f"date_ech>'{date_}'"
         }
 
     @classmethod

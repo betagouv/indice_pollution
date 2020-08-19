@@ -7,13 +7,13 @@ class Forecast(ForecastMixin):
     url = 'https://services1.arcgis.com/HzzPcgRsxxyIZdlU/arcgis/rest/services/ind_centre_val_de_loire_agglo_1/FeatureServer/0/query'
 
     @classmethod
-    def params(cls, date, insee):
+    def params(cls, date_, insee):
         epci = cls.insee_epci[insee]
 
-        day_after = str(parse(date).date() + timedelta(hours=24))
+        day_after = str(parse(date_).date() + timedelta(days=1))
         return {
             'outFields': ",".join(cls.outfields),
-            'where': f"(code_zone={epci}) AND ((date_ech=DATE '{date}') OR (date_ech= DATE '{day_after}'))",
+            'where': f"(code_zone={epci}) AND ((date_ech=DATE '{date_}') OR (date_ech= DATE '{day_after}'))",
             'outSR': 4326,
             'f': 'json'
         }

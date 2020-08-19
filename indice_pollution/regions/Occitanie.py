@@ -9,14 +9,14 @@ class Forecast(ForecastMixin):
         return cls.insee_epci.keys()
 
     @classmethod
-    def params(cls, date, insee):
+    def params(cls, date_, insee):
         epci = cls.insee_epci[insee]
 
         return {
             'f': 'json',
             'outFields': ",".join(cls.outfields),
             'outSR': '4326',
-            'where': f"(code_zone={epci}) AND (date_ech >= DATE '{date}')"
+            'where': f"(code_zone={epci}) AND (date_ech >= DATE '{date_}')"
         }
 
     @classmethod

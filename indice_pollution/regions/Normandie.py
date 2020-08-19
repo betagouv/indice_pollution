@@ -10,9 +10,9 @@ class Forecast(ForecastMixin):
     url = 'https://dservices7.arcgis.com/FPRT1cIkPKcq73uN/arcgis/services/ind_normandie_agglo/WFSServer?service=wfs&request=getcapabilities'
 
     @classmethod
-    def params(cls, date, insee):
+    def params(cls, date_, insee):
         filter_zone = f'<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{insee}</Literal></PropertyIsEqualTo>'
-        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Literal>{date}T00:00:00.000Z</Literal></PropertyIsGreaterThanOrEqualTo>'
+        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Literal>{date_}T00:00:00.000Z</Literal></PropertyIsGreaterThanOrEqualTo>'
         return {
             'service': 'wfs',
             'request': 'getfeature',

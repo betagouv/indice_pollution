@@ -6,10 +6,10 @@ from .autocomplete import autocomplete as autocomplete_
 @current_app.route('/forecast')
 def forecast():
     insee = request.args.get('insee')
-    date = request.args.get('date') or str(datetime.today().date())
+    date_ = request.args.get('date') or str(datetime.today().date())
 
     try:
-        result = forecast_(insee, date)
+        result = forecast_(insee, date_)
     except KeyError as e:
         current_app.logger.error(f'INSEE {insee} not found')
         current_app.logger.error(e)

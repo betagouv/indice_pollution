@@ -14,9 +14,9 @@ class Forecast(ForecastMixin):
         ]
 
     @classmethod
-    def params(cls, date, insee):
+    def params(cls, date_, insee):
         filter_zone = f'<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{insee}</Literal></PropertyIsEqualTo>'
-        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Function name="dateParse"><Literal>yyyy-MM-dd</Literal><Literal>{date}</Literal></Function></PropertyIsGreaterThanOrEqualTo>'
+        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Function name="dateParse"><Literal>yyyy-MM-dd</Literal><Literal>{date_}</Literal></Function></PropertyIsGreaterThanOrEqualTo>'
 
         return {
             'request': 'GetFeature',

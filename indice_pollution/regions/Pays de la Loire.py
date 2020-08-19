@@ -7,10 +7,10 @@ class Forecast(ForecastMixin):
     url = 'https://data.airpl.org/geoserver/ind_pays_de_la_loire/wfs'
 
     @classmethod
-    def params(cls, date, insee):
+    def params(cls, date_, insee):
         epci = cls.insee_epci[insee]
         filter_zone = f'<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{epci}</Literal></PropertyIsEqualTo>'
-        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Function name="dateParse"><Literal>yyyy-MM-dd</Literal><Literal>{date}</Literal></Function></PropertyIsGreaterThanOrEqualTo>'
+        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Function name="dateParse"><Literal>yyyy-MM-dd</Literal><Literal>{date_}</Literal></Function></PropertyIsGreaterThanOrEqualTo>'
 
         return {
             'request': 'GetFeature',

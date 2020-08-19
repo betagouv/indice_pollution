@@ -24,16 +24,16 @@ class ForecastMixin(object):
             time.sleep(0.5 * (attempts + 1))
             return self.get_multiple_attempts(url, params, attempts+1)
 
-    def get(self, date, insee, attempts=0):
+    def get(self, date_, insee, attempts=0):
         if insee not in self.insee_list():
             insee = self.get_close_insee(insee)
-        features = self.get_multiple_attempts(self.url, self.params(date, insee))
+        features = self.get_multiple_attempts(self.url, self.params(date_, insee))
         return list(filter(lambda s: s is not None, map(self.getter, features)))
 
     def features(self, r):
         return r.json()['features']
 
-    def params(self, date, insee):
+    def params(self, date_, insee):
         pass
 
     def getter(self, feature):

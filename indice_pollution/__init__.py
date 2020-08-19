@@ -2,7 +2,7 @@ from flask import Flask
 from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
 from .regions.solvers import region
-from datetime import date as date_
+from datetime import date
 import os
 
 
@@ -26,11 +26,11 @@ def create_app(test_config=None):
 
     return app
 
-def forecast(insee, date=None):
-    date = date or date_.today().isoformat()
+def forecast(insee, date_=None):
+    date_ = date_ or date.today().isoformat()
     r = region(insee)
     return {
-        "data": r.get(date=date, insee=insee),
+        "data": r.get(date_=date_, insee=insee),
         "metadata": {
             "region": {
                 "nom": r.__module__.split(".")[-1],
