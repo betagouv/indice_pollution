@@ -4,7 +4,6 @@ from dateutil.parser import parse
 from bs4 import BeautifulSoup
 import requests
 from datetime import date, timedelta
-from itertools import chain
 
 class Forecast(ForecastMixin):
     website = 'https://www.atmo-bfc.org/'
@@ -55,26 +54,25 @@ class Forecast(ForecastMixin):
                 lambda s: s is not None,
                 map(
                     self.getter,
-                    chain(
+                    [
                         features_daybefore,
                         features_date,
                         features_dayafter
-                    )
+                    ]
                 )
             )
         )
 
-    @classmethod
-    def features(cls, r):
-        soup = BeautifulSoup(r.json()["indices"])
+    def features(self, r):
+        soup = BeautifulSoup(r.json()["indices"], features="html5lib")
         valeurIndice = soup.find_all("div", class_="valeurIndice")[0]
-        return valeurIndice.find_all("span")[1].text
-
-    def getter(self, feature):
         return {
-            "indice": feature,
+            "indice": valeurIndice.find_all("span")[1].text,
             "date": self.date_
         }
+
+    def getter(self, feature):
+        return feature
 
     def get_close_insee(self, insee):
         return insee
