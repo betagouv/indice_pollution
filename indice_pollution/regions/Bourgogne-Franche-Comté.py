@@ -23,7 +23,6 @@ class Forecast(ForecastMixin):
 
     def params(self, date_, insee):
         self.date_ = date_
-        print(f'date: "{self.date_}"')
         return {
             "meC": "abo_communes",
             "meM": "traitementAjax",

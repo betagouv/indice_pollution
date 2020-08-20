@@ -2,7 +2,8 @@ from flask import Flask
 from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
 from .regions.solvers import region
-from datetime import date
+from datetime import datetime
+import pytz
 import os
 
 
@@ -27,7 +28,8 @@ def create_app(test_config=None):
     return app
 
 def forecast(insee, date_=None):
-    date_ = date_ or date.today().isoformat()
+    zone = pytz.timezone('Europe/Paris')
+    date_ = date_ or date.now(tz=zone).date().isoformat()
     r = region(insee)
     return {
         "data": r.get(date_=date_, insee=insee),
