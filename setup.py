@@ -8,7 +8,8 @@ DEPENDENCIES = [
     'python-dateutil',
     'orjson',
     'pytz',
-    'beautifulsoup4'
+    'beautifulsoup4',
+    'html5lib'
 ]
 
 setup(
