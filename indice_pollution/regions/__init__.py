@@ -13,6 +13,9 @@ class ForecastMixin(object):
      'val_o3', 'val_pm10', 'val_pm25'
     ]
 
+    attributes_key = 'attributes'
+    use_dateutil_parser = False
+
     HTTPAdapter = requests.adapters.HTTPAdapter
 
     def get_one_attempt(self, url, params):
@@ -57,27 +60,20 @@ class ForecastMixin(object):
             logging.error(f'Impossible de trouver le code insee de la préfecture de {insee}')
             raise KeyError
 
+    def getter(self, feature):
+        attributes = feature[self.attributes_key]
 
-class AttributesGetter(object):
-    attributes_key = 'attributes'
-    use_dateutil_parser = False
-
-    @classmethod
-    def getter(cls, feature):
-        attributes = feature[cls.attributes_key]
-
-        dt = cls.date_getter(attributes)
+        dt = self.date_getter(attributes)
         return {
             **{
                 'indice': attributes['valeur'],
                 'date': str(dt.date())
             },
-            **{k: attributes[k] for k in cls.outfields if k in attributes}
+            **{k: attributes[k] for k in self.outfields if k in attributes}
         }
 
-    @classmethod
-    def date_getter(cls, attributes):
-        if not cls.use_dateutil_parser:
+    def date_getter(self, attributes):
+        if not self.use_dateutil_parser:
             zone = pytz.timezone('Europe/Paris')
             return datetime.fromtimestamp(attributes['date_ech']/1000, tz=zone)
         else:

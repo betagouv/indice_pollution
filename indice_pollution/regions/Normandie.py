@@ -1,14 +1,16 @@
-from . import ForecastMixin, AttributesGetter
+from . import ForecastMixin
 from dateutil.parser import parse
 from json.decoder import JSONDecodeError
 import orjson as json
 from itertools import takewhile
 from string import printable
 
-class Forecast(AttributesGetter, ForecastMixin):
+class Forecast(ForecastMixin):
     website = 'http://www.atmonormandie.fr/'
     url = 'https://dservices7.arcgis.com/FPRT1cIkPKcq73uN/arcgis/services/ind_normandie_agglo/WFSServer?service=wfs&request=getcapabilities'
+
     attributes_key = 'properties'
+    use_dateutil_parser = True
 
     @classmethod
     def params(cls, date_, insee):
@@ -31,10 +33,6 @@ class Forecast(AttributesGetter, ForecastMixin):
             set_printable = set(printable + 'éèàçôêùà')
             clean_string = str("".join(takewhile(lambda c: c in set_printable, r.text)))
             return json.loads(clean_string)['features']
-
-    @classmethod
-    def date_getter(cls, properties):
-        return parse(properties['date_ech'])
 
     @classmethod
     def insee_list(cls):

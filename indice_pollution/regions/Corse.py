@@ -1,6 +1,6 @@
-from . import ForecastMixin, AttributesGetter
+from . import ForecastMixin
 
-class Forecast(AttributesGetter, ForecastMixin):
+class Forecast(ForecastMixin):
     website =  'https://www.qualitaircorse.org/'
     url = 'https://services9.arcgis.com/VQopoXNvUqHYZHjY/arcgis/rest/services/ind_atmo_corse/FeatureServer/0/query'
 

@@ -1,10 +1,10 @@
-from . import ForecastMixin, AttributesGetter
+from . import ForecastMixin
 from datetime import datetime, timedelta
 from dateutil.parser import parse
 import requests
 from flask import current_app
 
-class Forecast(AttributesGetter, ForecastMixin):
+class Forecast(ForecastMixin):
     website = 'https://www.airparif.asso.fr/'
     url = 'https://services8.arcgis.com/gtmasQsdfwbDAQSQ/arcgis/rest/services/ind_idf_agglo/FeatureServer/0/query'
 

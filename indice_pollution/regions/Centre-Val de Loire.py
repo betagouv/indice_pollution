@@ -1,8 +1,8 @@
-from . import ForecastMixin, AttributesGetter
+from . import ForecastMixin
 from datetime import datetime, timedelta
 from dateutil.parser import parse
 
-class Forecast(AttributesGetter, ForecastMixin):
+class Forecast(ForecastMixin):
     website = 'http://www.ligair.fr/'
     url = 'https://services1.arcgis.com/HzzPcgRsxxyIZdlU/arcgis/rest/services/ind_centre_val_de_loire_agglo_1/FeatureServer/0/query'
 
@@ -13,7 +13,7 @@ class Forecast(AttributesGetter, ForecastMixin):
         day_after = str(parse(date_).date() + timedelta(days=1))
         return {
             'outFields': ",".join(cls.outfields),
-            'where': f"(code_zone={epci}) AND ((date_ech=DATE '{date_}') OR (date_ech= DATE '{day_after}'))",
+            'where': f"(code_zone={epci}) AND (date_ech >= DATE '{date_}')",
             'outSR': 4326,
             'f': 'json'
         }

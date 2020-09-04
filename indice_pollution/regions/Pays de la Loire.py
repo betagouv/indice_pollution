@@ -1,8 +1,8 @@
-from . import ForecastMixin, AttributesGetter
+from . import ForecastMixin
 from dateutil.parser import parse
 from datetime import timedelta
 
-class Forecast(AttributesGetter, ForecastMixin):
+class Forecast(ForecastMixin):
     website = 'https://www.atmo-occitanie.org/'
     url = 'https://data.airpl.org/geoserver/ind_pays_de_la_loire/wfs'
 

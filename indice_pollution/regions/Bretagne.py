@@ -1,4 +1,4 @@
-from . import ForecastMixin, AttributesGetter
+from . import ForecastMixin
 import requests as requests_
 from requests import adapters
 import ssl
@@ -18,7 +18,7 @@ class TLSAdapter(adapters.HTTPAdapter):
                 ssl_context=ctx)
 
 
-class Forecast(AttributesGetter, ForecastMixin):
+class Forecast(ForecastMixin):
     website = 'https://www.airbreizh.asso.fr/'
     url = 'https://data.airbreizh.asso.fr/geoserver/ind_bretagne_agglo/ows'
 
