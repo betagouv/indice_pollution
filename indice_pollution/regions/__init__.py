@@ -1,6 +1,8 @@
 import requests
 import logging
 import time
+import pytz
+from datetime import datetime
 
 class ForecastMixin(object):
     url = ""
@@ -53,3 +55,19 @@ class ForecastMixin(object):
         except StopIteration:
             logging.error(f'Impossible de trouver le code insee de la préfecture de {insee}')
             raise KeyError
+
+
+class AttributesGetter(object):
+
+    @classmethod
+    def getter(cls, feature):
+        zone = pytz.timezone('Europe/Paris')
+        dt = datetime.fromtimestamp(feature['attributes']['date_ech']/1000, tz=zone)
+        return {
+            **{
+                'indice': feature['attributes']['valeur'],
+                'date': str(dt.date())
+            },
+            **{k: feature['attributes'][k] for k in cls.outfields if k in feature['attributes']}
+        }
+    

@@ -1,7 +1,6 @@
-from . import ForecastMixin
-from datetime import datetime
+from . import ForecastMixin, AttributesGetter
 
-class Forecast(ForecastMixin):
+class Forecast(AttributesGetter, ForecastMixin):
     website = 'https://www.atmo-occitanie.org/'
     url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/indice_occitanie_agglo/FeatureServer/0/query'
     @classmethod
@@ -17,17 +16,6 @@ class Forecast(ForecastMixin):
             'outFields': ",".join(cls.outfields),
             'outSR': '4326',
             'where': f"(code_zone={epci}) AND (date_ech >= DATE '{date_}')"
-        }
-
-    @classmethod
-    def getter(cls, feature):
-        dt = datetime.utcfromtimestamp(feature['attributes']['date_ech']/1000)
-        return {
-            **{
-            'indice': feature['attributes']['valeur'],
-            'date': str(dt.date())
-            },
-            **{k: feature['attributes'][k] for k in cls.outfields if k in feature['attributes']}
         }
 
     insee_epci = {

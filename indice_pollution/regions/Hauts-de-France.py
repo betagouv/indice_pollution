@@ -1,8 +1,8 @@
-from . import ForecastMixin
-from datetime import datetime, timedelta
+from . import ForecastMixin, AttributesGetter
+from datetime import timedelta
 from dateutil.parser import parse
 
-class Forecast(ForecastMixin):
+class Forecast(AttributesGetter, ForecastMixin):
     date_format = '%Y-%m-%d'
     website = 'https://www.atmo-hdf.fr/'
     url = 'https://services8.arcgis.com/rxZzohbySMKHTNcy/arcgis/rest/services/ind_hdf_agglo/FeatureServer/0/query'
@@ -24,16 +24,4 @@ class Forecast(ForecastMixin):
             'where': f"(date_ech>= '{date_}') AND code_zone={insee}",
             'outSR': 4326,
             'f': 'json'
-        }
-
-    @classmethod
-    def getter(cls, feature):
-        attributes = feature['attributes']
-        dt = datetime.fromtimestamp(attributes['date_ech']/1000).strftime(cls.date_format)
-        return {
-            **{
-                'indice': feature['attributes']['valeur'],
-                'date': dt
-            },
-            **{k: feature['attributes'][k] for k in cls.outfields if k in feature['attributes']}
         }
