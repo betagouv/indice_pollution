@@ -43,10 +43,13 @@ class ForecastMixin(object):
     def features(self, r):
         return r.json()['features']
 
+    def where(self, date_, insee):
+        zone = insee if not self.insee_epci else self.insee_epci[insee]
+        return f"(date_ech >= '{date_}') AND (code_zone='{zone}')"
+
     def params(self, date_, insee):
-        zone = insee if self.insee_list else self.insee_list[insee]
         return {
-            'where': f"(date_ech >= '{date_}') AND (code_zone='{zone}')",
+            'where': self.where(date_, insee),
             'outFields': ",".join(self.outfields),
             'f': 'json',
             'outSR': '4326'

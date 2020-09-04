@@ -10,14 +10,8 @@ class Forecast(ForecastMixin):
 
     insee_list = ['75056']
 
-    @classmethod
-    def params(cls, date_, insee):
-        return {
-            'where': f"date_ech >= CURRENT_DATE - INTERVAL '2' DAY",
-            'outFields': "*",
-            'f': 'json',
-            'outSR': '4326'
-        }
+    def where(self, date_, insee):
+        return f"date_ech >= CURRENT_DATE - INTERVAL '2' DAY"
     
     def get_close_insee(self, insee):
         return insee

@@ -8,17 +8,6 @@ class Forecast(ForecastMixin):
     def insee_list(self):
         return self.insee_epci.keys()
 
-    @classmethod
-    def params(cls, date_, insee):
-        epci = cls.insee_epci[insee]
-
-        return {
-            'f': 'json',
-            'outFields': ",".join(cls.outfields),
-            'outSR': '4326',
-            'where': f"(code_zone={epci}) AND (date_ech >= DATE '{date_}')"
-        }
-
     insee_epci = {
         '46042': '200023737',
         '46224': '200023737',
