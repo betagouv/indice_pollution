@@ -3,9 +3,10 @@ from . import ForecastMixin
 class Forecast(ForecastMixin):
     website = 'https://www.atmo-occitanie.org/'
     url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/indice_occitanie_agglo/FeatureServer/0/query'
-    @classmethod
-    def insee_list(cls):
-        return cls.insee_epci.keys()
+
+    @property
+    def insee_list(self):
+        return self.insee_epci.keys()
 
     @classmethod
     def params(cls, date_, insee):

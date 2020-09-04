@@ -7,10 +7,10 @@ class Forecast(ForecastMixin):
     website = 'https://www.atmo-hdf.fr/'
     url = 'https://services8.arcgis.com/rxZzohbySMKHTNcy/arcgis/rest/services/ind_hdf_agglo/FeatureServer/0/query'
 
-    @classmethod
-    def insee_list(cls):
-        return ['59350', '59183', '59178', '62041', '62160', '59606', '02691',
-        '60175', '62765', '62193', '59392', '80021', '62119']
+    insee_list = [
+        '59350', '59183', '59178', '62041', '62160', '59606', '02691', '60175',
+        '62765', '62193', '59392', '80021', '62119'
+    ]
 
     @classmethod
     def params(cls, date_, insee):

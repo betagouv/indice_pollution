@@ -12,6 +12,8 @@ class Forecast(ForecastMixin):
     attributes_key = 'properties'
     use_dateutil_parser = True
 
+    insee_list = ['76351', '14366', '76540', '14118', '50502', '27229', '50129', '61001']
+
     @classmethod
     def params(cls, date_, insee):
         filter_zone = f'<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{insee}</Literal></PropertyIsEqualTo>'
@@ -34,6 +36,3 @@ class Forecast(ForecastMixin):
             clean_string = str("".join(takewhile(lambda c: c in set_printable, r.text)))
             return json.loads(clean_string)['features']
 
-    @classmethod
-    def insee_list(cls):
-        return ['76351', '14366', '76540', '14118', '50502', '27229', '50129', '61001']

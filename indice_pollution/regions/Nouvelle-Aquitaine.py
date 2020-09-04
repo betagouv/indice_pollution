@@ -8,12 +8,10 @@ class Forecast(ForecastMixin):
     attributes_key = 'properties'
     use_dateutil_parser = True
 
-    @classmethod
-    def insee_list(cls):
-        return ['33063', '79005', '16102', '64102', '64445', '19272', '87085',
-            '24322', '40088', '17300', '16015', '79191', '87154', '86194', '19031',
-            '64300', '23096'
-        ]
+    insee_list = [
+        '33063', '79005', '16102', '64102', '64445', '19272', '87085', '24322', '40088',
+        '17300', '16015', '79191', '87154', '86194', '19031', '64300', '23096'
+    ]
 
     @classmethod
     def params(cls, date_, insee):

@@ -7,6 +7,8 @@ class Forecast(ForecastMixin):
     url = 'https://geoservices.atmosud.org/geoserver/ind_sudpaca/ows?service=WFS&version=1.1.0'
     fr_date_format = '%d-%m-%Y 00:00:00'
 
+    insee_list = ['06029', '06088', '13001', '13055', '83137', '84007']
+
     @classmethod
     def params(cls, date_, insee):
         parsed_date = datetime.strptime(date_, '%Y-%m-%d')
@@ -46,7 +48,3 @@ class Forecast(ForecastMixin):
                 if f'{{http://ind_sudpaca}}{k}' in feature_dict
             }
         }
-
-    @classmethod
-    def insee_list(cls):
-        return ['06029', '06088', '13001', '13055', '83137', '84007']

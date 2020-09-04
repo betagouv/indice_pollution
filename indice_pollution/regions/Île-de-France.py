@@ -8,9 +8,7 @@ class Forecast(ForecastMixin):
     website = 'https://www.airparif.asso.fr/'
     url = 'https://services8.arcgis.com/gtmasQsdfwbDAQSQ/arcgis/rest/services/ind_idf_agglo/FeatureServer/0/query'
 
-    @classmethod
-    def insee_list(cls):
-        return ['75056']
+    insee_list = ['75056']
 
     @classmethod
     def params(cls, date_, insee):

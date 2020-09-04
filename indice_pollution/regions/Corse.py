@@ -4,9 +4,6 @@ class Forecast(ForecastMixin):
     website =  'https://www.qualitaircorse.org/'
     url = 'https://services9.arcgis.com/VQopoXNvUqHYZHjY/arcgis/rest/services/ind_atmo_corse/FeatureServer/0/query'
 
-    @classmethod
-    def insee_list(cls):
-        return ['2B096', '2B033', '2A004']
 
     @classmethod
     def params(cls, date_, insee):
@@ -15,4 +12,4 @@ class Forecast(ForecastMixin):
             'outFields': ",".join(cls.outfields),
             'f': 'json',
             'outSR': '4326'
-        }
+        }    insee_list = ['2B096', '2B033', '2A004']

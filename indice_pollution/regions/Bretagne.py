@@ -51,9 +51,9 @@ class Forecast(ForecastMixin):
             'CQL_FILTER': f"date_ech>'{date_}'"
         }
 
-    @classmethod
-    def insee_list(cls):
-        return cls.insee_epci.keys()
+    @property
+    def insee_list(self):
+        return self.insee_epci.keys()
 
     insee_epci = {
         "29019": "242900314",

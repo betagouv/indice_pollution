@@ -41,7 +41,7 @@ class Forecast(ForecastMixin):
         }
 
     def get(self, date_, insee, attempts=0):
-        if insee not in self.insee_list():
+        if insee not in self.insee_list:
             insee = self.get_close_insee(insee)
         parsed_date = parse(date_)
         day_before = str((parsed_date - timedelta(days=1)).date())
