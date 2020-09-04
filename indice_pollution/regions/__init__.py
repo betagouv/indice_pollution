@@ -60,7 +60,7 @@ class ForecastMixin(object):
 
     @property
     def insee_list(self):
-        return []
+        return [] if not self.insee_epci else self.insee_epci.keys()
 
     def get_close_insee(self, insee):
         departement = insee[:2]

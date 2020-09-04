@@ -24,10 +24,6 @@ class Forecast(ForecastMixin):
             'outputFormat': 'json',
         }
 
-    @property
-    def insee_list(self):
-        return self.insee_epci.keys()
-
     insee_epci = {
         "49007": "244900015",
         "49307": "244900015",

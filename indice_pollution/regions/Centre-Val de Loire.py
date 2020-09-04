@@ -6,10 +6,6 @@ class Forecast(ForecastMixin):
     website = 'http://www.ligair.fr/'
     url = 'https://services1.arcgis.com/HzzPcgRsxxyIZdlU/arcgis/rest/services/ind_centre_val_de_loire_agglo_1/FeatureServer/0/query'
 
-    @property
-    def insee_list(self):
-        return self.insee_epci.keys()
-
     insee_epci = {
         "18033": "241800507",
         "18205": "241800507",

@@ -4,10 +4,6 @@ class Forecast(ForecastMixin):
     website = 'https://www.atmo-occitanie.org/'
     url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/indice_occitanie_agglo/FeatureServer/0/query'
 
-    @property
-    def insee_list(self):
-        return self.insee_epci.keys()
-
     insee_epci = {
         '46042': '200023737',
         '46224': '200023737',
