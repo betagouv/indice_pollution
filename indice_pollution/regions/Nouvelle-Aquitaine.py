@@ -1,10 +1,12 @@
-from dateutil.parser import parse
 from datetime import timedelta
-from . import ForecastMixin
+from . import ForecastMixin, AttributesGetter
 
-class Forecast(ForecastMixin):
+class Forecast(AttributesGetter, ForecastMixin):
     website = 'https://www.atmo-nouvelleaquitaine.org/'
     url = 'https://opendata.atmo-na.org/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
+
+    attributes_key = 'properties'
+    use_dateutil_parser = True
 
     @classmethod
     def insee_list(cls):
@@ -25,14 +27,4 @@ class Forecast(ForecastMixin):
             'typeName': 'ind_nouvelle_aquitaine_agglo:ind_nouvelle_aquitaine_agglo',
             'Filter': f"<Filter><And>{filter_zone}{filter_date}</And></Filter>",
             'outputFormat': 'json',
-        }
-
-    @classmethod
-    def getter(cls, feature):
-        return {
-            **{
-                'indice': feature['properties']['valeur'],
-                'date': str(parse(feature['properties']['date_ech']).date())
-            },
-            **{k: feature['properties'][k] for k in cls.outfields if k in feature['properties']}
         }

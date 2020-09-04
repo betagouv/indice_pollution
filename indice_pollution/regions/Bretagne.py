@@ -1,5 +1,4 @@
-from . import ForecastMixin
-from dateutil.parser import parse
+from . import ForecastMixin, AttributesGetter
 import requests as requests_
 from requests import adapters
 import ssl
@@ -19,9 +18,12 @@ class TLSAdapter(adapters.HTTPAdapter):
                 ssl_context=ctx)
 
 
-class Forecast(ForecastMixin):
+class Forecast(AttributesGetter, ForecastMixin):
     website = 'https://www.airbreizh.asso.fr/'
     url = 'https://data.airbreizh.asso.fr/geoserver/ind_bretagne_agglo/ows'
+
+    attributes_key = 'properties'
+    use_dateutil_parser = True
 
     epci_agglo = {
         '242900314': 'ind_bretagne_agglo_BREST',
@@ -47,16 +49,6 @@ class Forecast(ForecastMixin):
             'typeName': f'ind_bretagne_agglo:{agglo}',
             'outputFormat': 'application/json',
             'CQL_FILTER': f"date_ech>'{date_}'"
-        }
-
-    @classmethod
-    def getter(cls, feature):
-        return { 
-            **{
-                'indice': feature['properties']['valeur'],
-                'date':str(parse(feature['properties']['date_ech']).date())
-            },
-            **{k: feature['properties'][k] for k in cls.outfields if k in feature['properties']}
         }
 
     @classmethod

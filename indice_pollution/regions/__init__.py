@@ -3,6 +3,7 @@ import logging
 import time
 import pytz
 from datetime import datetime
+from dateutil.parser import parse
 
 class ForecastMixin(object):
     url = ""
@@ -58,16 +59,28 @@ class ForecastMixin(object):
 
 
 class AttributesGetter(object):
+    attributes_key = 'attributes'
+    use_dateutil_parser = False
 
     @classmethod
     def getter(cls, feature):
-        zone = pytz.timezone('Europe/Paris')
-        dt = datetime.fromtimestamp(feature['attributes']['date_ech']/1000, tz=zone)
+        attributes = feature[cls.attributes_key]
+
+        dt = cls.date_getter(attributes)
         return {
             **{
-                'indice': feature['attributes']['valeur'],
+                'indice': attributes['valeur'],
                 'date': str(dt.date())
             },
-            **{k: feature['attributes'][k] for k in cls.outfields if k in feature['attributes']}
+            **{k: attributes[k] for k in cls.outfields if k in attributes}
         }
+
+    @classmethod
+    def date_getter(cls, attributes):
+        if not cls.use_dateutil_parser:
+            zone = pytz.timezone('Europe/Paris')
+            return datetime.fromtimestamp(attributes['date_ech']/1000, tz=zone)
+        else:
+            return parse(attributes['date_ech'])
+
     

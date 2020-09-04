@@ -1,10 +1,13 @@
-from . import ForecastMixin
+from . import ForecastMixin, AttributesGetter
 from dateutil.parser import parse
 from datetime import timedelta
 
-class Forecast(ForecastMixin):
+class Forecast(AttributesGetter, ForecastMixin):
     website = 'https://www.atmo-occitanie.org/'
     url = 'https://data.airpl.org/geoserver/ind_pays_de_la_loire/wfs'
+
+    attributes_key = 'properties'
+    use_dateutil_parser = True
 
     @classmethod
     def params(cls, date_, insee):
@@ -19,16 +22,6 @@ class Forecast(ForecastMixin):
             'typeName': 'ind_pays_de_la_loire:ind_pays_de_la_loire_agglo',
             'Filter': f"<Filter><And>{filter_zone}{filter_date}</And></Filter>",
             'outputFormat': 'json',
-        }
-
-    @classmethod
-    def getter(cls, feature):
-        return {
-            **{
-                'indice': feature['properties']['valeur'],
-                'date': str(parse(feature['properties']['date_ech']).date())
-            },
-            **{k: feature['properties'][k] for k in cls.outfields if k in feature['properties']}
         }
 
     @classmethod
