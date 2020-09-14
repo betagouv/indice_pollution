@@ -49,36 +49,56 @@ forecast(75101)
 #### Response
 
 ```json
-[
-  {
-    "date":"2020-08-10",
-    "date_ech":1597017600000,
-    "indice":7,
-    "qualif":"M\u00e9diocre",
-    "val_no2":0,
-    "val_o3":0,
-    "val_pm10":0,
-    "val_pm25":0,
-    "val_so2":0,
-    "valeur":7
+{
+  "data": [
+    {
+      "date":"2020-08-10",
+      "date_ech":1597017600000,
+      "indice":7,
+      "qualif":"M\u00e9diocre",
+      "val_no2":0,
+      "val_o3":0,
+      "val_pm10":0,
+      "val_pm25":0,
+      "val_so2":0,
+      "valeur":7
+    }
+  ],
+  "metadata": {
+    "region": {
+      "website": "http://www.atmonormandie.fr/",
+      "nom": "Normandie",
+    }
   }
-]
+}
+
 ```
+
+##### data
 
 The array may contains several objects. Typically, one for the current day and potentially one forecast object for one or a couple of next days.
 
 - `date` is the date for the forecast provided in `YYYY-MM-DD` format
-- `date_ech` is ?
-- `indice` (and `valeur`) is the general "indice ATMO" as standardized by l'État Français (`1` is good air quality, `10` is terrible air quality)
-- `val_<pollutant>` are each the "indice AMTO" for each pollutant as standardized by l'État Français (`0` is a mistake value)
-- `qualif` is a word qualifying the general "indice ATMO" as standardized by l'État Français. One of `Très bonne`, `Bonne`, `Moyenne`, `Médiocre`, `Mauvaise`, 
+- `indice` is the general "indice ATMO" as standardized by l'État Français (`1` is good air quality, `10` is terrible air quality)
+
+- (optional) `date_ech` is ?
+- (optional) `val_<pollutant>` are each the "indice AMTO" for each pollutant as standardized by l'État Français (`0` is a mistake value)
+- (optional) `qualif` is a word qualifying the general "indice ATMO" as standardized by l'État Français. One of `Très bon`, `Bon`, `Moyen`, `Médiocre`, `Mauvais`, 
+- (optional) `valeur`. Same thing than `indice`
+
+ ##### metadata
+ 
+Currently, it only has a `region` property. This property is an object with: 
+- `nom` France Région name
+- `website` corresponding AASQUA website
+
 
 
 ## Test
 
-A test instanced is deployed at https://app-6ccdcc10-da92-47b1-add6-59d8d3914d79.cleverapps.io/
+A test instanced is deployed at https://app-ed2e0e03-0bd3-4eb4-8326-000288aeb6a0.cleverapps.io/
 
-Query example: https://app-6ccdcc10-da92-47b1-add6-59d8d3914d79.cleverapps.io/forecast?insee=26289
+Query example: https://app-ed2e0e03-0bd3-4eb4-8326-000288aeb6a0.cleverapps.io/forecast?insee=76717
 
 
 
