@@ -1,1 +1,1 @@
-from .Sud import Forecast
+from .Sud import Forecast, Episode

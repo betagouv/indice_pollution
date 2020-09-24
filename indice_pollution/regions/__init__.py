@@ -132,4 +132,45 @@ class ForecastMixin(object):
         else:
             return parse(attributes['date_ech'])
 
+class EpisodeMixin(ServiceMixin):
+    outfields = ['date_ech', 'lib_zone', 'code_zone', 'date_dif', 'code_pol',
+     'lib_pol', 'etat', 'com_court', 'com_long']
+
+    def get(self, date_, insee, attempts=0):
+        features = self.get_multiple_attempts(self.url, self.params(date_, insee))
+        print(features)
+        return list(filter(lambda s: s is not None, map(self.getter, features)))
     
+    def getter(self, feature):
+        print(self.attributes_key)
+        attributes = feature[self.attributes_key]
+
+        date_ech = self.date_parser(attributes['date_ech'])
+        date_dif = self.date_parser(attributes['date_dif'])
+        return {
+            **{k: attributes[k] for k in self.outfields if k in attributes},
+            **{
+                'date_dif': str(date_dif.date()),
+                'date_ech': str(date_ech.date())
+            }
+        }
+
+    def centre(self, insee):
+        r = requests.get(
+            f'https://geo.api.gouv.fr/communes/{insee}',
+            params={"fields": "centre", "format": "json", "geometry": "centre"}
+        )
+        r.raise_for_status()
+        return r.json()['centre']['coordinates']
+
+    def params(self, date_, insee):
+        centre = self.centre(insee)
+
+        return {
+            'where': '',
+            'outfields': self.outfields,
+            'f': 'json',
+            'geometry': f'{centre[0]},{centre[1]}',
+            'inSR': '4326',
+            'geometryType': 'esriGeometryPoint'
+        }

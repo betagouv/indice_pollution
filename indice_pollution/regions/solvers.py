@@ -37,7 +37,7 @@ def get_region_name(insee):
 def region(insee=None, region_name=None):
     region_name = region_name or get_region_name(insee)
     try:
-        region = import_module(f'.{region_name}', 'indice_pollution.regions').Forecast()
+        region = import_module(f'.{region_name}', 'indice_pollution.regions')
     except ModuleNotFoundError as e:
         logging.error(f'Region {region_name} not found INSEE: {insee}')
         logging.error(e)

@@ -1,15 +1,35 @@
-from . import ForecastMixin
+from . import ForecastMixin, EpisodeMixin
 from datetime import timedelta, datetime
 
-class Forecast(ForecastMixin):
+class Service(object):
     website = 'https://www.atmosud.org/'
     url = 'https://geoservices.atmosud.org/geoserver/ind_sudpaca/ows?service=WFS&version=1.1.0'
-    fr_date_format = '%Y-%m-%dT00:00:00Z'
-
-    insee_list = ['06029', '06088', '13001', '13055', '83137', '84007']
-
     attributes_key = 'properties'
     use_dateutil_parser = True
+    fr_date_format = '%Y-%m-%dT00:00:00Z'
+
+class Episode(Service, EpisodeMixin):
+    url = 'https://geoservices.atmosud.org/geoserver/alrt_sudpaca_dep/ows'
+
+    def params(self, date_, insee):
+        centre = self.centre(insee)
+
+        return {
+            'service': 'WFS',
+            'version': '1.1.0',
+            'request': 'GetFeature',
+            'typeName': 'alrt_sudpaca_dep:alrt3j_sudpaca',
+            'outputFormat': 'json',
+            'geometry': f'{centre[0]},{centre[1]}',
+            'inSR': '4326',
+            'geometryType': 'esriGeometryPoint',
+            'bbox': f'{centre[1]},{centre[0]},{centre[1]},{centre[0]},'
+        }
+
+class Forecast(Service, ForecastMixin):
+    url = 'https://geoservices.atmosud.org/geoserver/ind_sudpaca/ows'
+
+    insee_list = ['06029', '06088', '13001', '13055', '83137', '84007']
 
     @classmethod
     def params(cls, date_, insee):

@@ -6,10 +6,26 @@ from .autocomplete import autocomplete as autocomplete_
 @current_app.route('/forecast')
 def forecast():
     insee = request.args.get('insee')
-    date_ = request.args.get('date')
+    zone = pytz.timezone('Europe/Paris')
+    date_ = request.args.get('date') or str(datetime.now(tz=zone).date().isoformat())
 
     try:
         result = forecast_(insee, date_)
+    except KeyError as e:
+        current_app.logger.error(f'INSEE {insee} not found')
+        current_app.logger.error(e)
+        abort(404)
+
+    return jsonify(result)
+
+@current_app.route('/episodes')
+def episodes():
+    insee = request.args.get('insee')
+    zone = pytz.timezone('Europe/Paris')
+    date_ = request.args.get('date') or str(datetime.now(tz=zone).date().isoformat())
+
+    try:
+        result = episode_(insee, date_)
     except KeyError as e:
         current_app.logger.error(f'INSEE {insee} not found')
         current_app.logger.error(e)

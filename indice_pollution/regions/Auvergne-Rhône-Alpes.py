@@ -45,3 +45,7 @@ class Forecast(ForecastMixin):
 
     def get_close_insee(self, insee):
         return insee
+
+
+class Episode(Service, EpisodeMixin):
+    url = 'https://services3.arcgis.com/o7Q3o5SkiSeZD5LK/arcgis/rest/services/Episodes%20de%20pollution%20pr%C3%A9vus%20ou%20constat%C3%A9s/FeatureServer/0/query'

@@ -4,9 +4,14 @@ import json
 from bs4 import BeautifulSoup
 from dateutil.parser import parse
 
-class Forecast(ForecastMixin):
+class Service(ServiceMixin):
     website = 'https://www.atmo-occitanie.org/'
-    url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/Indice_de_qualite_de_l_air_des_agglomerations_sur_la_region_Occitanie/FeatureServer/0/query'
+
+class Episode(EpisodeMixin, Service):
+    url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/epipol_3j_occitanie/FeatureServer/0/query'
+
+class Forecast(ForecastMixin, Service):
+    url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/indice_occitanie_agglo/FeatureServer/0/query'
 
     IQA_TO_QUALIF = {
         "1": "tres_bon",
