@@ -40,10 +40,6 @@ export default {
     },
     computed: {
         classObject: function() {
-            console.log(this)
-            console.log(this.indice_class)
-            console.log(this.indice)
-            console.log(this.indice_class[this.indice])
             return this.indice_class[this.indice]
         }
     }
