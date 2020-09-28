@@ -1,9 +1,12 @@
 from setuptools import find_packages, setup
 
 DEPENDENCIES = [
+    'alembic',
     'flask',
+    'flask-alembic',
     'Flask-Manage-Webpack',
     'flask-cors',
+    'flask-sqlalchemy',
     'requests',
     'python-dateutil',
     'orjson',

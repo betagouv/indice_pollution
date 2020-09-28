@@ -1,8 +1,13 @@
 from flask import Flask
 from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
+from flask_alembic import Alembic
+from flask_sqlalchemy import SQLAlchemy
+db = SQLAlchemy()
+alembic = Alembic()
+
 from .regions.solvers import region
-from datetime import datetime
+from datetime import date
 import pytz
 import os
 
@@ -15,11 +20,15 @@ def create_app(test_config=None):
     )
     app.config.from_mapping(
         SECRET_KEY=os.getenv('SECRET_KEY', 'dev'),
+        SQLALCHEMY_DATABASE_URI=os.getenv('SQLALCHEMY_DATABASE_URI') or os.getenv('POSTGRESQL_ADDON_URI')
     )
     CORS(app, send_wildcard=True)
 
     manage_webpack = FlaskManageWebpack()
     manage_webpack.init_app(app)
+
+    db.init_app(app)
+    alembic.init_app(app)
 
     with app.app_context():
         import indice_pollution.api
