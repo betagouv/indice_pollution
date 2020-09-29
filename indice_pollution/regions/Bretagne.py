@@ -37,10 +37,9 @@ class Forecast(ForecastMixin):
 
     HTTPAdapter = TLSAdapter
 
-    @classmethod
-    def params(cls, date_, insee):
-        epci = cls.insee_epci[insee]
-        agglo = cls.epci_agglo[epci]
+    def params(self, date_, insee):
+        epci = self.insee_epci[insee]
+        agglo = self.epci_agglo[epci]
 
         return {
             'service': 'WFS',

@@ -20,11 +20,16 @@ regions = [
 
 def insee_list():
     return list(chain(*[
-        import_module(f'.{region_name}', 'indice_pollution.regions').Forecast.insee_list()
+        import_module(f'.{region_name}', 'indice_pollution.regions').Forecast().insee_list
         for region_name in regions
     ]))
 
 def region(insee):
+    try:
+        insee = f'{int(insee):05}'
+    except ValueError:
+        pass
+
     r = requests.get(f'https://geo.api.gouv.fr/communes/{insee}', params={"fields": "region"})
     r.raise_for_status()
     region_name = r.json()['region']['nom']

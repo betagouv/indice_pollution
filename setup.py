@@ -3,16 +3,17 @@ from setuptools import find_packages, setup
 DEPENDENCIES = [
     'alembic',
     'flask',
-    'flask-alembic',
-    'Flask-Manage-Webpack',
     'flask-cors',
+    'Flask-Manage-Webpack',
+    'flask-migrate',
     'flask-sqlalchemy',
     'requests',
     'python-dateutil',
     'orjson',
     'pytz',
     'beautifulsoup4',
-    'html5lib'
+    'html5lib',
+    'psycopg2'
 ]
 
 setup(
