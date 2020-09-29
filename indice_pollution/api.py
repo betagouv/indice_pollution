@@ -6,7 +6,7 @@ from .autocomplete import autocomplete as autocomplete_
 @current_app.route('/forecast')
 def forecast():
     insee = request.args.get('insee')
-    date_ = request.args.get('date') or str(datetime.today().date())
+    date_ = request.args.get('date')
 
     try:
         result = forecast_(insee, date_)

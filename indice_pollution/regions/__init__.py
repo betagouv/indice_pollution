@@ -4,6 +4,9 @@ import time
 import pytz
 from datetime import datetime
 from dateutil.parser import parse
+from sqlalchemy import exc
+from indice_pollution.history.models import IndiceHistory
+from indice_pollution.models import db
 
 class ForecastMixin(object):
     url = ""
@@ -21,24 +24,53 @@ class ForecastMixin(object):
     def get_one_attempt(self, url, params):
         s = requests.Session()
         s.mount('https://', self.HTTPAdapter())
-        r = s.get(url, params=params)
-        r.raise_for_status()
+        try:
+            r = s.get(url, params=params)
+        except requests.exceptions.ConnectionError as e:
+            logging.error(f'Impossible de se connecter à {url}')
+            logging.error(e)
+            return None
+        except requests.exceptions.SSLError as e:
+            logging.error(f'Erreur ssl {url}')
+            logging.error(e)
+            return None
+        try:
+            r.raise_for_status()
+        except requests.HTTPError as e:
+            logging.error(f'Erreur HTTP: {e}')
+            return None
         return r
 
     def get_multiple_attempts(self, url, params, attempts=0):
         r = self.get_one_attempt(url, params)
-        features = self.features(r)
+        if r:
+            features = self.features(r)
+        else:
+            features = []
         if attempts >= 3 or len(features) > 0:
             return features
         else:
             time.sleep(0.5 * (attempts + 1))
             return self.get_multiple_attempts(url, params, attempts+1)
 
-    def get(self, date_, insee, attempts=0):
+    def get(self, date_, insee, attempts=0, force_from_db=False):
         if insee not in self.insee_list:
             insee = self.get_close_insee(insee)
+        if force_from_db:
+            to_return = IndiceHistory.get(date_, insee)
+            if to_return:
+                return to_return
         features = self.get_multiple_attempts(self.url, self.params(date_, insee))
-        return list(filter(lambda s: s is not None, map(self.getter, features)))
+        to_return = list(filter(lambda s: s is not None, map(self.getter, features)))
+        if to_return:
+            for v in to_return:
+                indice = IndiceHistory.get_or_create(v['date'], insee)
+                indice.features = v
+                db.session.add(indice)
+                db.session.commit()
+        else:
+            to_return = IndiceHistory.get_after(date_, insee)
+        return to_return
 
     def features(self, r):
         return r.json()['features']
