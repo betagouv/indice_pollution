@@ -59,7 +59,7 @@ class ForecastMixin(object):
         if force_from_db:
             to_return = IndiceHistory.get(date_, insee)
             if to_return:
-                return to_return
+                return [to_return.features]
         features = self.get_multiple_attempts(self.url, self.params(date_, insee))
         to_return = list(filter(lambda s: s is not None, map(self.getter, features)))
         if to_return:
