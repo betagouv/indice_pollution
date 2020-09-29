@@ -1,0 +1,4 @@
+[
+    "0 * * * * generate-history",
+    "0 * * * * prune-history"
+]
