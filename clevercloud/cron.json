@@ -1,4 +1,3 @@
 [
-    "0 * * * * generate-history",
-    "0 * * * * prune-history"
+    "0 * * * * $ROOT/clevercloud/cron.sh",
 ]
