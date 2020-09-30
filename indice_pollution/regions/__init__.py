@@ -60,8 +60,7 @@ class ForecastMixin(object):
             to_return = IndiceHistory.get(date_, insee)
             if to_return:
                 return [to_return.features]
-        features = self.get_multiple_attempts(self.url, self.params(date_, insee))
-        to_return = list(filter(lambda s: s is not None, map(self.getter, features)))
+        to_return = self.get_no_cache(date_, insee, attempts)
         if to_return:
             for v in to_return:
                 indice = IndiceHistory.get_or_create(v['date'], insee)
@@ -71,6 +70,10 @@ class ForecastMixin(object):
         else:
             to_return = IndiceHistory.get_after(date_, insee)
         return to_return
+
+    def get_no_cache(self, date_, insee, attempts=0):
+        features = self.get_multiple_attempts(self.url, self.params(date_, insee), attempts)
+        return list(filter(lambda s: s is not None, map(self.getter, features)))
 
     def features(self, r):
         return r.json()['features']

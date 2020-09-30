@@ -40,14 +40,13 @@ class Forecast(ForecastMixin):
             "ajax": 1
         }
 
-    def get(self, date_, insee, attempts=0):
+    def get_no_cache(self, date_, insee, attempts=0):
         if insee not in self.insee_list:
             insee = self.get_close_insee(insee)
-        parsed_date = parse(date_)
-        day_before = str((parsed_date - timedelta(days=1)).date())
-        day_after = str((parsed_date + timedelta(days=1)).date())
+        day_before = str((date_ - timedelta(days=1)))
+        day_after = str((date_ + timedelta(days=1)))
         features_daybefore = self.get_multiple_attempts(self.url, self.params(day_before, insee))
-        features_date = self.get_multiple_attempts(self.url, self.params(date_, insee))
+        features_date = self.get_multiple_attempts(self.url, self.params(str(date_), insee))
         features_dayafter = self.get_multiple_attempts(self.url, self.params(day_after, insee))
         return list(
             filter(
