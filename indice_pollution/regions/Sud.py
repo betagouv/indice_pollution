@@ -26,3 +26,5 @@ class Forecast(ForecastMixin):
             'CQL_FILTER': f"code_zone='{insee}' AND (date_ech='{fr_date}' OR date_ech='{fr_tomorrow}')",
             'outputFormat': 'json'
         }
+    def date_getter(self, attributes):
+        return datetime.strptime(attributes['date_ech'], self.fr_date_format)
