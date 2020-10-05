@@ -58,7 +58,9 @@ class ForecastMixin(object):
         if insee not in self.insee_list:
             insee = self.get_close_insee(insee)
         if force_from_db:
-            to_return = IndiceHistory.get(date_, insee)
+            indice = IndiceHistory.get(date_, insee)
+            if indice:
+                to_return = [indice.features]
         if not to_return:
             to_return = self.get_no_cache(date_, insee, attempts)
             if to_return:
