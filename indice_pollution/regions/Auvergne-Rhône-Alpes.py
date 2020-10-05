@@ -26,7 +26,7 @@ class Forecast(ForecastMixin):
         "100": "tres_mauvais"
     }
 
-    def get_no_cache(self, date_, insee, attempts=0):
+    def get_from_scraping(self, previous_results, date_, insee):
         r = requests.get(f'https://www.atmo-auvergnerhonealpes.fr/monair/commune/{insee}')
         r.raise_for_status()
         soup = BeautifulSoup(r.text, 'html.parser')

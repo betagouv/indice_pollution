@@ -1,8 +1,62 @@
 from . import ForecastMixin
+import requests
+import json
+from bs4 import BeautifulSoup
+from dateutil.parser import parse
 
 class Forecast(ForecastMixin):
     website = 'https://www.atmo-occitanie.org/'
     url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/indice_occitanie_agglo/FeatureServer/0/query'
+
+    IQA_TO_QUALIF = {
+        "1": "tres_bon",
+        "2": "bon",
+        "3": "bon",
+        "4": "bon",
+        "5": "moyen",
+        "6": "mediocre",
+        "7": "mediocre",
+        "8": "mediocre",
+        "9": "mauvais",
+        "10": "tres_mauvais"
+    }
+
+    def get_from_scraping(self, previous_results, date_, insee):
+        r = requests.get(self.get_url(insee))
+        soup = BeautifulSoup(r.text, 'html.parser')
+        script = soup.find_all('script', {"data-drupal-selector": "drupal-settings-json"})[0]
+        j = json.loads(script.contents[0])
+        city_iqa = j['atmo_mesures']['city_iqa']
+        return [
+            {
+                "indice": int(v['iqa']),
+                "valeur": int(v['iqa']),
+                "qualif": self.IQA_TO_QUALIF[v['iqa']],
+                "date": str(parse(v['date']).date())
+            }
+            for v in city_iqa
+        ]
+
+    def get_url(self, insee):
+        r = requests.get(f'https://geo.api.gouv.fr/communes/{insee}',
+                params={
+                    "fields": "codesPostaux",
+                    "format": "json",
+                    "geometry": "centre"
+                }
+        )
+        codes_postaux = ",".join(r.json()['codesPostaux'])
+        search_string = f"{r.json()['nom']} [{codes_postaux}]"
+        r = requests.post(
+            'https://www.atmo-occitanie.org/',
+            data={
+                "search_custom": search_string,
+                "form_id": "city_search_block_form"
+            },
+            allow_redirects=False
+        )
+        return r.headers['Location']
+
 
     insee_epci = {
         '46042': '200023737',

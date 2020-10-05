@@ -1,10 +1,43 @@
 from . import ForecastMixin
-from datetime import datetime, timedelta
-from dateutil.parser import parse
+import re
+import requests
+from bs4 import BeautifulSoup
 
 class Forecast(ForecastMixin):
     website = 'http://www.ligair.fr/'
     url = 'https://services1.arcgis.com/HzzPcgRsxxyIZdlU/arcgis/rest/services/ind_centre_val_de_loire_agglo_1/FeatureServer/0/query'
+
+    def get_from_scraping(self, previous_results, date_, insee):
+        r = requests.get(f'http://www.ligair.fr/commune/{self.get_nom_ville(insee)}')
+        soup = BeautifulSoup(r.text, "html.parser")
+        indices = soup.find_all('div', class_='atmo-index-legend')
+        legend = indices[0]
+        bars = legend.find_all('div', class_='atmo-bar')
+        today = next(filter(lambda v: "Aujourd'hui" in v.text, bars))
+        qualif = today.find_next('p').text
+        labels = today.find_all('div', class_="atmo-bar-label")
+        today_text = next(filter(lambda v: "Aujourd'hui" in v.find_next('strong').text, labels)).text
+        p = re.compile("(\d+)\/10")
+        indice = p.findall(today_text)[0]
+        return previous_results + [
+            {"date": str(date_), "valeur": indice, "indice": indice, "qualif": qualif}
+        ]
+
+
+    def get_nom_ville(self, insee):
+        r = requests.get(f'https://geo.api.gouv.fr/communes/{insee}',
+                params={
+                    "fields": "codesPostaux",
+                    "format": "json",
+                    "geometry": "centre"
+                }
+        )
+        code_postal = r.json()['codesPostaux'][0]
+        r = requests.get('http://www.ligair.fr/ville/city',
+                params={"q": code_postal},
+                headers={"X-Requested-With": "XMLHttpRequest"}
+        )
+        return list(r.json().values())[0]
 
     insee_epci = {
         "18033": "241800507",

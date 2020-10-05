@@ -54,21 +54,27 @@ class ForecastMixin(object):
             return self.get_multiple_attempts(url, params, attempts+1)
 
     def get(self, date_, insee, attempts=0, force_from_db=False):
+        to_return = []
         if insee not in self.insee_list:
             insee = self.get_close_insee(insee)
         if force_from_db:
             to_return = IndiceHistory.get(date_, insee)
+        if not to_return:
+            to_return = self.get_no_cache(date_, insee, attempts)
             if to_return:
-                return [to_return.features]
-        to_return = self.get_no_cache(date_, insee, attempts)
-        if to_return:
-            for v in to_return:
-                indice = IndiceHistory.get_or_create(v['date'], insee)
-                indice.features = v
-                db.session.add(indice)
-                db.session.commit()
+                for v in to_return:
+                    indice = IndiceHistory.get_or_create(v['date'], insee)
+                    indice.features = v
+                    db.session.add(indice)
+                    db.session.commit()
+            else:
+                to_return = IndiceHistory.get_after(date_, insee)
+        for r in to_return:
+            if r['date'] == str(date_):
+                return to_return
         else:
-            to_return = IndiceHistory.get_after(date_, insee)
+            if hasattr(self, "get_from_scraping"):
+                return self.get_from_scraping(to_return, date_, insee)
         return to_return
 
     def get_no_cache(self, date_, insee, attempts=0):

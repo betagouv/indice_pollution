@@ -31,16 +31,7 @@ class Forecast(ForecastMixin):
     def get_close_insee(self, insee):
         return insee
 
-    def get(self, date_, insee, attempts=0, force_from_db=False):
-        to_return = super().get(date_, insee, attempts, force_from_db)
-
-        for r in to_return:
-            if r['date'] == str(date_):
-                return to_return
-        else:
-            return self.get_from_scraping(to_return, date_)
-
-    def get_from_scraping(self, previous_results, date_):
+    def get_from_scraping(self, previous_results, date_, insee):
         r = requests.get('https://www.airparif.asso.fr/')
         r.raise_for_status()
         soup = BeautifulSoup(r.text, 'html.parser')
