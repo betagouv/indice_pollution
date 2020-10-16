@@ -60,23 +60,20 @@ class ForecastMixin(object):
         if force_from_db:
             indice = IndiceHistory.get(date_, insee)
             if indice:
-                to_return = [indice.features]
+                return [indice.features]
         if not to_return:
             to_return = self.get_no_cache(date_, insee, attempts)
-            if to_return:
-                for v in to_return:
-                    indice = IndiceHistory.get_or_create(v['date'], insee)
-                    indice.features = v
-                    db.session.add(indice)
-                    db.session.commit()
-            else:
-                to_return = IndiceHistory.get_after(date_, insee)
-        for r in to_return:
-            if r['date'] == str(date_):
-                return to_return
-        else:
+        if not to_return:
+            to_return = IndiceHistory.get_after(date_, insee)
+        if not any(map(lambda r: r['date'] == str(date_), to_return)):
             if hasattr(self, "get_from_scraping"):
-                return self.get_from_scraping(to_return, date_, insee)
+                to_return = self.get_from_scraping(to_return, date_, insee)
+        if to_return:
+            for v in to_return:
+                indice = IndiceHistory.get_or_create(v['date'], insee)
+                indice.features = v
+                db.session.add(indice)
+                db.session.commit()
         return to_return
 
     def get_no_cache(self, date_, insee, attempts=0):
