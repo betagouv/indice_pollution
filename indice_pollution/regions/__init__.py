@@ -1,3 +1,4 @@
+from indice_pollution.regions.solvers import insee_list
 import requests
 import logging
 import time
@@ -55,8 +56,7 @@ class ForecastMixin(object):
 
     def get(self, date_, insee, attempts=0, force_from_db=False):
         to_return = []
-        if insee not in self.insee_list:
-            insee = self.get_close_insee(insee)
+        insee = self.get_close_insee(insee)
         if force_from_db:
             indice = IndiceHistory.get(date_, insee)
             if indice:
@@ -103,6 +103,8 @@ class ForecastMixin(object):
         return [] if not self.insee_epci else self.insee_epci.keys()
 
     def get_close_insee(self, insee):
+        if insee in self.insee_list:
+            return insee
         departement = insee[:2]
         try:
             return next(pref_insee for pref_insee in self.insee_list if pref_insee[:2] == departement)
