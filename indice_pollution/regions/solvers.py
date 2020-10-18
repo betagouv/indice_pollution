@@ -24,7 +24,7 @@ def insee_list():
         for region_name in regions
     ]))
 
-def region(insee):
+def get_region_name(insee):
     try:
         insee = f'{int(insee):05}'
     except ValueError:
@@ -32,7 +32,10 @@ def region(insee):
 
     r = requests.get(f'https://geo.api.gouv.fr/communes/{insee}', params={"fields": "region"})
     r.raise_for_status()
-    region_name = r.json()['region']['nom']
+    return r.json()['region']['nom']
+
+def region(insee=None, region_name=None):
+    region_name = region_name or get_region_name(insee)
     try:
         region = import_module(f'.{region_name}', 'indice_pollution.regions').Forecast()
     except ModuleNotFoundError as e:
