@@ -33,12 +33,9 @@ def create_app(test_config=None):
 
     return app
 
-def forecast(insee, date_=None, force_from_db=False):
-    from .regions.solvers import region
-    date_ = date_ or today()
-    r = region(insee)
+def make_resp(r, result):
     return {
-        "data": r.get(date_=date_, insee=insee, force_from_db=force_from_db),
+        "data": result,
         "metadata": {
             "region": {
                 "nom": r.__module__.split(".")[-1],
@@ -46,6 +43,30 @@ def forecast(insee, date_=None, force_from_db=False):
             }
         }
     }
+
+def forecast(insee, date_=None, force_from_db=False):
+    from .regions.solvers import region
+    date_ = date_ or today()
+    r = region(insee)
+    result = r.get(date_=date_, insee=insee, force_from_db=force_from_db)
+    return make_resp(r, result)
+
+def bulk_forecast(insee_region_names, date_=None):
+    from indice_pollution.history.models import IndiceHistory
+    from .regions.solvers import region
+    date_ = date_ or today()
+
+    indices = {i.insee: [i.features] for i in IndiceHistory.get_bulk(date_, list(insee_region_names.keys()))}
+    for insee in insee_region_names.keys():
+        if insee in indices:
+            continue
+        r = region(region_name=insee_region_names[insee])
+        close_insee = r.get_close_insee(insee)
+        if close_insee in indices:
+            indices[insee] = indices[close_insee]
+            continue
+        indices[insee] = r.get(date_=date_, insee=insee, force_from_db=False)
+    return {insee: make_resp(region(region_name=insee_region_names[insee]), indices[insee]) for insee in insee_region_names.keys()}
 
 def today():
     zone = pytz.timezone('Europe/Paris')
