@@ -4,7 +4,7 @@ from datetime import timedelta, datetime
 class Forecast(ForecastMixin):
     website = 'https://www.atmosud.org/'
     url = 'https://geoservices.atmosud.org/geoserver/ind_sudpaca/ows?service=WFS&version=1.1.0'
-    fr_date_format = '%d-%m-%Y 00:00:00'
+    fr_date_format = '%Y-%m-%dT00:00:00Z'
 
     insee_list = ['06029', '06088', '13001', '13055', '83137', '84007']
 
