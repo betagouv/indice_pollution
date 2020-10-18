@@ -20,6 +20,12 @@ class IndiceHistory(db.Model):
     @classmethod
     def get(cls, date_, insee):
         return cls.query.filter_by(date_=date_, insee=insee).first()
+    
+    @classmethod
+    def get_bulk(cls, date_, insee_list):
+        return cls.query\
+            .filter(cls.date_==date_, cls.insee.in_(set(insee_list)))\
+            .all()
 
     @classmethod
     def get_after(cls, date_, insee):
