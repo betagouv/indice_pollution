@@ -56,7 +56,15 @@ def bulk_forecast(insee_region_names, date_=None):
     from .regions.solvers import region
     date_ = date_ or today()
 
-    indices = {i.insee: [i.features] for i in IndiceHistory.get_bulk(date_, list(insee_region_names.keys()))}
+    insees = set(insee_region_names.keys())
+    close_insees = set()
+    for insee in insees:
+        r = region(region_name=insee_region_names[insee])
+        close_insee = r.get_close_insee(insee)
+        close_insees.add(close_insee)
+    insees.update(close_insees)
+
+    indices = {i.insee: [i.features] for i in IndiceHistory.get_bulk(date_, insees)}
     for insee in insee_region_names.keys():
         if insee in indices:
             continue
