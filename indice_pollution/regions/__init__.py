@@ -70,6 +70,8 @@ class ForecastMixin(object):
                 to_return = self.get_from_scraping(to_return, date_, insee)
         if to_return:
             for v in to_return:
+                if not v.get('indice'):
+                    continue
                 indice = IndiceHistory.get_or_create(v['date'], insee)
                 indice.features = v
                 db.session.add(indice)

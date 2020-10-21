@@ -48,30 +48,25 @@ class Forecast(ForecastMixin):
         features_daybefore = self.get_multiple_attempts(self.url, self.params(day_before, insee))
         features_date = self.get_multiple_attempts(self.url, self.params(str(date_), insee))
         features_dayafter = self.get_multiple_attempts(self.url, self.params(day_after, insee))
-        return list(
-            filter(
-                lambda s: s is not None,
-                map(
-                    self.getter,
-                    [
-                        features_daybefore,
-                        features_date,
-                        features_dayafter
-                    ]
-                )
-            )
-        )
+        return [
+            f
+            for f in [
+                features_daybefore,
+                features_date,
+                features_dayafter
+            ]
+            if f
+        ]
 
     def features(self, r):
+        if not "indices" in r.json():
+            return []
         soup = BeautifulSoup(r.json()["indices"], features="html5lib")
         valeurIndice = soup.find_all("div", class_="valeurIndice")[0]
         return {
             "indice": valeurIndice.find_all("span")[1].text,
             "date": self.date_
         }
-
-    def getter(self, feature):
-        return feature
 
     def get_close_insee(self, insee):
         return insee
