@@ -6,7 +6,7 @@ from datetime import datetime
 
 class Forecast(ForecastMixin):
     website = 'https://www.atmo-nouvelleaquitaine.org/'
-    url = 'https://opendata.atmo-na.org/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
+    url = 'http://opendata.atmo-na.org:80/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
 
     attributes_key = 'properties'
     use_dateutil_parser = True
@@ -27,6 +27,18 @@ class Forecast(ForecastMixin):
         "91": "mauvais",
         "100": "tres_mauvais"
     }
+
+    @classmethod
+    def params(cls, date_, insee):
+        filter_zone = f'<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{insee}</Literal></PropertyIsEqualTo>'
+        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Literal>{date_}T00:00:00.000Z</Literal></PropertyIsGreaterThanOrEqualTo>'
+        return {
+            'service': 'wfs',
+            'request': 'getfeature',
+            'typeName': 'ind_nouvelle_aquitaine_agglo:ind_nouvelle_aquitaine_agglo',
+            'Filter': f"<Filter><And>{filter_zone}{filter_date}</And></Filter>",
+            'outputFormat': 'json',
+        }
 
     def get_from_scraping(self, previous_results, date_, insee):
         r = requests.get(f'https://www.atmo-nouvelleaquitaine.org/monair/commune/{insee}')
