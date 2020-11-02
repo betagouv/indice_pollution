@@ -51,6 +51,11 @@ def forecast(insee, date_=None, force_from_db=False):
     result = r.get(date_=date_, insee=insee, force_from_db=force_from_db)
     return make_resp(r, result)
 
+def chunks(lst, n):
+    """Yield successive n-sized chunks from lst."""
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+
 def bulk_forecast(insee_region_names, date_=None):
     from indice_pollution.history.models import IndiceHistory
     from .regions.solvers import region
@@ -64,7 +69,12 @@ def bulk_forecast(insee_region_names, date_=None):
         close_insees.add(close_insee)
     insees.update(close_insees)
 
-    indices = {i.insee: [i.features] for i in IndiceHistory.get_bulk(date_, insees)}
+    indices = dict()
+    for chunk in chunks(list(insees), 10):
+        indices = {
+            **indices,
+            **{i.insee: [i.features] for i in IndiceHistory.get_bulk(date_, chunk)}
+        }
     for insee in insee_region_names.keys():
         if insee in indices:
             continue

@@ -74,7 +74,6 @@ class ForecastMixin(object):
                     continue
                 indice = IndiceHistory.get_or_create(v['date'], insee)
                 indice.features = v
-                db.session.add(indice)
                 db.session.commit()
         return to_return
 

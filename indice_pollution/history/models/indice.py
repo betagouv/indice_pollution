@@ -33,4 +33,9 @@ class IndiceHistory(db.Model):
 
     @classmethod
     def get_or_create(cls, date_, insee):
-        return  cls.get(date_, insee) or cls(date_=date_, insee=insee)
+        result =  cls.get(date_, insee)
+        if result:
+            return result
+        result = cls(date_=date_, insee=insee)
+        db.session.add(result)
+        return result
