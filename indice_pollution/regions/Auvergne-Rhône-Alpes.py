@@ -1,10 +1,12 @@
-from . import ForecastMixin
+from . import ForecastMixin, EpisodeMixin
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-class Forecast(ForecastMixin):
+class Service(object):
     website = 'https://www.atmo-auvergnerhonealpes.fr/'
+
+class Forecast(Service, ForecastMixin):
     url = 'https://services3.arcgis.com/o7Q3o5SkiSeZD5LK/arcgis/rest/services/ind_atmo_aura/FeatureServer/0/query'
     
     insee_list = [

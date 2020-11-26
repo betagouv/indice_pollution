@@ -1,17 +1,19 @@
-from . import ForecastMixin
+from . import ForecastMixin, EpisodeMixin
 import requests
 import json
 from bs4 import BeautifulSoup
 from dateutil.parser import parse
 
-class Service(ServiceMixin):
+class Service(object):
     website = 'https://www.atmo-occitanie.org/'
 
 class Episode(EpisodeMixin, Service):
     url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/epipol_3j_occitanie/FeatureServer/0/query'
+    attributes_key = 'attributes'
 
 class Forecast(ForecastMixin, Service):
-    url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/indice_occitanie_agglo/FeatureServer/0/query'
+    url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/Indice_de_qualite_de_l_air_des_agglomerations_sur_la_region_Occitanie/FeatureServer/0/query'
+    attributes_key = 'attributes'
 
     IQA_TO_QUALIF = {
         "1": "tres_bon",

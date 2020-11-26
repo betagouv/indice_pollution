@@ -1,12 +1,14 @@
-from . import ForecastMixin
+from . import EpisodeMixin, ForecastMixin
 import csv
 from dateutil.parser import parse
 from bs4 import BeautifulSoup
 import requests
 from datetime import date, timedelta
 
-class Forecast(ForecastMixin):
+class Service(object):
     website = 'https://www.atmo-bfc.org/'
+
+class Forecast(Service, ForecastMixin):
     url = 'https://www.atmo-bfc.org/medias/ajax/me_gateway.php'
 
     def get_one_attempt(self, url, params, attempts=0):
@@ -70,3 +72,22 @@ class Forecast(ForecastMixin):
 
     def get_close_insee(self, insee):
         return insee
+
+class Episode(Service, EpisodeMixin):
+    url = 'http://atmo-bfc.iad-informatique.com/geoserver/alerte/wfs'
+    attributes_key = 'properties'
+
+    def params(self, date_, insee):
+        centre = self.centre(insee)
+
+        return {
+            'where': '',
+            'outfields': self.outfields,
+            'outputFormat': 'application/json',
+            'geometry': f'{centre[0]},{centre[1]}',
+            'inSR': '4326',
+            'outSR': '4326',
+            'geometryType': 'esriGeometryPoint',
+            'request': 'GetFeature',
+            'typeName': 'alerte:alrt3j_bfc'
+        }

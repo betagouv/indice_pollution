@@ -1,10 +1,10 @@
-from . import ForecastMixin
+from . import ForecastMixin, EpisodeMixin
 from datetime import datetime, timedelta
 from dateutil.parser import parse
 import requests
 from flask import current_app
 
-class Service(ServiceMixin):
+class Service(object):
     website = 'https://www.airparif.asso.fr/'
 
 class Forecast(ForecastMixin, Service):

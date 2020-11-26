@@ -1,13 +1,16 @@
 from flask import current_app, request, abort, jsonify
 from datetime import datetime
 from . import forecast as forecast_
+from . import episode as episode_
 from .autocomplete import autocomplete as autocomplete_
+import pytz
+from dateutil import parser
 
 @current_app.route('/forecast')
 def forecast():
     insee = request.args.get('insee')
     zone = pytz.timezone('Europe/Paris')
-    date_ = request.args.get('date') or str(datetime.now(tz=zone).date().isoformat())
+    date_ = request.args.get('date')
 
     try:
         result = forecast_(insee, date_)

@@ -1,4 +1,4 @@
-from . import ForecastMixin
+from . import EpisodeMixin, ForecastMixin
 import requests as requests_
 from requests import adapters
 import ssl
@@ -17,9 +17,10 @@ class TLSAdapter(adapters.HTTPAdapter):
                 ssl_version=ssl.PROTOCOL_TLS,
                 ssl_context=ctx)
 
-
-class Forecast(ForecastMixin):
+class Service(object):
     website = 'https://www.airbreizh.asso.fr/'
+
+class Forecast(Service, ForecastMixin):
     url = 'https://data.airbreizh.asso.fr/geoserver/ind_bretagne_agglo/ows'
 
     attributes_key = 'properties'
@@ -225,4 +226,25 @@ class Forecast(ForecastMixin):
         "56084": "200067932",
         "56087": "200067932",
         "56088": "200067932",
+        }
+
+
+class Episode(Service, EpisodeMixin):
+    url = 'https://data.airbreizh.asso.fr/geoserver/alrt3j_bretagne/ows'
+    attributes_key = 'properties'
+
+    def params(self, date_, insee):
+        centre = self.centre(insee)
+
+        return {
+            'where': '',
+            'outfields': self.outfields,
+            'outputFormat': 'application/json',
+            'geometry': f'{centre[0]},{centre[1]}',
+            'inSR': '4326',
+            'outSR': '4326',
+            'geometryType': 'esriGeometryPoint',
+            'request': 'GetFeature',
+            'typeName': 'alrt3j_bretagne:alrt3j_bretagne',
+            'service': 'WFS',
         }
