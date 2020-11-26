@@ -1,9 +1,30 @@
-from . import ForecastMixin
+from . import ForecastMixin, EpisodeMixin
 from dateutil.parser import parse
 from datetime import timedelta
 
-class Forecast(ForecastMixin):
+class Service(object):
     website = 'http://www.airpl.org/'
+
+class Episode(Service, EpisodeMixin):
+    url = 'https://data.airpl.org/geoserver/alrt3j_pays_de_la_loire/wfs'
+    attributes_key = 'properties'
+
+    def params(self, date_, insee):
+        centre = self.centre(insee)
+
+        return {
+            'where': '',
+            'outfields': self.outfields,
+            'outputFormat': 'application/json',
+            'geometry': f'{centre[0]},{centre[1]}',
+            'inSR': '4326',
+            'outSR': '4326',
+            'geometryType': 'esriGeometryPoint',
+            'request': 'GetFeature',
+            'typeName': 'alrt3j_pays_de_la_loire'
+        }
+
+class Forecast(Service, ForecastMixin):
     url = 'https://data.airpl.org/geoserver/ind_pays_de_la_loire/wfs'
 
     attributes_key = 'properties'

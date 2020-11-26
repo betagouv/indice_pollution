@@ -1,12 +1,17 @@
 from datetime import timedelta
-from . import ForecastMixin
+from . import ForecastMixin, EpisodeMixin
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 
-class Forecast(ForecastMixin):
+class Service(object):
     website = 'https://www.atmo-nouvelleaquitaine.org/'
-    url = 'http://opendata.atmo-na.org:80/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
+
+class Episode(Service, EpisodeMixin):
+    url = 'https://opendata.atmo-na.org/geoserver/alrt_nouvelle_aquitaine/wfs'
+
+class Forecast(Service, ForecastMixin):
+    url = 'https://opendata.atmo-na.org/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
 
     attributes_key = 'properties'
     use_dateutil_parser = True

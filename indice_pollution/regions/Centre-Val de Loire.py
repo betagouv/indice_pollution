@@ -1,10 +1,12 @@
-from . import ForecastMixin
+from . import EpisodeMixin, ForecastMixin
 import re
 import requests
 from bs4 import BeautifulSoup
 
-class Forecast(ForecastMixin):
+class Service(object):
     website = 'http://www.ligair.fr/'
+
+class Forecast(Service, ForecastMixin):
     url = 'https://services1.arcgis.com/HzzPcgRsxxyIZdlU/arcgis/rest/services/ind_centre_val_de_loire_agglo_1/FeatureServer/0/query'
 
     def get_from_scraping(self, previous_results, date_, insee):
@@ -321,3 +323,7 @@ class Forecast(ForecastMixin):
         "41208": "200030385",
         "41266": "200030385",
     }
+
+
+class Episode(Service, EpisodeMixin):
+    url = "https://services1.arcgis.com/HzzPcgRsxxyIZdlU/arcgis/rest/services/alerte_3j1/FeatureServer/0/query"

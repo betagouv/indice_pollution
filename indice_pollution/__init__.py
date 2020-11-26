@@ -47,9 +47,9 @@ def make_resp(r, result):
 def forecast(insee, date_=None, force_from_db=False):
     from .regions.solvers import region
     date_ = date_ or today()
-    r = region(insee)
-    result = r.get(date_=date_, insee=insee, force_from_db=force_from_db)
-    return make_resp(r, result)
+    forecast = region(insee).Forecast()
+    result = forecast.get(date_=date_, insee=insee, force_from_db=force_from_db)
+    return make_resp(forecast, result)
 
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
@@ -64,8 +64,8 @@ def bulk_forecast(insee_region_names, date_=None):
     insees = set(insee_region_names.keys())
     close_insees = set()
     for insee in insees:
-        r = region(region_name=insee_region_names[insee])
-        close_insee = r.get_close_insee(insee)
+        forecast = region(region_name=insee_region_names[insee]).Forecast()
+        close_insee = forecast.get_close_insee(insee)
         close_insees.add(close_insee)
     insees.update(close_insees)
 
@@ -78,14 +78,29 @@ def bulk_forecast(insee_region_names, date_=None):
     for insee in insee_region_names.keys():
         if insee in indices:
             continue
-        r = region(region_name=insee_region_names[insee])
-        close_insee = r.get_close_insee(insee)
+        forecast = region(region_name=insee_region_names[insee]).Forecast()
+        close_insee = forecast.get_close_insee(insee)
         if close_insee in indices:
             indices[insee] = indices[close_insee]
             continue
-        indices[insee] = r.get(date_=date_, insee=insee, force_from_db=False)
-    return {insee: make_resp(region(region_name=insee_region_names[insee]), indices[insee]) for insee in insee_region_names.keys()}
+        indices[insee] = forecast.get(date_=date_, insee=insee, force_from_db=False)
+    return {insee: make_resp(region(region_name=insee_region_names[insee]).Forecast(), indices[insee]) for insee in insee_region_names.keys()}
 
 def today():
     zone = pytz.timezone('Europe/Paris')
     return datetime.now(tz=zone).date()
+
+def episode(insee, date_=None):
+    from .regions.solvers import region
+    zone = pytz.timezone('Europe/Paris')
+    date_ = date_ or today()
+    episode = region(insee).Episode()
+    return {
+        "data": episode.get(date_=date_, insee=insee),
+        "metadata": {
+            "region": {
+                "nom": episode.__name__.split(".")[-1],
+                "website": episode.website
+            }
+        }
+    }

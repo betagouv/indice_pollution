@@ -1,12 +1,14 @@
-from . import ForecastMixin
+from . import ForecastMixin, EpisodeMixin
 from dateutil.parser import parse
 from json.decoder import JSONDecodeError
 import orjson as json
 from itertools import takewhile
 from string import printable
 
-class Forecast(ForecastMixin):
+class Service(object):
     website = 'http://www.atmonormandie.fr/'
+
+class Forecast(Service, ForecastMixin):
     url = 'https://dservices7.arcgis.com/FPRT1cIkPKcq73uN/arcgis/services/ind_normandie_agglo/WFSServer?service=wfs&request=getcapabilities'
 
     attributes_key = 'properties'
@@ -36,3 +38,23 @@ class Forecast(ForecastMixin):
             clean_string = str("".join(takewhile(lambda c: c in set_printable, r.text)))
             return json.loads(clean_string)['features']
 
+
+class Episode(Service, EpisodeMixin):
+    url = 'https://dservices7.arcgis.com/FPRT1cIkPKcq73uN/arcgis/services/alrt3j_normandie/WFSServer'
+    attributes_key = 'properties'
+
+    def params(self, date_, insee):
+        centre = self.centre(insee)
+
+        return {
+            'where': '',
+            'outfields': self.outfields,
+            'geometry': f'{centre[0]},{centre[1]}',
+            'inSR': '4326',
+            'outSR': '4326',
+            'geometryType': 'esriGeometryPoint',
+            'request': 'GetFeature',
+            'typeName': 'alrt3j_normandie:alrt3j_normandie',
+            'service': 'WFS',
+            'outputFormat': 'GEOJSON'
+        }

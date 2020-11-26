@@ -1,12 +1,13 @@
-from . import ForecastMixin
+from . import ForecastMixin, EpisodeMixin
 from datetime import datetime, timedelta
 from dateutil.parser import parse
 import requests
-from bs4 import BeautifulSoup
 from flask import current_app
 
-class Forecast(ForecastMixin):
+class Service(object):
     website = 'https://www.airparif.asso.fr/'
+
+class Forecast(ForecastMixin, Service):
     url = 'https://services8.arcgis.com/gtmasQsdfwbDAQSQ/arcgis/rest/services/ind_idf_agglo/FeatureServer/0/query'
 
     insee_list = ['75056']
@@ -43,3 +44,14 @@ class Forecast(ForecastMixin):
         return previous_results + [
             {"date": str(date_), "valeur": indice, "indice": indice, "qualif": qualif}
         ]
+
+class Episode(EpisodeMixin, Service):
+    url = 'https://services8.arcgis.com/gtmasQsdfwbDAQSQ/arcgis/rest/services/alrt_idf/FeatureServer/0/query'
+
+    def params(self, insee, date_):
+        return {
+            'where': '1=1',
+            'outFields': '*',
+            'outSR': '4326',
+            'f': 'json'
+        }

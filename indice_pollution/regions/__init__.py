@@ -9,7 +9,7 @@ from sqlalchemy import exc
 from indice_pollution.history.models import IndiceHistory
 from indice_pollution.models import db
 
-class ForecastMixin(object):
+class ServiceMixin(object):
     url = ""
     epci_list = []
     insee_epci = dict()
@@ -132,4 +132,75 @@ class ForecastMixin(object):
         else:
             return parse(attributes['date_ech'])
 
+    def date_parser(self, date_):
+        if date_ is None:
+            return
+        if not self.use_dateutil_parser:
+            zone = pytz.timezone('Europe/Paris')
+            return datetime.fromtimestamp(date_/1000, tz=zone)
+        else:
+            return parse(date_)
+
+
+class ForecastMixin(ServiceMixin):
+    outfields = ['date_ech', 'valeur', 'qualif', 'val_no2', 'val_so2',
+     'val_o3', 'val_pm10', 'val_pm25'
+    ]
+
+    def getter(self, feature):
+        attributes = feature[self.attributes_key]
+
+        dt = self.date_parser(attributes['date_ech'])
+        return {
+            **{
+                'indice': attributes['valeur'],
+                'date': str(dt.date())
+            },
+            **{k: attributes[k] for k in self.outfields if k in attributes}
+        }
+
+
+class EpisodeMixin(ServiceMixin):
+    outfields = ['date_ech', 'lib_zone', 'code_zone', 'date_dif', 'code_pol',
+     'lib_pol', 'etat', 'com_court', 'com_long']
+
+    def get(self, date_, insee, attempts=0):
+        features = self.get_multiple_attempts(self.url, self.params(date_, insee))
+        return list(filter(lambda s: s is not None, map(self.getter, features)))
     
+    def getter(self, feature):
+        attributes = feature[self.attributes_key]
+
+        if attributes['etat'] == 'PAS DE DEPASSEMENT':
+            return None
+
+        date_ech = self.date_parser(attributes['date_ech'])
+        date_dif = self.date_parser(attributes.get('date_dif'))
+        return {
+            **{k: attributes[k] for k in self.outfields if k in attributes},
+            **{
+                'date_dif': str(date_dif.date()) if date_dif else None,
+                'date_ech': str(date_ech.date())
+            }
+        }
+
+    def centre(self, insee):
+        r = requests.get(
+            f'https://geo.api.gouv.fr/communes/{insee}',
+            params={"fields": "centre", "format": "json", "geometry": "centre"}
+        )
+        r.raise_for_status()
+        return r.json()['centre']['coordinates']
+
+    def params(self, date_, insee):
+        centre = self.centre(insee)
+
+        return {
+            'where': '',
+            'outfields': self.outfields,
+            'f': 'json',
+            'geometry': f'{centre[0]},{centre[1]}',
+            'inSR': '4326',
+            'outSR': '4326',
+            'geometryType': 'esriGeometryPoint'
+        }
