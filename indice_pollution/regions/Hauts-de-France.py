@@ -10,8 +10,8 @@ class Service(ServiceMixin):
         '62765', '62193', '59392', '80021', '62119'
     ]
 
-class Forecast(ForecastMixin, Service):
+class Forecast(Service, ForecastMixin):
     url = 'https://services8.arcgis.com/rxZzohbySMKHTNcy/arcgis/rest/services/ind_hdf_agglo/FeatureServer/0/query'
 
-class Episode(EpisodeMixin, Service):
+class Episode(Service, EpisodeMixin):
     url = 'https://services8.arcgis.com/rxZzohbySMKHTNcy/arcgis/rest/services/alrt3j_hdf/FeatureServer/0/query?outFields='

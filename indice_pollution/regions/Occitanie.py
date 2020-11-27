@@ -8,62 +8,6 @@ class Service(object):
     website = 'https://www.atmo-occitanie.org/'
     attributes_key = 'attributes'
 
-class Episode(EpisodeMixin, Service):
-    url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/epipol_3j_occitanie/FeatureServer/0/query'
-
-class Forecast(ForecastMixin, Service):
-    url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/Indice_de_qualite_de_l_air_des_agglomerations_sur_la_region_Occitanie/FeatureServer/0/query'
-
-    IQA_TO_QUALIF = {
-        "1": "tres_bon",
-        "2": "bon",
-        "3": "bon",
-        "4": "bon",
-        "5": "moyen",
-        "6": "mediocre",
-        "7": "mediocre",
-        "8": "mediocre",
-        "9": "mauvais",
-        "10": "tres_mauvais"
-    }
-
-    def get_from_scraping(self, previous_results, date_, insee):
-        r = requests.get(self.get_url(insee))
-        soup = BeautifulSoup(r.text, 'html.parser')
-        script = soup.find_all('script', {"data-drupal-selector": "drupal-settings-json"})[0]
-        j = json.loads(script.contents[0])
-        city_iqa = j['atmo_mesures']['city_iqa']
-        return [
-            {
-                "indice": int(v['iqa']),
-                "valeur": int(v['iqa']),
-                "qualif": self.IQA_TO_QUALIF[v['iqa']],
-                "date": str(parse(v['date']).date())
-            }
-            for v in city_iqa
-        ]
-
-    def get_url(self, insee):
-        r = requests.get(f'https://geo.api.gouv.fr/communes/{insee}',
-                params={
-                    "fields": "codesPostaux",
-                    "format": "json",
-                    "geometry": "centre"
-                }
-        )
-        codes_postaux = ",".join(r.json()['codesPostaux'])
-        search_string = f"{r.json()['nom']} [{codes_postaux}]"
-        r = requests.post(
-            'https://www.atmo-occitanie.org/',
-            data={
-                "search_custom": search_string,
-                "form_id": "city_search_block_form"
-            },
-            allow_redirects=False
-        )
-        return r.headers['Location']
-
-
     insee_epci = {
         '46042': '200023737',
         '46224': '200023737',
@@ -650,3 +594,58 @@ class Forecast(ForecastMixin, Service):
         '82195': '248200099',
         '82001': '248200099'
     }
+
+class Episode(Service, EpisodeMixin):
+    url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/epipol_3j_occitanie/FeatureServer/0/query'
+
+class Forecast(Service, ForecastMixin):
+    url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/Indice_de_qualite_de_l_air_des_agglomerations_sur_la_region_Occitanie/FeatureServer/0/query'
+
+    IQA_TO_QUALIF = {
+        "1": "tres_bon",
+        "2": "bon",
+        "3": "bon",
+        "4": "bon",
+        "5": "moyen",
+        "6": "mediocre",
+        "7": "mediocre",
+        "8": "mediocre",
+        "9": "mauvais",
+        "10": "tres_mauvais"
+    }
+
+    def get_from_scraping(self, previous_results, date_, insee):
+        r = requests.get(self.get_url(insee))
+        soup = BeautifulSoup(r.text, 'html.parser')
+        script = soup.find_all('script', {"data-drupal-selector": "drupal-settings-json"})[0]
+        j = json.loads(script.contents[0])
+        city_iqa = j['atmo_mesures']['city_iqa']
+        return [
+            {
+                "indice": int(v['iqa']),
+                "valeur": int(v['iqa']),
+                "qualif": self.IQA_TO_QUALIF[v['iqa']],
+                "date": str(parse(v['date']).date())
+            }
+            for v in city_iqa
+        ]
+
+    def get_url(self, insee):
+        r = requests.get(f'https://geo.api.gouv.fr/communes/{insee}',
+                params={
+                    "fields": "codesPostaux",
+                    "format": "json",
+                    "geometry": "centre"
+                }
+        )
+        codes_postaux = ",".join(r.json()['codesPostaux'])
+        search_string = f"{r.json()['nom']} [{codes_postaux}]"
+        r = requests.post(
+            'https://www.atmo-occitanie.org/',
+            data={
+                "search_custom": search_string,
+                "form_id": "city_search_block_form"
+            },
+            allow_redirects=False
+        )
+        return r.headers['Location']

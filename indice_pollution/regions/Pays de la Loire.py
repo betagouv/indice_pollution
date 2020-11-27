@@ -7,44 +7,6 @@ class Service(object):
     attributes_key = 'properties'
     use_dateutil_parser = True
 
-class Episode(Service, EpisodeMixin):
-    url = 'https://data.airpl.org/geoserver/alrt3j_pays_de_la_loire/wfs'
-
-    def params(self, date_, insee):
-        centre = self.centre(insee)
-
-        return {
-            'where': '',
-            'outfields': self.outfields,
-            'outputFormat': 'application/json',
-            'geometry': f'{centre[0]},{centre[1]}',
-            'inSR': '4326',
-            'outSR': '4326',
-            'geometryType': 'esriGeometryPoint',
-            'request': 'GetFeature',
-            'typeName': 'alrt3j_pays_de_la_loire'
-        }
-
-class Forecast(Service, ForecastMixin):
-    url = 'https://data.airpl.org/geoserver/ind_pays_de_la_loire/wfs'
-
-    attributes_key = 'properties'
-
-    @classmethod
-    def params(cls, date_, insee):
-        epci = cls.insee_epci[insee]
-        filter_zone = f'<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{epci}</Literal></PropertyIsEqualTo>'
-        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Function name="dateParse"><Literal>yyyy-MM-dd</Literal><Literal>{date_}</Literal></Function></PropertyIsGreaterThanOrEqualTo>'
-
-        return {
-            'request': 'GetFeature',
-            'service': 'WFS',
-            'version': '1.1',
-            'typeName': 'ind_pays_de_la_loire:ind_pays_de_la_loire_agglo',
-            'Filter': f"<Filter><And>{filter_zone}{filter_date}</And></Filter>",
-            'outputFormat': 'json',
-        }
-
     insee_epci = {
         "49007": "244900015",
         "49307": "244900015",
@@ -158,3 +120,41 @@ class Forecast(Service, ForecastMixin):
         "44024": "244400404",
         "44171": "244400404",
     }
+
+class Episode(Service, EpisodeMixin):
+    url = 'https://data.airpl.org/geoserver/alrt3j_pays_de_la_loire/wfs'
+
+    def params(self, date_, insee):
+        centre = self.centre(insee)
+
+        return {
+            'where': '',
+            'outfields': self.outfields,
+            'outputFormat': 'application/json',
+            'geometry': f'{centre[0]},{centre[1]}',
+            'inSR': '4326',
+            'outSR': '4326',
+            'geometryType': 'esriGeometryPoint',
+            'request': 'GetFeature',
+            'typeName': 'alrt3j_pays_de_la_loire'
+        }
+
+class Forecast(Service, ForecastMixin):
+    url = 'https://data.airpl.org/geoserver/ind_pays_de_la_loire/wfs'
+
+    attributes_key = 'properties'
+
+    @classmethod
+    def params(cls, date_, insee):
+        epci = cls.insee_epci[insee]
+        filter_zone = f'<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{epci}</Literal></PropertyIsEqualTo>'
+        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Function name="dateParse"><Literal>yyyy-MM-dd</Literal><Literal>{date_}</Literal></Function></PropertyIsGreaterThanOrEqualTo>'
+
+        return {
+            'request': 'GetFeature',
+            'service': 'WFS',
+            'version': '1.1',
+            'typeName': 'ind_pays_de_la_loire:ind_pays_de_la_loire_agglo',
+            'Filter': f"<Filter><And>{filter_zone}{filter_date}</And></Filter>",
+            'outputFormat': 'json',
+        }
