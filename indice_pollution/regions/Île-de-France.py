@@ -1,16 +1,18 @@
 from . import ForecastMixin, EpisodeMixin
-from datetime import datetime, timedelta
-from dateutil.parser import parse
 import requests
 from flask import current_app
+from bs4 import BeautifulSoup
 
 class Service(object):
     website = 'https://www.airparif.asso.fr/'
+    insee_list = ['75056']
+    
+    def get_close_insee(self, insee):
+        return insee
 
-class Forecast(ForecastMixin, Service):
+class Forecast(Service, ForecastMixin):
     url = 'https://services8.arcgis.com/gtmasQsdfwbDAQSQ/arcgis/rest/services/ind_idf_agglo/FeatureServer/0/query'
 
-    insee_list = ['75056']
 
     INDICE_TO_QUALIF = {
         0: "tres_bon",
@@ -28,9 +30,6 @@ class Forecast(ForecastMixin, Service):
 
     def where(self, date_, insee):
         return f"date_ech >= CURRENT_DATE - INTERVAL '2' DAY"
-    
-    def get_close_insee(self, insee):
-        return insee
 
     def get_from_scraping(self, previous_results, date_, insee):
         r = requests.get('https://www.airparif.asso.fr/')
@@ -45,7 +44,7 @@ class Forecast(ForecastMixin, Service):
             {"date": str(date_), "valeur": indice, "indice": indice, "qualif": qualif}
         ]
 
-class Episode(EpisodeMixin, Service):
+class Episode(Service, EpisodeMixin):
     url = 'https://services8.arcgis.com/gtmasQsdfwbDAQSQ/arcgis/rest/services/alrt_idf/FeatureServer/0/query'
 
     def params(self, insee, date_):

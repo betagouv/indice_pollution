@@ -8,6 +8,9 @@ from datetime import date, timedelta
 class Service(object):
     website = 'https://www.atmo-bfc.org/'
 
+    def get_close_insee(self, insee):
+        return insee
+
 class Forecast(Service, ForecastMixin):
     url = 'https://www.atmo-bfc.org/medias/ajax/me_gateway.php'
 
@@ -69,9 +72,6 @@ class Forecast(Service, ForecastMixin):
             "indice": valeurIndice.find_all("span")[1].text,
             "date": self.date_
         }
-
-    def get_close_insee(self, insee):
-        return insee
 
 class Episode(Service, EpisodeMixin):
     url = 'http://atmo-bfc.iad-informatique.com/geoserver/alerte/wfs'

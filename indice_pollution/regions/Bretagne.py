@@ -20,37 +20,6 @@ class TLSAdapter(adapters.HTTPAdapter):
 class Service(object):
     website = 'https://www.airbreizh.asso.fr/'
 
-class Forecast(Service, ForecastMixin):
-    url = 'https://data.airbreizh.asso.fr/geoserver/ind_bretagne_agglo/ows'
-
-    attributes_key = 'properties'
-    use_dateutil_parser = True
-
-    epci_agglo = {
-        '242900314': 'ind_bretagne_agglo_BREST',
-        '200042174': 'ind_bretagne_agglo_LORIENT',
-        '200068120': 'ind_bretagne_agglo_QUIMPER',
-        '243500139': 'ind_bretagne_agglo_RENNES',
-        '200069409': 'ind_bretagne_agglo_SAINT_BRIEUC',
-        '243500782': 'ind_bretagne_agglo_SAINT_MALO',
-        '200067932': 'ind_bretagne_agglo_VANNES',
-    }
-
-    HTTPAdapter = TLSAdapter
-
-    def params(self, date_, insee):
-        epci = self.insee_epci[insee]
-        agglo = self.epci_agglo[epci]
-
-        return {
-            'service': 'WFS',
-            'version': '1.0.0',
-            'request': 'GetFeature',
-            'typeName': f'ind_bretagne_agglo:{agglo}',
-            'outputFormat': 'application/json',
-            'CQL_FILTER': f"date_ech>'{date_}'"
-        }
-
     insee_epci = {
         "29019": "242900314",
         "29075": "242900314",
@@ -226,12 +195,42 @@ class Forecast(Service, ForecastMixin):
         "56084": "200067932",
         "56087": "200067932",
         "56088": "200067932",
+    }
+
+    attributes_key = 'properties'
+    use_dateutil_parser = True
+
+    epci_agglo = {
+        '242900314': 'ind_bretagne_agglo_BREST',
+        '200042174': 'ind_bretagne_agglo_LORIENT',
+        '200068120': 'ind_bretagne_agglo_QUIMPER',
+        '243500139': 'ind_bretagne_agglo_RENNES',
+        '200069409': 'ind_bretagne_agglo_SAINT_BRIEUC',
+        '243500782': 'ind_bretagne_agglo_SAINT_MALO',
+        '200067932': 'ind_bretagne_agglo_VANNES',
+    }
+
+class Forecast(Service, ForecastMixin):
+    url = 'https://data.airbreizh.asso.fr/geoserver/ind_bretagne_agglo/ows'
+
+    HTTPAdapter = TLSAdapter
+
+    def params(self, date_, insee):
+        epci = self.insee_epci[insee]
+        agglo = self.epci_agglo[epci]
+
+        return {
+            'service': 'WFS',
+            'version': '1.0.0',
+            'request': 'GetFeature',
+            'typeName': f'ind_bretagne_agglo:{agglo}',
+            'outputFormat': 'application/json',
+            'CQL_FILTER': f"date_ech>'{date_}'"
         }
 
 
 class Episode(Service, EpisodeMixin):
     url = 'https://data.airbreizh.asso.fr/geoserver/alrt3j_bretagne/ows'
-    attributes_key = 'properties'
 
     def params(self, date_, insee):
         centre = self.centre(insee)

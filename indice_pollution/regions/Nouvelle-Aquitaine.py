@@ -6,13 +6,6 @@ from datetime import datetime
 
 class Service(object):
     website = 'https://www.atmo-nouvelleaquitaine.org/'
-
-class Episode(Service, EpisodeMixin):
-    url = 'https://opendata.atmo-na.org/geoserver/alrt_nouvelle_aquitaine/wfs'
-
-class Forecast(Service, ForecastMixin):
-    url = 'https://opendata.atmo-na.org/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
-
     attributes_key = 'properties'
     use_dateutil_parser = True
 
@@ -20,6 +13,15 @@ class Forecast(Service, ForecastMixin):
         '33063', '79005', '16102', '64102', '64445', '19272', '87085', '24322', '40088',
         '17300', '16015', '79191', '87154', '86194', '19031', '64300', '23096'
     ]
+
+    def get_close_insee(self, insee):
+        return insee
+
+class Episode(Service, EpisodeMixin):
+    url = 'https://opendata.atmo-na.org/geoserver/alrt_nouvelle_aquitaine/wfs'
+
+class Forecast(Service, ForecastMixin):
+    url = 'https://opendata.atmo-na.org/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
     COLOR_TO_QUALIF = {
         "0": "tres_bon",
         "21": "bon",
@@ -61,6 +63,3 @@ class Forecast(Service, ForecastMixin):
             }
             for day in days
         ]
-
-    def get_close_insee(self, insee):
-        return insee

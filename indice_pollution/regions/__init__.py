@@ -6,7 +6,7 @@ import pytz
 from datetime import datetime
 from dateutil.parser import parse
 from sqlalchemy import exc
-from indice_pollution.history.models import IndiceHistory
+from indice_pollution.history.models import IndiceHistory, EpisodeHistory
 from indice_pollution.models import db
 
 class ServiceMixin(object):
@@ -58,13 +58,13 @@ class ServiceMixin(object):
         to_return = []
         insee = self.get_close_insee(insee)
         if force_from_db:
-            indice = IndiceHistory.get(date_, insee)
+            indice = self.HistoryModel.get(date_, insee)
             if indice:
                 return [indice.features]
         if not to_return:
             to_return = self.get_no_cache(date_, insee, attempts)
         if not to_return:
-            to_return = IndiceHistory.get_after(date_, insee)
+            to_return = self.HistoryModel.get_after(date_, insee)
         if not any(map(lambda r: r['date'] == str(date_), to_return)):
             if hasattr(self, "get_from_scraping"):
                 to_return = self.get_from_scraping(to_return, date_, insee)
@@ -72,7 +72,7 @@ class ServiceMixin(object):
             for v in to_return:
                 if not v.get('indice'):
                     continue
-                indice = IndiceHistory.get_or_create(v['date'], insee)
+                indice = self.HistoryModel.get_or_create(v['date'], insee)
                 indice.features = v
                 db.session.commit()
         return to_return
@@ -143,6 +143,7 @@ class ServiceMixin(object):
 
 
 class ForecastMixin(ServiceMixin):
+    HistoryModel = IndiceHistory
     outfields = ['date_ech', 'valeur', 'qualif', 'val_no2', 'val_so2',
      'val_o3', 'val_pm10', 'val_pm25'
     ]
@@ -161,12 +162,9 @@ class ForecastMixin(ServiceMixin):
 
 
 class EpisodeMixin(ServiceMixin):
+    HistoryModel = EpisodeHistory
     outfields = ['date_ech', 'lib_zone', 'code_zone', 'date_dif', 'code_pol',
      'lib_pol', 'etat', 'com_court', 'com_long']
-
-    def get(self, date_, insee, attempts=0):
-        features = self.get_multiple_attempts(self.url, self.params(date_, insee))
-        return list(filter(lambda s: s is not None, map(self.getter, features)))
     
     def getter(self, feature):
         attributes = feature[self.attributes_key]

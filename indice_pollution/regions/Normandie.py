@@ -7,14 +7,13 @@ from string import printable
 
 class Service(object):
     website = 'http://www.atmonormandie.fr/'
-
-class Forecast(Service, ForecastMixin):
-    url = 'https://dservices7.arcgis.com/FPRT1cIkPKcq73uN/arcgis/services/ind_normandie_agglo/WFSServer?service=wfs&request=getcapabilities'
-
     attributes_key = 'properties'
     use_dateutil_parser = True
 
     insee_list = ['76351', '14366', '76540', '14118', '50502', '27229', '50129', '61001']
+
+class Forecast(Service, ForecastMixin):
+    url = 'https://dservices7.arcgis.com/FPRT1cIkPKcq73uN/arcgis/services/ind_normandie_agglo/WFSServer?service=wfs&request=getcapabilities'
 
     @classmethod
     def params(cls, date_, insee):
@@ -41,7 +40,6 @@ class Forecast(Service, ForecastMixin):
 
 class Episode(Service, EpisodeMixin):
     url = 'https://dservices7.arcgis.com/FPRT1cIkPKcq73uN/arcgis/services/alrt3j_normandie/WFSServer'
-    attributes_key = 'properties'
 
     def params(self, date_, insee):
         centre = self.centre(insee)

@@ -4,10 +4,11 @@ from datetime import timedelta
 
 class Service(object):
     website = 'http://www.airpl.org/'
+    attributes_key = 'properties'
+    use_dateutil_parser = True
 
 class Episode(Service, EpisodeMixin):
     url = 'https://data.airpl.org/geoserver/alrt3j_pays_de_la_loire/wfs'
-    attributes_key = 'properties'
 
     def params(self, date_, insee):
         centre = self.centre(insee)
@@ -28,7 +29,6 @@ class Forecast(Service, ForecastMixin):
     url = 'https://data.airpl.org/geoserver/ind_pays_de_la_loire/wfs'
 
     attributes_key = 'properties'
-    use_dateutil_parser = True
 
     @classmethod
     def params(cls, date_, insee):

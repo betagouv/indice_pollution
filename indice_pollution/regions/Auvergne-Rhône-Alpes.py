@@ -5,15 +5,17 @@ from datetime import datetime
 
 class Service(object):
     website = 'https://www.atmo-auvergnerhonealpes.fr/'
-
-class Forecast(Service, ForecastMixin):
-    url = 'https://services3.arcgis.com/o7Q3o5SkiSeZD5LK/arcgis/rest/services/ind_atmo_aura/FeatureServer/0/query'
-    
     insee_list = [
         '73065', '74081', '43157', '69123', '73248', '03190', '74012', '38544', '73011',
         '63300', '01053', '74056', '03310', '03185', '42187', '15014', '38185', '74010',
         '42218', '26362', '38053', '01328', '63113'
     ]
+
+    def get_close_insee(self, insee):
+        return insee
+
+class Forecast(Service, ForecastMixin):
+    url = 'https://services3.arcgis.com/o7Q3o5SkiSeZD5LK/arcgis/rest/services/ind_atmo_aura/FeatureServer/0/query'
 
     COLOR_TO_QUALIF = {
         "0": "tres_bon",
@@ -44,9 +46,6 @@ class Forecast(Service, ForecastMixin):
             }
             for day in days
         ]
-
-    def get_close_insee(self, insee):
-        return insee
 
 
 class Episode(Service, EpisodeMixin):
