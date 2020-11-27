@@ -56,7 +56,7 @@ def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
-def bulk(insee_region_names, date_=None):
+def bulk(insee_region_names, date_=None, fetch_episodes=False):
     from indice_pollution.history.models import IndiceHistory, EpisodeHistory
     from .regions.solvers import region as get_region
     date_ = date_ or today()
@@ -75,9 +75,10 @@ def bulk(insee_region_names, date_=None):
         indices.update(
             {i.insee: [i.features] for i in IndiceHistory.get_bulk(date_, chunk)}
         )
-        episodes.update(
-            {i.insee: [i.features] for i in EpisodeHistory.get_bulk(date_, chunk)}
-        )
+        if fetch_episodes:
+            episodes.update(
+                {i.insee: [i.features] for i in EpisodeHistory.get_bulk(date_, chunk)}
+            )
     for insee in insee_region_names.keys():
         if insee in indices:
             continue
@@ -88,30 +89,36 @@ def bulk(insee_region_names, date_=None):
             indices[insee] = indices[close_insee]
             continue
         indices[insee] = f.get(date_=date_, insee=insee, force_from_db=False)
-    for insee in insee_region_names.keys():
-        if insee in episodes:
-            continue
-        region = get_region(region_name=insee_region_names[insee])
-        e = region.Episode()
-        print(insee)
-        close_insee = e.get_close_insee(insee)
-        if close_insee in episodes:
-            episodes[insee] = episodes[close_insee]
-            continue
-        episodes[insee] = e.get(date_=date_, insee=insee, force_from_db=False)
-    return {
+    if fetch_episodes:
+        for insee in insee_region_names.keys():
+            if insee in episodes:
+                continue
+            region = get_region(region_name=insee_region_names[insee])
+            e = region.Episode()
+            close_insee = e.get_close_insee(insee)
+            if close_insee in episodes:
+                episodes[insee] = episodes[close_insee]
+                continue
+            episodes[insee] = e.get(date_=date_, insee=insee, force_from_db=False)
+    to_return = {
         insee: {
             "forecast": make_resp(
                 get_region(region_name=insee_region_names[insee]).Forecast(),
                 indices[insee]
                ),
-            "episode": make_resp(
-                get_region(region_name=insee_region_names[insee]).Episode(),
-                episodes[insee]
-            )
         }
         for insee in insee_region_names.keys()
     }
+    if fetch_episodes:
+        for insee in insee_region_names:
+            to_return[insee].update({
+                "episode": make_resp(
+                    get_region(region_name=insee_region_names[insee]).Episode(),
+                    episodes[insee]
+                )
+                }
+            )
+    return to_return
 
 def today():
     zone = pytz.timezone('Europe/Paris')
