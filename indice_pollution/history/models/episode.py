@@ -19,7 +19,7 @@ class EpisodeHistory(db.Model):
 
     @classmethod
     def get(cls, date_, insee):
-        return cls.query.filter_by(date_=date_, insee=insee).first()
+        return db.session.query(cls).filter_by(date_=date_, insee=insee).first()
     
     @classmethod
     def get_bulk(cls, date_, insee_list):
