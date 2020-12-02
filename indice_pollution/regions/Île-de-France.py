@@ -29,7 +29,7 @@ class Forecast(Service, ForecastMixin):
     }
 
     def where(self, date_, insee):
-        return f"date_ech >= CURRENT_DATE - INTERVAL '2' DAY"
+        return "date_ech >= CURRENT_DATE - INTERVAL '2' DAY"
 
     def get_from_scraping(self, previous_results, date_, insee):
         r = requests.get('https://www.airparif.asso.fr/')
@@ -47,9 +47,12 @@ class Forecast(Service, ForecastMixin):
 class Episode(Service, EpisodeMixin):
     url = 'https://services8.arcgis.com/gtmasQsdfwbDAQSQ/arcgis/rest/services/alrt_idf/FeatureServer/0/query'
 
+    def where(self, date_, insee):
+        return "date_ech >= CURRENT_DATE - INTERVAL '2' DAY"
+
     def params(self, insee, date_):
         return {
-            'where': '1=1',
+            'where': "date_ech >= CURRENT_DATE - INTERVAL '7' DAY",
             'outFields': '*',
             'outSR': '4326',
             'f': 'json'

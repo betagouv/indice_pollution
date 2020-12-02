@@ -65,7 +65,7 @@ class ServiceMixin(object):
             to_return = self.get_no_cache(date_, insee, attempts)
         if not to_return:
             to_return = self.HistoryModel.get_after(date_, insee)
-        if not any(map(lambda r: r['date'] if 'date' in r else r['date_ech'] == str(date_), to_return)):
+        if not any(map(lambda r: (r['date'] if 'date' in r else r['date_dif']) == str(date_), to_return)):
             if hasattr(self, "get_from_scraping"):
                 to_return = self.get_from_scraping(to_return, date_, insee)
         if to_return:
@@ -95,9 +95,6 @@ class ServiceMixin(object):
             'f': 'json',
             'outSR': '4326'
         }
-
-    def getter(self, feature):
-        pass
 
     @property
     def insee_list(self):
