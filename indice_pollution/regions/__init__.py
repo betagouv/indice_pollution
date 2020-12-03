@@ -70,7 +70,7 @@ class ServiceMixin(object):
                 to_return = self.get_from_scraping(to_return, date_, insee)
         if to_return:
             for v in to_return:
-                if not v.get('indice'):
+                if self.dict_name not in v:
                     continue
                 indice = self.HistoryModel.get_or_create(v['date'], insee)
                 indice.features = v
@@ -144,6 +144,7 @@ class ForecastMixin(ServiceMixin):
     outfields = ['date_ech', 'valeur', 'qualif', 'val_no2', 'val_so2',
      'val_o3', 'val_pm10', 'val_pm25'
     ]
+    dict_name = 'indice'
 
     def getter(self, feature):
         attributes = feature[self.attributes_key]
@@ -162,6 +163,7 @@ class EpisodeMixin(ServiceMixin):
     HistoryModel = EpisodeHistory
     outfields = ['date_ech', 'lib_zone', 'code_zone', 'date_dif', 'code_pol',
      'lib_pol', 'etat', 'com_court', 'com_long']
+    dict_name = 'episode'
     
     def getter(self, feature):
         attributes = feature[self.attributes_key]
@@ -172,11 +174,9 @@ class EpisodeMixin(ServiceMixin):
         date_ech = self.date_parser(attributes['date_ech'])
         date_dif = self.date_parser(attributes.get('date_dif'))
         return {
-            **{k: attributes[k] for k in self.outfields if k in attributes},
-            **{
-                'date_dif': str(date_dif.date()) if date_dif else None,
-                'date_ech': str(date_ech.date())
-            }
+            'episode': {k: attributes[k] for k in self.outfields if k in attributes},
+            'date_dif': str(date_dif.date()) if date_dif else None,
+            'date': str(date_ech.date())
         }
 
     def centre(self, insee):
