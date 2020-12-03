@@ -20,6 +20,8 @@ class TLSAdapter(adapters.HTTPAdapter):
 class Service(object):
     website = 'https://www.airbreizh.asso.fr/'
 
+    HTTPAdapter = TLSAdapter
+
     insee_epci = {
         "29019": "242900314",
         "29075": "242900314",
@@ -212,8 +214,6 @@ class Service(object):
 
 class Forecast(Service, ForecastMixin):
     url = 'https://data.airbreizh.asso.fr/geoserver/ind_bretagne_agglo/ows'
-
-    HTTPAdapter = TLSAdapter
 
     def params(self, date_, insee):
         epci = self.insee_epci[insee]
