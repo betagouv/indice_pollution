@@ -3,6 +3,7 @@ from . import ForecastMixin, EpisodeMixin
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
+from ..history.models import Commune
 
 class Service(object):
     website = 'https://www.atmo-nouvelleaquitaine.org/'
@@ -18,7 +19,23 @@ class Service(object):
         return insee
 
 class Episode(Service, EpisodeMixin):
-    url = 'https://opendata.atmo-na.org/geoserver/alrt_nouvelle_aquitaine/wfs'
+    url = 'https://opendata.atmo-na.org/geoserver/alrt3j_nouvelle_aquitaine/wfs'
+
+    def params(self, date_, insee):
+        commune = Commune.get(insee)
+        filter_zone = f'<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{commune.code_departement}</Literal></PropertyIsEqualTo>'
+        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_dif</PropertyName><Literal>{date_}T00:00:00.000Z</Literal></PropertyIsGreaterThanOrEqualTo>'
+
+        return {
+            'request': 'GetFeature',
+            'version': '1.0.0',
+            'typeName': 'alrt3j_nouvelle_aquitaine:alrt3j_nouvelle_aquitaine',
+            'where': '',
+            'outfields': self.outfields,
+            'outputFormat': 'json',
+            'outSR': '4326',
+            'Filter': f"<Filter><And>{filter_zone}{filter_date}</And></Filter>",
+        }
 
 class Forecast(Service, ForecastMixin):
     url = 'https://opendata.atmo-na.org/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
