@@ -4,6 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
 from ..history.models import Commune
+import logging
 
 class Service(object):
     website = 'https://www.atmo-nouvelleaquitaine.org/'
@@ -65,7 +66,17 @@ class Forecast(Service, ForecastMixin):
         }
 
     def get_from_scraping(self, previous_results, date_, insee):
-        r = requests.get(f'https://www.atmo-nouvelleaquitaine.org/monair/commune/{insee}')
+        url = f'https://www.atmo-nouvelleaquitaine.org/monair/commune/{insee}'
+        try:
+            r = requests.get(url)
+        except requests.exceptions.ConnectionError as e:
+            logging.error(f'Impossible de se connecter à {url}')
+            logging.error(e)
+            return []
+        except requests.exceptions.SSLError as e:
+            logging.error(f'Erreur ssl {url}')
+            logging.error(e)
+            return []
         r.raise_for_status()
         soup = BeautifulSoup(r.text, 'html.parser')
 
