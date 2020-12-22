@@ -41,16 +41,16 @@ class Episode(Service, EpisodeMixin):
 class Forecast(Service, ForecastMixin):
     url = 'https://opendata.atmo-na.org/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
     COLOR_TO_QUALIF = {
-        "0": "tres_bon",
-        "21": "bon",
-        "31": "bon",
-        "41": "bon",
-        "51": "moyen",
-        "61": "mediocre",
-        "71": "mediocre",
-        "81": "mediocre",
-        "91": "mauvais",
-        "100": "tres_mauvais"
+        "1": "tres_bon",
+        "2": "bon",
+        "3": "bon",
+        "4": "bon",
+        "5": "moyen",
+        "6": "mediocre",
+        "7": "mediocre",
+        "8": "mediocre",
+        "9": "mauvais",
+        "10": "tres_mauvais"
     }
 
     @classmethod
