@@ -140,7 +140,7 @@ class Episode(Service, EpisodeMixin):
         }
 
 class Forecast(Service, ForecastMixin):
-    url = 'https://data.airpl.org/geoserver/ind_pays_de_la_loire/wfs'
+    url = 'https://data.airpl.org/geoserver/ind_pays_de_la_loire_agglo/wfs'
 
     attributes_key = 'properties'
 
@@ -154,7 +154,7 @@ class Forecast(Service, ForecastMixin):
             'request': 'GetFeature',
             'service': 'WFS',
             'version': '1.1',
-            'typeName': 'ind_pays_de_la_loire:ind_pays_de_la_loire_agglo',
+            'typeName': 'ind_pays_de_la_loire_agglo:ind_pays_de_la_loire_agglo',
             'Filter': f"<Filter><And>{filter_zone}{filter_date}</And></Filter>",
             'outputFormat': 'json',
         }
