@@ -3,6 +3,7 @@ import requests
 import logging
 import time
 import pytz
+import json
 from datetime import datetime
 from dateutil.parser import parse
 from sqlalchemy import exc
@@ -79,10 +80,13 @@ class ServiceMixin(object):
 
     def get_no_cache(self, date_, insee, attempts=0):
         features = self.get_multiple_attempts(self.url, self.params(date_, insee), attempts)
-        return list(filter(lambda s: s is not None, map(self.getter, features)))
+        return list(filter(lambda s: s is not None, map(lambda f: self.getter(self.attributes_getter(f)), features)))
 
     def features(self, r):
-        return r.json()['features']
+        try:
+            return r.json()['features']
+        except json.decoder.JSONDecodeError:
+            return []
 
     def where(self, date_, insee):
         zone = insee if not self.insee_epci else self.insee_epci[insee]
@@ -101,7 +105,7 @@ class ServiceMixin(object):
         return [] if not self.insee_epci else self.insee_epci.keys()
 
     def get_close_insee(self, insee):
-        if insee in self.insee_list:
+        if insee in self.insee_list or self.insee_list == []:
             return insee
         departement = insee[:2]
         try:
@@ -110,24 +114,18 @@ class ServiceMixin(object):
             logging.error(f'Impossible de trouver le code insee de la préfecture de {insee}')
             raise KeyError
 
-    def getter(self, feature):
-        attributes = feature[self.attributes_key]
-
-        dt = self.date_getter(attributes)
-        return {
-            **{
-                'indice': attributes['valeur'],
-                'date': str(dt.date())
-            },
-            **{k: attributes[k] for k in self.outfields if k in attributes}
-        }
+    def attributes_getter(self, feature):
+        return feature[self.attributes_key]
 
     def date_getter(self, attributes):
+        str_date = attributes.get('date_ech', attributes.get('date'))
+        if not str_date:
+            return
         if not self.use_dateutil_parser:
             zone = pytz.timezone('Europe/Paris')
-            return datetime.fromtimestamp(attributes['date_ech']/1000, tz=zone)
+            return datetime.fromtimestamp(str_date/1000, tz=zone)
         else:
-            return parse(attributes['date_ech'])
+            return parse(str_date)
 
     def date_parser(self, date_):
         if date_ is None:
@@ -146,17 +144,91 @@ class ForecastMixin(ServiceMixin):
     ]
     dict_name = 'indice'
 
-    def getter(self, feature):
-        attributes = feature[self.attributes_key]
+    def getter(self, attributes):
+        dt = self.date_getter(attributes)
+        indice = self.indice_getter(attributes)
+        label = self.label_getter(indice)
+        couleur = self.couleur_getter(attributes, indice)
 
-        dt = self.date_parser(attributes['date_ech'])
         return {
-            **{
-                'indice': attributes['valeur'],
-                'date': str(dt.date())
-            },
+            'indice': indice,
+            'label': label,
+            'couleur': couleur,
+            'sous_indices': attributes.get('sous_indices'),
+            'date': str(dt.date()),
             **{k: attributes[k] for k in self.outfields if k in attributes}
         }
+
+    def indice_getter(self, attributes):
+        # On peut avoir un indice à 0, ce qui nous empêche de faire
+        # indice = attributes.get('indice) or attributes.get('valeur)
+        # car attributes.get('indice') sera truthy
+        indice = attributes.get('indice', attributes.get('valeur'))
+        # De même, on peut avoir indice valant 0
+        # ce qui nous empêche de faire
+        # if indice:
+        if indice != None:
+            if type(indice) == int:
+                return {
+                    0: "tres_bon",
+                    1: "tres_bon",
+                    2: "bon",
+                    3: "bon",
+                    4: "bon",
+                    5: "moyen",
+                    6: "mediocre",
+                    7: "mediocre",
+                    8: "mediocre",
+                    9: "mauvais",
+                    10: "tres_mauvais"
+                }.get(indice)
+            return indice
+        if 'lib_qual' in attributes:
+            return {
+                "Bon": "bon",
+                "Moyen": "moyen",
+                "Dégradé": "degrade",
+                "Mauvais": "mauvais",
+                "Très mauvais": "tres_mauvais",
+                "Extrêment mauvais": "extrement_mauvais",
+            }.get(attributes['lib_qual'])
+
+
+    def label_getter(self, indice):
+        if not indice:
+            return
+        return {
+            "tres_bon": "Très bon", #On garde la rétro compatibilité pour l’instant
+            "bon": "Bon",
+            "moyen": "Moyen",
+            "degrade": "Dégradé",
+            "mauvais": "Mauvais",
+            "mediocre": "Médiocre", #On garde la rétro compatibilité pour l’instant
+            "tres_mauvais": "Très mauvais",
+            "extrement_mauvais": "Extrêment mauvais",
+        }.get(
+            indice.lower(),
+            indice
+        )
+
+    def couleur_getter(self, attributes, indice):
+        couleur = attributes.get('couleur') or attributes.get('coul_qual')
+        if couleur:
+            return couleur
+        if not indice:
+            return
+        return {
+            "tres_bon": "#50F0E6", #On garde la rétro-compatibilité
+            "bon": "#50F0E6",
+            "moyen": "#50CCAA",
+            "degrade": "#F0E641",
+            "mediocre": "#F0E641", #On garde la rétro-compatibilité
+            "mauvais": "#FF5050",
+            "tres_mauvais": "#960032",
+            "extrement_mauvais": "#960032",
+        }.get(
+            indice.lower()
+        )
 
 
 class EpisodeMixin(ServiceMixin):
@@ -166,7 +238,7 @@ class EpisodeMixin(ServiceMixin):
     dict_name = 'episode'
     
     def getter(self, feature):
-        attributes = feature[self.attributes_key]
+        attributes = self.attributes_getter(feature)
 
         if attributes['etat'] == 'PAS DE DEPASSEMENT':
             return None

@@ -599,7 +599,16 @@ class Episode(Service, EpisodeMixin):
     url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/epipol_3j_occitanie/FeatureServer/0/query'
 
 class Forecast(Service, ForecastMixin):
-    url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/Indice_de_qualite_de_l_air_des_agglomerations_sur_la_region_Occitanie/FeatureServer/0/query'
+    url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/Indice_quotidien_de_qualit%C3%A9_de_l%E2%80%99air_pour_les_collectivit%C3%A9s_territoriales_en_Occitanie/FeatureServer/0/query'
+
+    def params(self, date_, insee):
+        zone = insee if not self.insee_epci else self.insee_epci[insee]
+        return {
+            'where': f"(date_ech >= CURRENT_DATE - INTERVAL '2' DAY) AND code_zone ='{zone}'",
+            'outFields': "*",
+            'f': 'json',
+            'outSR': '4326'
+        }
 
     IQA_TO_QUALIF = {
         "1": "tres_bon",

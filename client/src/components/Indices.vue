@@ -5,8 +5,9 @@
             <div class="grid">
                 <Indice 
                     v-for="(indice, index) in indices"
-                    v-bind:indice="indice.indice"
+                    v-bind:label="indice.label"
                     v-bind:date="indice.date"
+                    v-bind:couleur="indice.couleur"
                     v-bind:index="index"
                     v-bind:key="indice.date"
                 >

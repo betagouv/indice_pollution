@@ -16,19 +16,7 @@ class Service(object):
 
 class Forecast(Service, ForecastMixin):
     url = 'https://services3.arcgis.com/o7Q3o5SkiSeZD5LK/arcgis/rest/services/ind_atmo_aura/FeatureServer/0/query'
-
-    COLOR_TO_QUALIF = {
-        "1": "tres_bon",
-        "2": "bon",
-        "3": "bon",
-        "4": "bon",
-        "5": "moyen",
-        "6": "mediocre",
-        "7": "mediocre",
-        "8": "mediocre",
-        "9": "mauvais",
-        "10": "tres_mauvais"
-    }
+    use_dateutil_parser = True
 
     def get_from_scraping(self, previous_results, date_, insee):
         r = requests.get(f'https://www.atmo-auvergnerhonealpes.fr/monair/commune/{insee}')
@@ -39,11 +27,10 @@ class Forecast(Service, ForecastMixin):
         days = controls[0].find_all('a', class_='raster-control-link')
 
         return [
-            {
+            self.getter({
                 "date": str(datetime.fromtimestamp(int(day.attrs.get('data-rasterid'))).date()),
                 "indice": int(int(day.attrs.get('data-index'))/10),
-                "qualif": self.COLOR_TO_QUALIF[day.attrs.get('data-color')]
-            }
+            })
             for day in days
         ]
 

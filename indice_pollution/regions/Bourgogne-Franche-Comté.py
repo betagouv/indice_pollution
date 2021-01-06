@@ -12,10 +12,24 @@ class Service(object):
         return insee
 
 class Forecast(Service, ForecastMixin):
-    url = 'https://www.atmo-bfc.org/medias/ajax/me_gateway.php'
+    url_scraping = 'https://www.atmo-bfc.org/medias/ajax/me_gateway.php'
+    url = 'https://atmo-bfc.iad-informatique.com/geoserver/indice/ows'
+    attributes_key = 'properties'
+    use_dateutil_parser = True
 
-    def get_one_attempt(self, url, params, attempts=0):
-        r = requests.post(url,
+    def params(self, date_, insee):
+        return {
+            'service': 'WFS',
+            'version': '2.0.0',
+            'request': 'GetFeature',
+            'typeName': f'indice:vu_indice_bourgogne-franche-comte',
+            'outputFormat': 'application/json',
+            'CQL_FILTER': f"date_ech >= '{date_}T00:00:00Z' AND code_zone={insee}"
+        }
+
+
+    def get_from_scraping_one_day(self, params):
+        r = requests.post(self.url_scraping,
             headers={
                 'Accept-Encoding': '*',
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
@@ -25,7 +39,7 @@ class Forecast(Service, ForecastMixin):
         r.raise_for_status()
         return r
 
-    def params(self, date_, insee):
+    def params_scraping(self, date_, insee):
         self.date_ = date_
         return {
             "meC": "abo_communes",
@@ -45,14 +59,14 @@ class Forecast(Service, ForecastMixin):
             "ajax": 1
         }
 
-    def get_no_cache(self, date_, insee, attempts=0):
+    def get_from_scraping(self, previous_results, date_, insee):
         if insee not in self.insee_list:
             insee = self.get_close_insee(insee)
         day_before = str((date_ - timedelta(days=1)))
         day_after = str((date_ + timedelta(days=1)))
-        features_daybefore = self.get_multiple_attempts(self.url, self.params(day_before, insee))
-        features_date = self.get_multiple_attempts(self.url, self.params(str(date_), insee))
-        features_dayafter = self.get_multiple_attempts(self.url, self.params(day_after, insee))
+        features_daybefore = self.features_scraping(self.get_from_scraping_one_day(self.params_scraping(day_before, insee)))
+        features_date = self.features_scraping(self.get_from_scraping_one_day(self.params_scraping(str(date_), insee)))
+        features_dayafter = self.features_scraping(self.get_from_scraping_one_day(self.params_scraping(day_after, insee)))
         return [
             f
             for f in [
@@ -63,7 +77,7 @@ class Forecast(Service, ForecastMixin):
             if f
         ]
 
-    def features(self, r):
+    def features_scraping(self, r):
         if not "indices" in r.json():
             return []
         soup = BeautifulSoup(r.json()["indices"], features="html5lib")

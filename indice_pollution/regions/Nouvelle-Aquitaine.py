@@ -40,23 +40,11 @@ class Episode(Service, EpisodeMixin):
 
 class Forecast(Service, ForecastMixin):
     url = 'https://opendata.atmo-na.org/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
-    COLOR_TO_QUALIF = {
-        "1": "tres_bon",
-        "2": "bon",
-        "3": "bon",
-        "4": "bon",
-        "5": "moyen",
-        "6": "mediocre",
-        "7": "mediocre",
-        "8": "mediocre",
-        "9": "mauvais",
-        "10": "tres_mauvais"
-    }
 
     @classmethod
     def params(cls, date_, insee):
         filter_zone = f'<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{insee}</Literal></PropertyIsEqualTo>'
-        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Literal>{date_}T00:00:00.000Z</Literal></PropertyIsGreaterThanOrEqualTo>'
+        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Literal>{date_}T00:00:00Z</Literal></PropertyIsGreaterThanOrEqualTo>'
         return {
             'service': 'wfs',
             'request': 'getfeature',
@@ -84,10 +72,9 @@ class Forecast(Service, ForecastMixin):
         days = controls[0].find_all('a', class_='raster-control-link')
 
         return [
-            {
+            self.getter({
                 "date": str(datetime.fromtimestamp(int(day.attrs.get('data-rasterid'))).date()),
                 "indice": int(int(day.attrs.get('data-index'))/10),
-                "qualif": self.COLOR_TO_QUALIF[day.attrs.get('data-color')]
-            }
+            })
             for day in days
         ]

@@ -11,25 +11,19 @@ class Service(object):
         return insee
 
 class Forecast(Service, ForecastMixin):
-    url = 'https://services8.arcgis.com/gtmasQsdfwbDAQSQ/arcgis/rest/services/ind_idf_agglo/FeatureServer/0/query'
+    url = 'https://magellan.airparif.asso.fr/geoserver/DIDON/wfs'
+    attributes_key = 'properties'
+    use_dateutil_parser = True
 
-
-    INDICE_TO_QUALIF = {
-        0: "tres_bon",
-        1: "tres_bon",
-        2: "bon",
-        3: "bon",
-        4: "bon",
-        5: "moyen",
-        6: "mediocre",
-        7: "mediocre",
-        8: "mediocre",
-        9: "mauvais",
-        10: "tres_mauvais"
-    }
-
-    def where(self, date_, insee):
-        return "date_ech >= CURRENT_DATE - INTERVAL '2' DAY"
+    def params(self, date_, insee):
+        return {
+            'service': 'WFS',
+            'version': '2.0.0',
+            'request': 'GetFeature',
+            'typeName': f'DIDON:indice_atmo_2020',
+            'outputFormat': 'application/json',
+            'CQL_FILTER': f"date_ech >= '{date_}T00:00:00Z' AND code_zone={insee}"
+        }
 
     def get_from_scraping(self, previous_results, date_, insee):
         r = requests.get('https://www.airparif.asso.fr/')
