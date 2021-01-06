@@ -115,7 +115,12 @@ class ServiceMixin(object):
             raise KeyError
 
     def attributes_getter(self, feature):
-        return feature[self.attributes_key]
+        try:
+            return feature[self.attributes_key]
+        except KeyError as e:
+            logging.error(f"KeyError dans attributes getter self.attributes_key: '{self.attributes_key}' keys: '{feature.keys()}'")
+            raise e
+
 
     def date_getter(self, attributes):
         str_date = attributes.get('date_ech', attributes.get('date'))

@@ -19,12 +19,11 @@ class Forecast(Service, ForecastMixin):
             'outSR': '4326'
         }
 
-    def getter(self, feature):
-        attributes = self.attributes_getter(feature)
+    def getter(self, attributes):
         return super().getter(
             {
                 'couleur': attributes['coul_qual'],
-                **feature
+                **attributes
             }
         )
 
