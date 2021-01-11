@@ -5,7 +5,7 @@ import time
 import pytz
 import json
 from datetime import datetime
-from dateutil.parser import parse
+from dateutil import parser as dateutil_parser
 from sqlalchemy import exc
 from indice_pollution.history.models import IndiceHistory, EpisodeHistory
 from indice_pollution.models import db
@@ -47,6 +47,8 @@ class ServiceMixin(object):
         r = self.get_one_attempt(url, params)
         if r:
             features = self.features(r)
+            if not features and 'error' in r.text:
+                logging.error(f'Errors in response: {r.text}')
         else:
             features = []
         if attempts >= 3 or len(features) > 0:
@@ -86,7 +88,10 @@ class ServiceMixin(object):
         try:
             return r.json()['features']
         except json.decoder.JSONDecodeError:
-            return []
+            logging.error(f'Unable to decode JSON "{r.text}"')
+        except KeyError as e:
+            logging.error(f'Unable to find key "features" in "{r.json().keys()}"')
+        return []
 
     def where(self, date_, insee):
         zone = insee if not self.insee_epci else self.insee_epci[insee]
@@ -130,16 +135,20 @@ class ServiceMixin(object):
             zone = pytz.timezone('Europe/Paris')
             return datetime.fromtimestamp(str_date/1000, tz=zone)
         else:
-            return parse(str_date)
+            return dateutil_parser.parse(str_date)
 
     def date_parser(self, date_):
         if date_ is None:
             return
-        if not self.use_dateutil_parser:
+        if type(date_) == int:
             zone = pytz.timezone('Europe/Paris')
             return datetime.fromtimestamp(date_/1000, tz=zone)
-        else:
-            return parse(date_)
+        try:
+            return dateutil_parser.parse(date_)
+        except dateutil_parser.ParserError as e:
+            logging.error(f'Unable to parse date: "{date_}"')
+            logging.error(e)
+            return
 
 
 class ForecastMixin(ServiceMixin):
@@ -242,18 +251,19 @@ class EpisodeMixin(ServiceMixin):
      'lib_pol', 'etat', 'com_court', 'com_long']
     dict_name = 'episode'
     
-    def getter(self, feature):
-        attributes = self.attributes_getter(feature)
+    def getter(self, attributes):
+        try:
+            date_dif = self.date_parser(attributes['date_dif'])
+        except KeyError as e:
+            logging.error(f"Unable to get key 'date_ech' or 'date_dif' in {attributes.keys()}")
+            logging.error(e)
+            return
+        if not date_dif:
+            return
 
-        if attributes['etat'] == 'PAS DE DEPASSEMENT':
-            return None
-
-        date_ech = self.date_parser(attributes['date_ech'])
-        date_dif = self.date_parser(attributes.get('date_dif'))
         return {
             'episode': {k: attributes[k] for k in self.outfields if k in attributes},
-            'date_dif': str(date_dif.date()) if date_dif else None,
-            'date': str(date_ech.date())
+            'date': str(date_dif.date())
         }
 
     def centre(self, insee):
