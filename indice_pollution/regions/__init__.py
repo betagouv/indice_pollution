@@ -4,6 +4,7 @@ import logging
 import time
 import pytz
 import json
+import unidecode
 from datetime import datetime
 from dateutil import parser as dateutil_parser
 from sqlalchemy import exc
@@ -196,6 +197,10 @@ class ForecastMixin(ServiceMixin):
                     9: "mauvais",
                     10: "tres_mauvais"
                 }.get(indice)
+            if type(indice) == str:
+                # Certaines régions mettent des accents, d’autres pas
+                # On désaccentue tout
+                return unidecode.unidecode(indice)
             return indice
         if 'lib_qual' in attributes:
             return {

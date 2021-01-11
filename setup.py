@@ -13,7 +13,8 @@ DEPENDENCIES = [
     'pytz',
     'beautifulsoup4',
     'html5lib',
-    'psycopg2'
+    'psycopg2',
+    'unidecode'
 ]
 
 setup(
