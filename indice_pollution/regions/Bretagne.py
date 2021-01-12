@@ -202,30 +202,19 @@ class Service(object):
     attributes_key = 'properties'
     use_dateutil_parser = True
 
-    epci_agglo = {
-        '242900314': 'ind_bretagne_agglo_BREST',
-        '200042174': 'ind_bretagne_agglo_LORIENT',
-        '200068120': 'ind_bretagne_agglo_QUIMPER',
-        '243500139': 'ind_bretagne_agglo_RENNES',
-        '200069409': 'ind_bretagne_agglo_SAINT_BRIEUC',
-        '243500782': 'ind_bretagne_agglo_SAINT_MALO',
-        '200067932': 'ind_bretagne_agglo_VANNES',
-    }
-
 class Forecast(Service, ForecastMixin):
-    url = 'https://data.airbreizh.asso.fr/geoserver/ind_bretagne_agglo/ows'
+    url = 'https://data.airbreizh.asso.fr/geoserver/ind_bretagne/ows'
 
     def params(self, date_, insee):
         epci = self.insee_epci[insee]
-        agglo = self.epci_agglo[epci]
 
         return {
             'service': 'WFS',
             'version': '1.0.0',
             'request': 'GetFeature',
-            'typeName': f'ind_bretagne_agglo:{agglo}',
+            'typeName': f'ind_bretagne:ind_bretagne',
             'outputFormat': 'application/json',
-            'CQL_FILTER': f"date_ech>'{date_}'"
+            'CQL_FILTER': f"code_zone = {epci} AND date_ech>='{date_}'"
         }
 
 
