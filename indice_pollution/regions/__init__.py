@@ -94,18 +94,6 @@ class ServiceMixin(object):
             logging.error(f'Unable to find key "features" in "{r.json().keys()}"')
         return []
 
-    def where(self, date_, insee):
-        zone = insee if not self.insee_epci else self.insee_epci[insee]
-        return f"(date_ech >= '{date_}') AND (code_zone='{zone}')"
-
-    def params(self, date_, insee):
-        return {
-            'where': self.where(date_, insee),
-            'outFields': ",".join(self.outfields),
-            'f': 'json',
-            'outSR': '4326'
-        }
-
     @property
     def insee_list(self):
         return [] if not self.insee_epci else self.insee_epci.keys()
@@ -158,6 +146,18 @@ class ForecastMixin(ServiceMixin):
      'val_o3', 'val_pm10', 'val_pm25'
     ]
     dict_name = 'indice'
+
+    def where(self, date_, insee):
+        zone = insee if not self.insee_epci else self.insee_epci[insee]
+        return f"(date_ech >= '{date_}') AND (code_zone='{zone}')"
+
+    def params(self, date_, insee):
+        return {
+            'where': self.where(date_, insee),
+            'outFields': ",".join(self.outfields),
+            'f': 'json',
+            'outSR': '4326'
+        }
 
     def getter(self, attributes):
         dt = self.date_getter(attributes)
