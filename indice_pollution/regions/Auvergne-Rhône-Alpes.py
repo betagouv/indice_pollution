@@ -5,18 +5,13 @@ from datetime import datetime
 
 class Service(object):
     website = 'https://www.atmo-auvergnerhonealpes.fr/'
-    insee_list = [
-        '73065', '74081', '43157', '69123', '73248', '03190', '74012', '38544', '73011',
-        '63300', '01053', '74056', '03310', '03185', '42187', '15014', '38185', '74010',
-        '42218', '26362', '38053', '01328', '63113'
-    ]
-
-    def get_close_insee(self, insee):
-        return insee
 
 class Forecast(Service, ForecastMixin):
-    url = 'https://services3.arcgis.com/o7Q3o5SkiSeZD5LK/arcgis/rest/services/ind_atmo_aura/FeatureServer/0/query'
+    url = 'https://services3.arcgis.com/o7Q3o5SkiSeZD5LK/arcgis/rest/services/Indices_2021_7j/FeatureServer/0/query'
     use_dateutil_parser = True
+    outfields = '*'
+
+    def where(self, date_, insee):
 
     def get_from_scraping(self, previous_results, date_, insee):
         r = requests.get(f'https://www.atmo-auvergnerhonealpes.fr/monair/commune/{insee}')
