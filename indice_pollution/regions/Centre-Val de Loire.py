@@ -22,7 +22,7 @@ class Forecast(Service, ForecastMixin):
     def getter(self, attributes):
         return super().getter(
             {
-                'couleur': attributes['coul_qual'],
+                'couleur': attributes.get('coul_qual'),
                 **attributes
             }
         )
@@ -36,11 +36,7 @@ class Forecast(Service, ForecastMixin):
         today = next(filter(lambda v: "Aujourd'hui" in v.text, bars))
         labels = today.find_all('div', class_="atmo-bar-label")
         today_text = next(filter(lambda v: "Aujourd'hui" in v.find_next('strong').text, labels)).text
-        p = re.compile("(\d+)\/10")
-        try:
-            indice = int(p.findall(today_text)[0])
-        except ValueError:
-            indice = None
+        indice = today_text[len("Aujourd'hui : "):].lower()
         return previous_results + [
             self.getter({
                 "date": str(date_), 
