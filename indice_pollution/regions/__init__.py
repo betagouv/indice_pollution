@@ -120,7 +120,7 @@ class ServiceMixin(object):
         str_date = attributes.get('date_ech', attributes.get('date'))
         if not str_date:
             return
-        if not self.use_dateutil_parser:
+        if not self.use_dateutil_parser and type(str_date) == int:
             zone = pytz.timezone('Europe/Paris')
             return datetime.fromtimestamp(str_date/1000, tz=zone)
         else:
