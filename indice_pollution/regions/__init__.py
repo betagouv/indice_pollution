@@ -200,8 +200,8 @@ class ForecastMixin(ServiceMixin):
             if type(indice) == str:
                 # Certaines régions mettent des accents, d’autres pas
                 # On désaccentue tout
-                return unidecode.unidecode(indice)
-            return indice
+                return unidecode.unidecode(indice).strip()
+            return indice.strip()
         if 'lib_qual' in attributes:
             return {
                 "Bon": "bon",
@@ -226,8 +226,8 @@ class ForecastMixin(ServiceMixin):
             "tres_mauvais": "Très mauvais",
             "extrement_mauvais": "Extrêment mauvais",
         }.get(
-            indice.lower(),
-            indice
+            indice.lower().strip(),
+            indice.strip()
         )
 
     def couleur_getter(self, attributes, indice):
