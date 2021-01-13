@@ -12,6 +12,7 @@ class Forecast(Service, ForecastMixin):
     outfields = '*'
 
     def where(self, date_, insee):
+        return f"code_zone='{insee}' AND date_ech >= CURRENT_DATE - INTERVAL '3' day"
 
     def get_from_scraping(self, previous_results, date_, insee):
         r = requests.get(f'https://www.atmo-auvergnerhonealpes.fr/monair/commune/{insee}')
