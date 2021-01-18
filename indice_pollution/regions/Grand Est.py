@@ -8,7 +8,8 @@ class Service(ServiceMixin):
     ]
 
 class Forecast(Service, ForecastMixin):
-    url = 'https://services3.arcgis.com/Is0UwT37raQYl9Jj/arcgis/rest/services/ind_Grand_Est_commune_3j/FeatureServer/0/query'
+    url = 'https://services3.arcgis.com/Is0UwT37raQYl9Jj/arcgis/rest/services/ind_grandest_5j/FeatureServer/0/query'
+    outfields = ['*']
 
 class Episode(Service, EpisodeMixin):
     url = 'https://services3.arcgis.com/Is0UwT37raQYl9Jj/arcgis/rest/services/alrt3j_grandest/FeatureServer/0/query'

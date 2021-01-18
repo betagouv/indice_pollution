@@ -204,6 +204,7 @@ class ForecastMixin(ServiceMixin):
             return indice.strip()
         if 'lib_qual' in attributes:
             return {
+                "Très bon": "bon", # retrocompatiblité
                 "Bon": "bon",
                 "Moyen": "moyen",
                 "Dégradé": "degrade",
