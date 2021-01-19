@@ -629,13 +629,19 @@ class Forecast(Service, ForecastMixin):
         script = soup.find_all('script', {"data-drupal-selector": "drupal-settings-json"})[0]
         j = json.loads(script.contents[0])
         city_iqa = j['atmo_mesures']['city_iqa']
+        occitanie_indice_dict = {
+            '1': 'bon',
+            '2': 'moyen',
+            '3': 'degrade',
+            '4': 'mauvais',
+            '5': 'tres_mauvais',
+            '6': 'extrement_mauvais'
+        }
         return [
-            {
-                "indice": int(v['iqa']),
-                "valeur": int(v['iqa']),
-                "qualif": self.IQA_TO_QUALIF[v['iqa']],
+            self.getter({
+                "indice": occitanie_indice_dict.get(v['iqa']),
                 "date": str(parse(v['date']).date())
-            }
+            })
             for v in city_iqa
         ]
 
