@@ -124,21 +124,12 @@ class ServiceMixin(object):
             zone = pytz.timezone('Europe/Paris')
             return datetime.fromtimestamp(str_date/1000, tz=zone)
         else:
-            return dateutil_parser.parse(str_date)
-
-    def date_parser(self, date_):
-        if date_ is None:
-            return
-        if type(date_) == int:
-            zone = pytz.timezone('Europe/Paris')
-            return datetime.fromtimestamp(date_/1000, tz=zone)
-        try:
-            return dateutil_parser.parse(date_)
-        except dateutil_parser.ParserError as e:
-            logging.error(f'Unable to parse date: "{date_}"')
-            logging.error(e)
-            return
-
+            try:
+                return dateutil_parser.parse(str_date)
+            except dateutil_parser.ParserError as e:
+                logging.error(f'Unable to parse date: "{str_date}"')
+                logging.error(e)
+                return
 
 class ForecastMixin(ServiceMixin):
     HistoryModel = IndiceHistory
@@ -259,7 +250,7 @@ class EpisodeMixin(ServiceMixin):
     
     def getter(self, attributes):
         try:
-            date_dif = self.date_parser(attributes['date_dif'])
+            date_dif = self.date_getter(attributes)
         except KeyError as e:
             logging.error(f"Unable to get key 'date_ech' or 'date_dif' in {attributes.keys()}")
             logging.error(e)

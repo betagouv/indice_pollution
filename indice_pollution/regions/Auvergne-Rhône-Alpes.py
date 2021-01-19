@@ -7,7 +7,7 @@ class Service(object):
     website = 'https://www.atmo-auvergnerhonealpes.fr/'
 
 class Forecast(Service, ForecastMixin):
-    url = 'https://services3.arcgis.com/o7Q3o5SkiSeZD5LK/arcgis/rest/services/Indices_2021_7j/FeatureServer/0/query'
+    url = 'https://services3.arcgis.com/o7Q3o5SkiSeZD5LK/arcgis/rest/services/Indice_ATMO/FeatureServer/0/query'
     use_dateutil_parser = True
     outfields = '*'
 

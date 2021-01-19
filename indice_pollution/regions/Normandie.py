@@ -1,3 +1,4 @@
+from datetime import datetime
 from . import ForecastMixin, EpisodeMixin
 from dateutil.parser import parse
 from json.decoder import JSONDecodeError
@@ -13,7 +14,7 @@ class Service(object):
     insee_list = ['76351', '14366', '76540', '14118', '50502', '27229', '50129', '61001']
 
 class Forecast(Service, ForecastMixin):
-    url = 'https://dservices7.arcgis.com/FPRT1cIkPKcq73uN/arcgis/services/ind_normandie_agglo/WFSServer?service=wfs&request=getcapabilities'
+    url = 'https://dservices7.arcgis.com/FPRT1cIkPKcq73uN/arcgis/services/ind_normandie_agglo/WFSServer'
 
     @classmethod
     def params(cls, date_, insee):
@@ -56,3 +57,12 @@ class Episode(Service, EpisodeMixin):
             'service': 'WFS',
             'outputFormat': 'GEOJSON'
         }
+
+    def date_getter(self, attributes):
+        str_date = attributes.get('date_ech')
+        if not str_date:
+            return
+        split_date = str_date.split('/')
+        if len(split_date) != 3:
+            return
+        return datetime(int(split_date[2]), int(split_date[0]), int(split_date[1]))
