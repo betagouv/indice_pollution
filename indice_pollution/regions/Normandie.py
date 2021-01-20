@@ -44,18 +44,16 @@ class Episode(Service, EpisodeMixin):
 
     def params(self, date_, insee):
         centre = self.centre(insee)
+        srsname = 'urn:ogc:def:crs:EPSG::4326'
 
         return {
-            'where': '',
-            'outfields': self.outfields,
-            'geometry': f'{centre[0]},{centre[1]}',
-            'inSR': '4326',
-            'outSR': '4326',
-            'geometryType': 'esriGeometryPoint',
-            'request': 'GetFeature',
+            'service': 'wfs',
+            'version': '2.0.0',
+            'request': 'getfeature',
             'typeName': 'alrt3j_normandie:alrt3j_normandie',
-            'service': 'WFS',
-            'outputFormat': 'GEOJSON'
+            'outputFormat': 'geojson',
+            'srsName': srsname,
+            'bbox': f'{centre[0]},{centre[1]},{centre[0]},{centre[1]},{srsname}',
         }
 
     def date_getter(self, attributes):
