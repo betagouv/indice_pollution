@@ -7,15 +7,7 @@ class IndiceHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     date_ = db.Column(db.Date, nullable=False)
     insee = db.Column(db.String, nullable=False)
-    _features = db.Column("features", db.String, nullable=False)
-
-    @property
-    def features(self):
-        return json.loads(self._features)
-
-    @features.setter
-    def features(self, value):
-        self._features = json.dumps(value)
+    features = db.Column(db.JSON, nullable=False)
 
     @classmethod
     def get(cls, date_, insee):
@@ -32,10 +24,10 @@ class IndiceHistory(db.Model):
         return [v.features for v in cls.query.filter(cls.date_ >= date_, cls.insee==insee).all()]
 
     @classmethod
-    def get_or_create(cls, date_, insee):
+    def get_or_create(cls, date_, insee, features):
         result =  cls.get(date_, insee)
         if result:
             return result
-        result = cls(date_=date_, insee=insee)
+        result = cls(date_=date_, insee=insee, features=features)
         db.session.add(result)
         return result

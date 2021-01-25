@@ -77,7 +77,7 @@ def bulk(insee_region_names, date_=None, fetch_episodes=False):
         )
         if fetch_episodes:
             episodes.update(
-                {i.code_departement: [i.features] for i in EpisodeHistory.get_bulk(date_, chunk)}
+                {i.code_zone: [i.features] for i in EpisodeHistory.get_bulk(date_, chunk)}
             )
     for insee in insee_region_names.keys():
         if insee in indices:

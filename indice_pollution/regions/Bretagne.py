@@ -222,17 +222,18 @@ class Episode(Service, EpisodeMixin):
     url = 'https://data.airbreizh.asso.fr/geoserver/alrt3j_bretagne/ows'
 
     def params(self, date_, insee):
-        centre = self.centre(insee)
+        departement = self.departement(insee)
+        filter_zone = f"<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{departement}</Literal></PropertyIsEqualTo>"
 
         return {
             'where': '',
             'outfields': self.outfields,
             'outputFormat': 'application/json',
-            'geometry': f'{centre[0]},{centre[1]}',
             'inSR': '4326',
             'outSR': '4326',
             'geometryType': 'esriGeometryPoint',
             'request': 'GetFeature',
             'typeName': 'alrt3j_bretagne:alrt3j_bretagne',
             'service': 'WFS',
+            'Filter': f'<Filter>{filter_zone}</Filter>',
         }

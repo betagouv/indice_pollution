@@ -41,9 +41,6 @@ class Forecast(Service, ForecastMixin):
 class Episode(Service, EpisodeMixin):
     url = 'https://services8.arcgis.com/gtmasQsdfwbDAQSQ/arcgis/rest/services/alrt_idf/FeatureServer/0/query'
 
-    def where(self, date_, insee):
-        return "date_ech >= CURRENT_DATE - INTERVAL '2' DAY"
-
     def params(self, insee, date_):
         return {
             'where': "date_ech >= CURRENT_DATE - INTERVAL '7' DAY",

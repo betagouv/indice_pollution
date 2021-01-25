@@ -10,6 +10,7 @@ class Commune(db.Model):
     nom = db.Column(db.String)
     code_departement = db.Column(db.String)
     code_region = db.Column(db.String)
+    code_zone = db.Column(db.String)
     nom_region = db.Column(db.String)
     _centre = db.Column('centre', db.String)
 
@@ -23,7 +24,7 @@ class Commune(db.Model):
 
     @classmethod
     def get(cls, insee):
-        result = cls.query.filter_by(insee=insee).first()
+        result = db.session.query(cls).filter_by(insee=insee).first()
         if result:
             return result
         r = requests.get(

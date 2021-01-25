@@ -105,3 +105,6 @@ class Episode(Service, EpisodeMixin):
             'request': 'GetFeature',
             'typeName': 'alerte:alrt3j_bfc'
         }
+
+    def getter(self, attributes):
+        return super().getter({'code_pol': attributes['id_poll_ue'], **attributes})

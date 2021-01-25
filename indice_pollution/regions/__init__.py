@@ -74,11 +74,10 @@ class ServiceMixin(object):
                 to_return = self.get_from_scraping(to_return, date_, insee)
         if to_return:
             for v in to_return:
-                if self.dict_name not in v:
-                    continue
-                indice = self.HistoryModel.get_or_create(v['date'], insee)
-                indice.features = v
+                indice = self.HistoryModel.get_or_create(v['date'], insee, features=v)
                 db.session.commit()
+        else:
+            logging.error(f"Pas d’épisode de pollution pour '{insee}'")
         return to_return
 
     def get_no_cache(self, date_, insee, attempts=0):
@@ -136,7 +135,6 @@ class ForecastMixin(ServiceMixin):
     outfields = ['date_ech', 'valeur', 'qualif', 'val_no2', 'val_so2',
      'val_o3', 'val_pm10', 'val_pm25'
     ]
-    dict_name = 'indice'
 
     def where(self, date_, insee):
         zone = insee if not self.insee_epci else self.insee_epci[insee]
@@ -246,7 +244,6 @@ class EpisodeMixin(ServiceMixin):
     HistoryModel = EpisodeHistory
     outfields = ['date_ech', 'lib_zone', 'code_zone', 'date_dif', 'code_pol',
      'lib_pol', 'etat', 'com_court', 'com_long']
-    dict_name = 'episode'
     
     def getter(self, attributes):
         try:
@@ -259,8 +256,8 @@ class EpisodeMixin(ServiceMixin):
             return
 
         return {
-            'episode': {k: attributes[k] for k in self.outfields if k in attributes},
-            'date': str(date_dif.date())
+            'date': str(date_dif.date()),
+            **{k: attributes[k] for k in self.outfields if k in attributes},
         }
 
     def centre(self, insee):
@@ -270,6 +267,14 @@ class EpisodeMixin(ServiceMixin):
         )
         r.raise_for_status()
         return r.json()['centre']['coordinates']
+
+    def departement(self, insee):
+        r = requests.get(
+            f'https://geo.api.gouv.fr/communes/{insee}',
+            params={"fields": "codeDepartement", "format": "json"}
+        )
+        r.raise_for_status()
+        return r.json()['codeDepartement']
 
     def params(self, date_, insee):
         centre = self.centre(insee)
