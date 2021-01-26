@@ -124,7 +124,7 @@ def today():
     zone = pytz.timezone('Europe/Paris')
     return datetime.now(tz=zone).date()
 
-def episode(insee, date_=None):
+def episodes(insee, date_=None):
     from .regions.solvers import region
     zone = pytz.timezone('Europe/Paris')
     date_ = date_ or today()
