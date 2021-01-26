@@ -1,10 +1,9 @@
-from . import ForecastMixin, EpisodeMixin
+from indice_pollution.regions import ForecastMixin, EpisodeMixin
 from dateutil.parser import parse
-from datetime import timedelta
+from datetime import timedelta, date, datetime
 
 class Service(object):
     website = 'http://www.airpl.org/'
-    attributes_key = 'properties'
     use_dateutil_parser = True
 
     def get_close_insee(self, insee):
@@ -12,24 +11,21 @@ class Service(object):
 
 class Episode(Service, EpisodeMixin):
     url = 'https://data.airpl.org/geoserver/alrt3j_pays_de_la_loire/wfs'
+    attributes_key = 'properties'
 
     def params(self, date_, insee):
-        centre = self.centre(insee)
-
+        departement = self.departement(insee)
         return {
-            'where': '',
-            'outfields': self.outfields,
-            'outputFormat': 'application/json',
-            'geometry': f'{centre[0]},{centre[1]}',
-            'inSR': '4326',
-            'outSR': '4326',
-            'geometryType': 'esriGeometryPoint',
-            'request': 'GetFeature',
-            'typeName': 'alrt3j_pays_de_la_loire'
+            "version": "2.0.0",
+            "typeName": "alrt3j_pays_de_la_loire:alrt3j_pays_de_la_loire",
+            "service": "WFS",
+            "outputFormat": "application/json",
+            "request": "GetFeature",
+            "CQL_FILTER": f"date_ech >= {date_}T00:00:00Z AND code_zone='{departement}'"
         }
 
 class Forecast(Service, ForecastMixin):
-    url = 'https://data.airpl.org/api/v1/indice/commune/?commune=53001&export=json&date__range=2020-9-1,2021-1-4'
+    url = 'https://data.airpl.org/api/v1/indice/commune/'
 
     @classmethod
     def params(cls, date_, insee):
