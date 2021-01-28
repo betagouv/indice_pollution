@@ -72,7 +72,7 @@ class ServiceMixin(object):
         if not any(map(lambda r: (r['date'] if 'date' in r else r['date_dif']) == str(date_), to_return)):
             if hasattr(self, "get_from_scraping"):
                 to_return = self.get_from_scraping(to_return, date_, insee)
-        to_return = list(filter(lambda r: r['date']>= date_, to_return))
+        to_return = list(filter(lambda r: r['date']>= str(date_), to_return))
         if to_return:
             for v in to_return:
                 indice = self.HistoryModel.get_or_create(v['date'], insee, features=v)
