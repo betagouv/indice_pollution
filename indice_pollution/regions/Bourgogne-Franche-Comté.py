@@ -13,7 +13,7 @@ class Service(object):
 
 class Forecast(Service, ForecastMixin):
     url_scraping = 'https://www.atmo-bfc.org/medias/ajax/me_gateway.php'
-    url = 'https://atmo-bfc.iad-informatique.com/geoserver/indice/ows'
+    url = 'https://atmo-bfc.iad-informatique.com/geoserver/ows'
     attributes_key = 'properties'
     use_dateutil_parser = True
 
@@ -22,7 +22,7 @@ class Forecast(Service, ForecastMixin):
             'service': 'WFS',
             'version': '2.0.0',
             'request': 'GetFeature',
-            'typeName': f'indice:vu_indice_bourgogne-franche-comte',
+            'typeName': f'indice:ind_bfc',
             'outputFormat': 'application/json',
             'CQL_FILTER': f"date_ech >= '{date_}T00:00:00Z' AND code_zone={insee}"
         }
@@ -88,7 +88,7 @@ class Forecast(Service, ForecastMixin):
         }
 
 class Episode(Service, EpisodeMixin):
-    url = 'http://atmo-bfc.iad-informatique.com/geoserver/alerte/wfs'
+    url = 'http://atmo-bfc.iad-informatique.com/geoserver/wfs'
     attributes_key = 'properties'
 
     def params(self, date_, insee):
