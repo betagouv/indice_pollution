@@ -1,3 +1,6 @@
+import requests
+import csv
+from indice_pollution.history.models.commune import Commune
 from flask import Flask
 from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
@@ -56,7 +59,7 @@ def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
-def bulk(insee_region_names, date_=None, fetch_episodes=False):
+def bulk(insee_region_names, date_=None, fetch_episodes=False, fetch_allergenes=False):
     from indice_pollution.history.models import IndiceHistory, EpisodeHistory
     from .regions.solvers import region as get_region
     date_ = date_ or today()
@@ -118,6 +121,29 @@ def bulk(insee_region_names, date_=None, fetch_episodes=False):
                 )
                 }
             )
+    if fetch_allergenes and os.getenv('ALLERGIES_URL'):
+        r = requests.get(os.getenv("ALLERGIES_URL"))
+        decoded_content = r.content.decode('utf-8')
+        reader = csv.DictReader(
+            decoded_content.splitlines(),
+            delimiter=';',
+            fieldnames=[
+                'code_departement', 'departement', 'cypres', 'noisetier', 'aulne', 'peuplier', 
+                'saule', 'frene', 'charme', 'bouleau', 'platane', 'chene', 'tilleul', 'chataigner', 
+                'rumex', 'graminees', 'plantain', 'urticacees', 'armoises', 'ambroisies', 'total']
+        )
+        allergenes = dict()
+        for r in reader:
+            allergenes[f"{r['code_departement']:0>2}"] = r['total']
+        for insee in insees:
+            if not insee in to_return:
+                continue
+            commune = Commune.get(insee)
+            code_departement = f"{commune.code_departement:0>2}" if commune.code_departement != '2A' and commune.code_departement != '2B' else '20'
+            if code_departement in allergenes:
+                to_return[insee].update({
+                    "raep" : allergenes[code_departement]
+                })
     return to_return
 
 def today():
