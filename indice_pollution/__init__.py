@@ -68,7 +68,10 @@ def bulk(insee_region_names, date_=None, fetch_episodes=False, fetch_allergenes=
     close_insees = set()
     for insee in insees:
         region = get_region(region_name=insee_region_names[insee])
-        close_insee = region.Forecast().get_close_insee(insee)
+        try:
+            close_insee = region.Forecast().get_close_insee(insee)
+        except KeyError:
+            continue
         close_insees.add(close_insee)
     insees.update(close_insees)
 
@@ -87,7 +90,10 @@ def bulk(insee_region_names, date_=None, fetch_episodes=False, fetch_allergenes=
             continue
         region = get_region(region_name=insee_region_names[insee])
         f = region.Forecast()
-        close_insee = f.get_close_insee(insee)
+        try:
+            close_insee = f.get_close_insee(insee)
+        except KeyError:
+            continue
         if close_insee in indices:
             indices[insee] = indices[close_insee]
             continue
