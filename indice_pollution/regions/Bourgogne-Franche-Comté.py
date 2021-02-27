@@ -78,7 +78,10 @@ class Forecast(Service, ForecastMixin):
         ]
 
     def features_scraping(self, r):
-        if not "indices" in r.json():
+        try:
+            if not "indices" in r.json():
+                return []
+        except:
             return []
         soup = BeautifulSoup(r.json()["indices"], features="html5lib")
         valeurIndice = soup.find_all("div", class_="valeurIndice")[0]
