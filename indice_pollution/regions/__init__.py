@@ -60,7 +60,10 @@ class ServiceMixin(object):
 
     def get(self, date_, insee, attempts=0, force_from_db=False):
         to_return = []
-        insee = self.get_close_insee(insee)
+        try:
+            insee = self.get_close_insee(insee)
+        except KeyError:
+            return []
         if force_from_db:
             indice = self.HistoryModel.get(date_, insee)
             if indice:
