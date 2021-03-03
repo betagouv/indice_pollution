@@ -1,6 +1,7 @@
 from datetime import timedelta
 from . import ForecastMixin, EpisodeMixin
 import requests
+from dateutil import parser as dateutil_parser
 from bs4 import BeautifulSoup
 from datetime import datetime
 from ..history.models import Commune
@@ -25,7 +26,7 @@ class Episode(Service, EpisodeMixin):
     def params(self, date_, insee):
         commune = Commune.get(insee)
         filter_zone = f'<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{commune.code_departement}</Literal></PropertyIsEqualTo>'
-        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_dif</PropertyName><Literal>{date_}T00:00:00.000Z</Literal></PropertyIsGreaterThanOrEqualTo>'
+        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>timestamp</PropertyName><Literal>{date_}T00:00:00.000Z</Literal></PropertyIsGreaterThanOrEqualTo>'
 
         return {
             'request': 'GetFeature',
@@ -37,6 +38,9 @@ class Episode(Service, EpisodeMixin):
             'outSR': '4326',
             'Filter': f"<Filter><And>{filter_zone}{filter_date}</And></Filter>",
         }
+
+    def date_getter(self, attributes):
+        return dateutil_parser.parse(attributes['timestamp'])
 
 class Forecast(Service, ForecastMixin):
     url = 'https://opendata.atmo-na.org/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
