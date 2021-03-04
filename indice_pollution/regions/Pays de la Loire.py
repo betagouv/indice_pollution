@@ -1,6 +1,7 @@
 from indice_pollution.regions import ForecastMixin, EpisodeMixin
 from dateutil.parser import parse
 from datetime import timedelta, date, datetime
+from .pays_de_la_loire_epcis import dict_commune_ecpi
 
 class Service(object):
     website = 'http://www.airpl.org/'
@@ -25,13 +26,13 @@ class Episode(Service, EpisodeMixin):
         }
 
 class Forecast(Service, ForecastMixin):
-    url = 'https://data.airpl.org/api/v1/indice/commune/'
+    url = 'https://data.airpl.org/api/v1/indice/epci/'
 
     @classmethod
     def params(cls, date_, insee):
         max_date = date_ + timedelta(days=1)
         return {
-            "commune": insee,
+            "epci": dict_commune_ecpi[insee],
             "date__range": f"{date_},{max_date}",
             "export": "json"
         }
