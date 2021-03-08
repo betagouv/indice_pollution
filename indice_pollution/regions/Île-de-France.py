@@ -1,7 +1,9 @@
 from . import ForecastMixin, EpisodeMixin
+import os
 import requests
 from flask import current_app
 from bs4 import BeautifulSoup
+from datetime import date, timedelta
 
 class Service(object):
     website = 'https://www.airparif.asso.fr/'
@@ -48,3 +50,24 @@ class Episode(Service, EpisodeMixin):
             'outSR': '4326',
             'f': 'json'
         }
+
+    def get_from_scraping(self, to_return, date_, insee):
+        api_key = os.getenv('AIRPARIF_API_KEY')
+        if not api_key:
+            return []
+        r = requests.get(
+            "https://api.airparif.asso.fr/episodes/en-cours-et-prevus",
+            headers={
+                "X-Api-Key": api_key,
+                "accept": "application/json"
+            })
+        for k, date_ in [('jour', date.today()), ('demain', date.today() + timedelta(days=1))]:
+            for polluant in r.json()[k]['polluants']:
+                to_return += [{
+                    'code_pol': polluant['nom'],
+                    'date': str(date_),
+                    'etat': "PAS DE DEPASSEMENT" if polluant['niveau'] == "-" else polluant['niveau'],
+                    'code_zone': insee[:2]
+                }]
+        return to_return
+
