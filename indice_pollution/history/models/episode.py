@@ -24,8 +24,13 @@ class EpisodeHistory(db.Model):
             raise e
 
     @classmethod
-    def get(cls, date_,code_zone=None):
-        return db.session.query(cls).filter_by(date_=date_, code_zone=code_zone).first()
+    def get(cls, date_, code_zone=None, polluant=None):
+        query = db.session.query(cls).filter_by(date_=date_)
+        if code_zone:
+            query = query.filter_by(code_zone=code_zone)
+        if polluant:
+            query = query.filter_by(polluant=polluant)
+        return query.first()
     
     @classmethod
     def get_bulk(cls, date_, insee_list):
@@ -56,8 +61,12 @@ class EpisodeHistory(db.Model):
     @classmethod
     def get_or_create(cls, date_, insee=None, code_zone=None, features=None):
         code_zone = code_zone or Commune.get(insee).code_zone
-        if code_zone:
-            result = cls.get(date_, code_zone=code_zone)
+        if type(features) == dict:
+            polluant = features.get("code_pol") or features.get("code_polluant")
+        else:
+            polluant = None
+        if code_zone and polluant:
+            result = cls.get(date_, code_zone=code_zone, polluant=polluant)
             if result:
                 return result
         commune = Commune.get(insee)
@@ -65,7 +74,7 @@ class EpisodeHistory(db.Model):
             commune.code_zone = str(features['code_zone'])
             db.session.add(commune)
             db.session.commit()
-        result = cls.get(date_, code_zone=commune.code_zone)
+        result = cls.get(date_, code_zone=commune.code_zone, polluant=polluant)
         if result:
             return result
         result = cls(features)

@@ -21,6 +21,7 @@ class ServiceMixin(object):
 
     attributes_key = 'attributes'
     use_dateutil_parser = False
+    get_only_from_scraping = False
 
     HTTPAdapter = requests.adapters.HTTPAdapter
 
@@ -68,7 +69,7 @@ class ServiceMixin(object):
             indice = self.HistoryModel.get(date_, insee)
             if indice:
                 return [indice.features]
-        if not to_return:
+        if not to_return and not self.get_only_from_scraping:
             to_return = self.get_no_cache(date_, insee, attempts)
         if not to_return:
             to_return = self.HistoryModel.get_after(date_, insee)
