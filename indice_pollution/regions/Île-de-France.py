@@ -41,18 +41,15 @@ class Forecast(Service, ForecastMixin):
         ]
 
 class Episode(Service, EpisodeMixin):
-    url = 'https://services8.arcgis.com/gtmasQsdfwbDAQSQ/arcgis/rest/services/alrt_idf/FeatureServer/0/query'
-
-    def params(self, insee, date_):
-        return {
-            'where': "date_ech >= CURRENT_DATE - INTERVAL '7' DAY",
-            'outFields': '*',
-            'outSR': '4326',
-            'f': 'json'
-        }
+    get_only_from_scraping = True
 
     def get_from_scraping(self, to_return, date_, insee):
         api_key = os.getenv('AIRPARIF_API_KEY')
+        polluant_code_pol = {
+            "O3": "7",
+            "NO2": "8",
+            "PM10": "5"
+        }
         if not api_key:
             return []
         r = requests.get(
@@ -64,7 +61,7 @@ class Episode(Service, EpisodeMixin):
         for k, date_ in [('jour', date.today()), ('demain', date.today() + timedelta(days=1))]:
             for polluant in r.json()[k]['polluants']:
                 to_return += [{
-                    'code_pol': polluant['nom'],
+                    'code_pol': polluant_code_pol.get(polluant['nom']),
                     'date': str(date_),
                     'etat': "PAS DE DEPASSEMENT" if polluant['niveau'] == "-" else polluant['niveau'],
                     'code_zone': insee[:2]
