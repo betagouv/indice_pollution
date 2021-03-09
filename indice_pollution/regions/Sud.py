@@ -6,7 +6,6 @@ class Service(object):
     attributes_key = 'properties'
     use_dateutil_parser = True
     fr_date_format = '%Y-%m-%dT00:00:00Z'
-    insee_list = ['06029', '06088', '13001', '13055', '83137', '84007']
 
 class Episode(Service, EpisodeMixin):
     url = 'https://geoservices.atmosud.org/geoserver/alrt_sudpaca_dep/ows'
@@ -35,11 +34,15 @@ class Forecast(Service, ForecastMixin):
         fr_date = date_.strftime(cls.fr_date_format)
         fr_tomorrow = tomorrow_date.strftime(cls.fr_date_format)
 
+        insee = {
+            "13055": "13201" # Seuls les arrondissement de Marseilles sont pris en compte, on prend le premier
+        }.get(insee, insee)
+
         return {
             'service': 'WFS',
             'version': '1.1.0',
             'request': 'GetFeature',
-            'typeName': 'ind_sudpaca:ind_sudpaca_agglo',
+            'typeName': 'ind_sudpaca:ind_sudpaca',
             'CQL_FILTER': f"code_zone='{insee}' AND (date_ech='{fr_date}' OR date_ech='{fr_tomorrow}')",
             'outputFormat': 'json'
         }
