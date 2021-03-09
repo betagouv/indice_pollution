@@ -1,4 +1,6 @@
 from datetime import datetime
+import logging
+import requests
 from . import ForecastMixin, EpisodeMixin
 from dateutil.parser import parse
 from json.decoder import JSONDecodeError
@@ -14,19 +16,39 @@ class Service(object):
     insee_list = ['76351', '14366', '76540', '14118', '50502', '27229', '50129', '61001']
 
 class Forecast(Service, ForecastMixin):
-    url = 'https://dservices7.arcgis.com/FPRT1cIkPKcq73uN/arcgis/services/ind_normandie_agglo/WFSServer'
+    url = 'https://api.atmonormandie.fr/index.php/lizmap/service/'
 
-    @classmethod
-    def params(cls, date_, insee):
-        filter_zone = f'<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{insee}</Literal></PropertyIsEqualTo>'
-        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Literal>{date_}T00:00:00.000Z</Literal></PropertyIsGreaterThanOrEqualTo>'
-        return {
-            'service': 'wfs',
-            'request': 'getfeature',
-            'typeName': f'ind_normandie_agglo:ind_normandie_agglo',
-            'Filter': f"<Filter><And>{filter_zone}{filter_date}</And></Filter>",
-            'outputFormat': 'geojson',
+    def get_one_attempt(self, url, params):
+        filter_zone = f"<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{params['insee']}</Literal></PropertyIsEqualTo>"
+        params = {'project': 'flux_indice_atmo_normandie', 'repository': 'dindice'}
+        data = {
+            'filter': f'<Filter>{filter_zone}</Filter>',
+            'OUTPUTFORMAT': 'GeoJSON',
+            'SERVICE': 'WFS',
+            'REQUEST': 'GetFeature',
+            'dl': 1,
+            'TYPENAME': 'ind_normandie_3jours',
+            'VERSION': '1.0.0'
         }
+        try:
+            r = requests.post(self.url, params=params, data=data)
+        except requests.exceptions.ConnectionError as e:
+            logging.error(f'Impossible de se connecter à {url}')
+            logging.error(e)
+            return None
+        except requests.exceptions.SSLError as e:
+            logging.error(f'Erreur ssl {url}')
+            logging.error(e)
+            return None
+        try:
+            r.raise_for_status()
+        except requests.HTTPError as e:
+            logging.error(f'Erreur HTTP: {e}')
+            return None
+        return r
+
+    def params(self, date_, insee):
+        return {"insee": insee}
 
     @classmethod
     def features(cls, r):
