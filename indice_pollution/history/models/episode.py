@@ -58,8 +58,11 @@ class EpisodeHistory(db.Model):
 
     @classmethod
     def get_after(cls, date_, insee):
-        commune = Commune.get(insee)
-        return [v.features for v in cls.query.filter(cls.date_ >= date_, cls.code_zone==commune.code_zone).all()]
+        if len(insee) == 5:
+            code_zone = Commune.get(insee).code_zone
+        else:
+            code_zone = insee
+        return [v.features for v in cls.query.filter(cls.date_ >= date_, cls.code_zone==code_zone).all()]
 
     @classmethod
     def get_or_create(cls, date_, insee=None, code_zone=None, features=None):
