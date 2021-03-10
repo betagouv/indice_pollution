@@ -66,7 +66,16 @@ class EpisodeHistory(db.Model):
 
     @classmethod
     def get_or_create(cls, date_, insee=None, code_zone=None, features=None):
-        code_zone = code_zone or Commune.get(insee).code_zone
+        if not code_zone:
+            if insee and len(insee) == 5:
+                commune = Commune.get(insee)
+                if not commune.code_zone:
+                    commune.code_zone = str(features['code_zone'])
+                    db.session.add(commune)
+                    db.session.commit()
+                code_zone = commune.code_zone
+            if insee and len(insee) == 2:
+                code_zone = insee
         if type(features) == dict:
             polluant = features.get("code_pol") or features.get("code_polluant")
         else:
@@ -75,12 +84,7 @@ class EpisodeHistory(db.Model):
             result = cls.get(date_, code_zone=code_zone, polluant=str(polluant))
             if result:
                 return result
-        commune = Commune.get(insee)
-        if not commune.code_zone:
-            commune.code_zone = str(features['code_zone'])
-            db.session.add(commune)
-            db.session.commit()
-        result = cls.get(date_, code_zone=commune.code_zone, polluant=str(polluant))
+        result = cls.get(date_, code_zone=code_zone, polluant=str(polluant))
         if result:
             return result
         result = cls(features)
