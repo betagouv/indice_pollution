@@ -69,7 +69,7 @@ class EpisodeHistory(db.Model):
         else:
             polluant = None
         if code_zone and polluant:
-            result = cls.get(date_, code_zone=code_zone, polluant=polluant)
+            result = cls.get(date_, code_zone=code_zone, polluant=str(polluant))
             if result:
                 return result
         commune = Commune.get(insee)
@@ -77,7 +77,7 @@ class EpisodeHistory(db.Model):
             commune.code_zone = str(features['code_zone'])
             db.session.add(commune)
             db.session.commit()
-        result = cls.get(date_, code_zone=commune.code_zone, polluant=polluant)
+        result = cls.get(date_, code_zone=commune.code_zone, polluant=str(polluant))
         if result:
             return result
         result = cls(features)
