@@ -42,11 +42,14 @@ class EpisodeHistory(db.Model):
         diff = insee_list - set([c[0] for c in insee_code_zone_list])
         if len(diff) > 0:
             for insee in diff:
-                commune = Commune.get(insee)
-                if commune and commune.code_zone:
-                    insee_code_zone_list.append(
-                        (commune.insee, commune.code_zone)
-                    )
+                if len(insee) == 5:
+                    commune = Commune.get(insee)
+                    if commune and commune.code_zone:
+                        insee_code_zone_list.append(
+                            (commune.insee, commune.code_zone)
+                        )
+                elif len(insee) == 2:
+                    insee_code_zone_list.append((insee, insee))
         code_zone_list = [c[1] for c in insee_code_zone_list]
 
         return cls.query\
