@@ -147,8 +147,13 @@ def bulk(insee_region_names, date_=None, fetch_episodes=False, fetch_allergenes=
         for insee in insees:
             if not insee in to_return:
                 continue
-            commune = Commune.get(insee)
-            code_departement = f"{commune.code_departement:0>2}" if commune.code_departement != '2A' and commune.code_departement != '2B' else '20'
+            if len(insee) == 5:
+                commune = Commune.get(insee)
+                code_departement = f"{commune.code_departement:0>2}" if commune.code_departement != '2A' and commune.code_departement != '2B' else '20'
+            elif len(insee) == 2:
+                code_departement = f"{insee:0>2}" if insee != '2A' and insee != '2B' else '20'
+            else:
+                code_departement = ""
             if code_departement in allergenes:
                 to_return[insee].update({
                     "raep" : allergenes[code_departement]
