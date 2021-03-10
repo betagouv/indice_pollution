@@ -28,17 +28,32 @@ class Forecast(Service, ForecastMixin):
         }
 
     def get_from_scraping(self, previous_results, date_, insee):
-        r = requests.get('https://www.airparif.asso.fr/')
-        r.raise_for_status()
-        soup = BeautifulSoup(r.text, 'html.parser')
+        api_key = os.getenv('AIRPARIF_API_KEY')
+        indice_qual = {
+            "Bon": "bon",
+            "Moyen": "moyen",
+            "Dégradé": "degrade",
+            "Mauvais": "mauvais",
+            "Très mauvais": "tres_mauvais",
+            "Extrêmement mauvais": "extremement_mauvais"
+        }
+        if not api_key:
+            return []
+        r = requests.get(
+            "https://api.airparif.asso.fr/episodes/en-cours-et-prevus",
+            headers={
+                "X-Api-Key": api_key,
+                "accept": "application/json"
+            })
+        to_return = []
+        for _k, indices in r.json().items():
+            to_return = [
+                {"date": indice["date"], "indice": indice["indice"]}
+                for indice in indices
+            ]
+        return to_return
 
-        data =  soup.find_all('div', class_='indices_data')[0].find_all('div')
-        indice = int(data[1].text)
-        qualif = self.INDICE_TO_QUALIF[indice]
 
-        return previous_results + [
-            {"date": str(date_), "valeur": indice, "indice": indice, "qualif": qualif}
-        ]
 
 class Episode(Service, EpisodeMixin):
     get_only_from_scraping = True
