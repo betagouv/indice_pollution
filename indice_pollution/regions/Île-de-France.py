@@ -40,7 +40,7 @@ class Forecast(Service, ForecastMixin):
         if not api_key:
             return []
         r = requests.get(
-            "https://api.airparif.asso.fr/episodes/en-cours-et-prevus",
+            f"https://api.airparif.asso.fr/indices/prevision/commune?insee={insee}",
             headers={
                 "X-Api-Key": api_key,
                 "accept": "application/json"
