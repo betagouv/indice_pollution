@@ -48,8 +48,9 @@ class Forecast(Service, ForecastMixin):
         to_return = []
         for _k, indices in r.json().items():
             to_return = [
-                {"date": indice["date"], "indice": indice["indice"]}
+                {"date": indice["date"], "indice": indice_qual.get(indice["indice"])}
                 for indice in indices
+                if "date" in indice and "indice" in indice
             ]
         return to_return
 
