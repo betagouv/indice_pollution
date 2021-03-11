@@ -155,12 +155,12 @@ class ForecastMixin(ServiceMixin):
 
     def getter(self, attributes):
         dt = self.date_getter(attributes)
-        indice = self.indice_getter(attributes)
-        label = self.label_getter(indice)
-        couleur = self.couleur_getter(attributes, indice)
+        qualif = self.indice_getter(attributes)
+        label = self.label_getter(qualif)
+        couleur = self.couleur_getter(attributes, qualif)
 
         return {
-            'indice': indice,
+            'indice': qualif,
             'label': label,
             'couleur': couleur,
             'sous_indices': attributes.get('sous_indices'),

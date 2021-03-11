@@ -1,33 +1,42 @@
 from . import ForecastMixin, EpisodeMixin
+import os
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
+from flask import current_app
 
 class Service(object):
     website = 'https://www.atmo-auvergnerhonealpes.fr/'
 
 class Forecast(Service, ForecastMixin):
-    url = 'https://services3.arcgis.com/o7Q3o5SkiSeZD5LK/arcgis/rest/services/Indice_ATMO/FeatureServer/0/query'
-    use_dateutil_parser = True
-    outfields = '*'
-
-    def where(self, date_, insee):
-        return f"code_zone='{insee}' AND date_ech >= CURRENT_DATE - INTERVAL '3' day"
+    get_only_from_scraping = True
 
     def get_from_scraping(self, previous_results, date_, insee):
-        r = requests.get(f'https://www.atmo-auvergnerhonealpes.fr/monair/commune/{insee}')
-        r.raise_for_status()
-        soup = BeautifulSoup(r.text, 'html.parser')
+        api_key = os.getenv('AURA_API_KEY')
+        if not api_key:
+            return []
 
-        controls = soup.find_all('div', class_='day-controls')
-        days = controls[0].find_all('a', class_='raster-control-link')
+        r = requests.get(f'https://api.atmo-aura.fr/api/v1/communes/{insee}/indices/atmo?api_token={api_key}&date_debut_echeance={date_}')
+        try:
+            r.raise_for_status()
+        except requests.HTTPError as e:
+            current_app.logger.error(e)
+            return []
+        indice_qual = {
+            "Bon": "bon",
+            "Moyen": "moyen",
+            "Dégradé": "degrade",
+            "Mauvais": "mauvais",
+            "Très mauvais": "tres_mauvais",
+            "Extrêmement mauvais": "extremement_mauvais"
+        }
 
         return [
             self.getter({
-                "date": str(datetime.fromtimestamp(int(day.attrs.get('data-rasterid'))).date()),
-                "indice": int(int(day.attrs.get('data-index'))/10),
+                "date": indice['date_echeance'],
+                "lib_qual": indice['qualificatif']
             })
-            for day in days
+            for indice in r.json()['data']
         ]
 
 
