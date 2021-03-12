@@ -42,7 +42,8 @@ def make_resp(r, result):
         "metadata": {
             "region": {
                 "nom": r.__module__.split(".")[-1],
-                "website": r.website
+                "website": r.website,
+                "nom_aasqa": r.nom_aasqa
             }
         }
     }
@@ -166,15 +167,6 @@ def today():
 
 def episodes(insee, date_=None):
     from .regions.solvers import region
-    zone = pytz.timezone('Europe/Paris')
     date_ = date_ or today()
     episode = region(insee).Episode()
-    return {
-        "data": episode.get(date_=date_, insee=insee),
-        "metadata": {
-            "region": {
-                "nom": episode.__module__.split(".")[-1],
-                "website": episode.website
-            }
-        }
-    }
+    return make_resp(episode, episode.get(date_=date_, insee=insee))
