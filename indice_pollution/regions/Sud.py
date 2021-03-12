@@ -3,6 +3,7 @@ from datetime import timedelta, datetime
 
 class Service(object):
     website = 'https://www.atmosud.org/'
+    nom_aasqa = 'AtmoSud'
     attributes_key = 'properties'
     use_dateutil_parser = True
     fr_date_format = '%Y-%m-%dT00:00:00Z'

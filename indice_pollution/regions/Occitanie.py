@@ -6,6 +6,7 @@ from dateutil.parser import parse
 
 class Service(object):
     website = 'https://www.atmo-occitanie.org/'
+    nom_aasqa = 'ATMO Occitanie'
     attributes_key = 'attributes'
 
     insee_epci = {

@@ -5,6 +5,7 @@ from .pays_de_la_loire_epcis import dict_commune_ecpi
 
 class Service(object):
     website = 'http://www.airpl.org/'
+    nom_aasqa = 'Air Pays de la Loire'
     use_dateutil_parser = True
 
     def get_close_insee(self, insee):

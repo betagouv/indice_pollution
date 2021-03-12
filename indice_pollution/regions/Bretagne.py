@@ -19,6 +19,7 @@ class TLSAdapter(adapters.HTTPAdapter):
 
 class Service(object):
     website = 'https://www.airbreizh.asso.fr/'
+    nom_aasqa = 'Airbreizh'
 
     HTTPAdapter = TLSAdapter
 

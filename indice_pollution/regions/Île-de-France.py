@@ -7,6 +7,7 @@ from datetime import date, timedelta
 
 class Service(object):
     website = 'https://www.airparif.asso.fr/'
+    nom_aasqa = 'Airparif'
     insee_list = ['75056']
     
     def get_close_insee(self, insee):

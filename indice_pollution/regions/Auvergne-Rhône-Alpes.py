@@ -7,6 +7,7 @@ from flask import current_app
 
 class Service(object):
     website = 'https://www.atmo-auvergnerhonealpes.fr/'
+    nom_aasqa = 'Atmo Auvergne-Rhône-Alpes'
 
 class Forecast(Service, ForecastMixin):
     get_only_from_scraping = True

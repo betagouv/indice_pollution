@@ -5,6 +5,7 @@ from . import EpisodeMixin, ForecastMixin
 
 class Service(object):
     website = 'http://www.ligair.fr/'
+    nom_aasqa = "Lig'Air"
 
 
 class Forecast(Service, ForecastMixin):

@@ -10,6 +10,7 @@ from string import printable
 
 class Service(object):
     website = 'http://www.atmonormandie.fr/'
+    nom_aasqa = 'ATMO Normandie'
     attributes_key = 'properties'
     use_dateutil_parser = True
 

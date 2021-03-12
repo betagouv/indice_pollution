@@ -9,6 +9,7 @@ import logging
 
 class Service(object):
     website = 'https://www.atmo-nouvelleaquitaine.org/'
+    nom_aasqa = 'ATMO Nouvelle-Aquitaine'
     attributes_key = 'properties'
     use_dateutil_parser = True
 

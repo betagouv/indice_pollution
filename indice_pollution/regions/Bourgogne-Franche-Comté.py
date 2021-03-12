@@ -7,6 +7,7 @@ from datetime import date, timedelta
 
 class Service(object):
     website = 'https://www.atmo-bfc.org/'
+    nom_aasqa = 'ATMO Bourgogne-Franche-Comté'
 
     def get_close_insee(self, insee):
         return insee
