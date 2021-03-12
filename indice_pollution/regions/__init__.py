@@ -252,16 +252,16 @@ class EpisodeMixin(ServiceMixin):
     
     def getter(self, attributes):
         try:
-            date_dif = self.date_getter(attributes)
+            date_ech = self.date_getter(attributes)
         except KeyError as e:
             logging.error(f"Unable to get key 'date_ech' or 'date_dif' in {attributes.keys()}")
             logging.error(e)
             return
-        if not date_dif:
+        if not date_ech:
             return
 
         return {
-            'date': str(date_dif.date()),
+            'date': str(date_ech.date()),
             **{k: attributes[k] for k in self.outfields if k in attributes},
         }
 
