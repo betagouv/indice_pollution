@@ -21,26 +21,20 @@ class Service(object):
         return insee
 
 class Episode(Service, EpisodeMixin):
-    url = 'https://opendata.atmo-na.org/geoserver/alrt3j_nouvelle_aquitaine/wfs'
+    url = 'https://opendata.atmo-na.org/api/v1/alerte/data/'
 
-    def params(self, date_, insee):
-        commune = Commune.get(insee)
-        filter_zone = f'<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{commune.code_departement}</Literal></PropertyIsEqualTo>'
-        filter_date = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>timestamp</PropertyName><Literal>{date_}T00:00:00.000Z</Literal></PropertyIsGreaterThanOrEqualTo>'
-
+    def params(cls, date_, insee):
         return {
-            'request': 'GetFeature',
-            'version': '1.0.0',
-            'typeName': 'alrt3j_nouvelle_aquitaine:alrt3j_nouvelle_aquitaine',
-            'where': '',
-            'outfields': self.outfields,
-            'outputFormat': 'json',
-            'outSR': '4326',
-            'Filter': f"<Filter><And>{filter_zone}{filter_date}</And></Filter>",
+            "date_deb": f"{date_}",
+            "type": "json"
         }
 
-    def date_getter(self, attributes):
-        return dateutil_parser.parse(attributes['timestamp'])
+    def features(self, r):
+        return r.json().get('features', [])
+
+    def attributes_getter(self, feature):
+        return feature['properties']
+
 
 class Forecast(Service, ForecastMixin):
     url = 'https://opendata.atmo-na.org/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
