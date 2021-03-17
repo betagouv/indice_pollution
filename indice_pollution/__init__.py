@@ -134,17 +134,14 @@ def bulk(insee_region_names, date_=None, fetch_episodes=False, fetch_allergenes=
     if fetch_allergenes and os.getenv('ALLERGIES_URL'):
         r = requests.get(os.getenv("ALLERGIES_URL"))
         decoded_content = r.content.decode('utf-8')
+        first_column_name = decoded_content[:10] #Il s'agit de la date
         reader = csv.DictReader(
             decoded_content.splitlines(),
-            delimiter=';',
-            fieldnames=[
-                'code_departement', 'departement', 'cypres', 'noisetier', 'aulne', 'peuplier', 
-                'saule', 'frene', 'charme', 'bouleau', 'platane', 'chene', 'tilleul', 'chataigner', 
-                'rumex', 'graminees', 'plantain', 'urticacees', 'armoises', 'ambroisies', 'total']
+            delimiter=';'
         )
         allergenes = dict()
         for r in reader:
-            allergenes[f"{r['code_departement']:0>2}"] = r['total']
+            allergenes[f"{r[first_column_name]:0>2}"] = r['Total']
         for insee in insees:
             if not insee in to_return:
                 continue
