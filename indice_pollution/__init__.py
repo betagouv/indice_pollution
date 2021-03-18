@@ -60,21 +60,29 @@ def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
-def bulk(insee_region_names, date_=None, fetch_episodes=False, fetch_allergenes=False):
+def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_allergenes=False):
     from indice_pollution.history.models import IndiceHistory, EpisodeHistory
     from .regions.solvers import region as get_region
     date_ = date_ or today()
 
     insees = set(insee_region_names.keys())
+    region_not_found_insees = set()
     close_insees = set()
     for insee in insees:
-        region = get_region(region_name=insee_region_names[insee])
+        try:
+            region = get_region(region_name=insee_region_names[insee])
+        except KeyError:
+            region_not_found_insees.add(insee)
+            continue
         try:
             close_insee = region.Forecast().get_close_insee(insee)
         except KeyError:
             continue
         close_insees.add(close_insee)
     insees.update(close_insees)
+    for insee in region_not_found_insees:
+        insees.remove(insee)
+        del insee_region_names[insee]
 
     indices = dict()
     episodes = dict()
