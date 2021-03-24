@@ -41,8 +41,14 @@ class ServiceMixin(object):
         try:
             r.raise_for_status()
         except requests.HTTPError as e:
-            logging.error(f'Erreur HTTP: {e}')
+            logging.error(f'Erreur HTTP dans la requete {url} {params}: {e}')
             return None
+        try:
+            if 'error' in r.json():
+                logging.error(f'Erreur dans la réponse à la requête: {url} {params}: {r.json()}')
+                return None
+        except ValueError:
+            pass
         return r
 
     def get_multiple_attempts(self, url, params, attempts=0):
