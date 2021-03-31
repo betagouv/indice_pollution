@@ -58,7 +58,7 @@ def forecast(insee, date_=None, force_from_db=False):
     if region.Service.is_active:
         forecast = region.Forecast()
         result = forecast.get(date_=date_, insee=insee, force_from_db=force_from_db)
-        return make_resp(forecast, result)
+        return make_resp(region, result)
     else:
         return {
             "error": "Inactive region",
@@ -142,7 +142,7 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
     to_return = {
         insee: {
             "forecast": make_resp(
-                get_region(region_name=insee_region_names[insee]).Forecast(),
+                get_region(region_name=insee_region_names[insee]),
                 indices.get(insee, [])
                ),
         }
@@ -152,7 +152,7 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
         for insee in insee_region_names:
             to_return[insee].update({
                 "episode": make_resp(
-                    get_region(region_name=insee_region_names[insee]).Episode(),
+                    get_region(region_name=insee_region_names[insee]),
                     episodes.get(insee, [])
                 )
                 }
@@ -194,7 +194,7 @@ def episodes(insee, date_=None):
     region = get_region(insee)
     if region.Service.is_active:
         episode = region.Episode()
-        return make_resp(episode, episode.get(date_=date_, insee=insee))
+        return make_resp(region, episode.get(date_=date_, insee=insee))
     else:
         return {
             "error": "Inactive region",
