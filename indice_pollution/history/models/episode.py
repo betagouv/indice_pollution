@@ -2,6 +2,7 @@ from sqlalchemy.sql.elements import _corresponding_column_or_error
 from indice_pollution.models import db
 import json
 from .commune import Commune
+from flask import current_app
 
 class EpisodeHistory(db.Model):
     __table_args__ = {"schema": "indice_schema"}
@@ -87,7 +88,13 @@ class EpisodeHistory(db.Model):
         result = cls.get(date_, code_zone=code_zone, polluant=str(polluant))
         if result:
             return result
-        result = cls(features)
+        try:
+            result = cls(features)
+        except KeyError as e:
+            current_app.logger.error(f"Unable to create episode with {features}")
+            current_app.logger.error(e)
+            return None
+
         if result.date_ == date_:
             db.session.add(result)
             db.session.commit()
