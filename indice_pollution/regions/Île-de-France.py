@@ -78,6 +78,16 @@ class Episode(Service, EpisodeMixin):
                 "X-Api-Key": api_key,
                 "accept": "application/json"
             })
+        try:
+            r.raise_for_status()
+        except requests.HTTPError as e:
+            current_app.logger.error(e)
+            return []
+        try:
+            r.json()
+        except ValueError as e:
+            current_app.logger.error(e)
+            return []
         for k, date_ in [('jour', date.today()), ('demain', date.today() + timedelta(days=1))]:
             for polluant in r.json()[k]['polluants']:
                 to_return += [{
