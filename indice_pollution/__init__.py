@@ -39,21 +39,32 @@ def create_app(test_config=None):
 def make_resp(r, result):
     return {
         "data": result,
-        "metadata": {
-            "region": {
-                "nom": r.__module__.split(".")[-1],
-                "website": r.website,
-                "nom_aasqa": r.nom_aasqa
-            }
+        "metadata": make_metadata(r)
+    }
+
+def make_metadata(r):
+    return {
+        "region": {
+            "nom": r.__name__.split(".")[-1],
+            "website": r.Service.website,
+            "nom_aasqa": r.Service.nom_aasqa
         }
     }
 
 def forecast(insee, date_=None, force_from_db=False):
-    from .regions.solvers import region
+    from .regions.solvers import get_region
     date_ = date_ or today()
-    forecast = region(insee).Forecast()
-    result = forecast.get(date_=date_, insee=insee, force_from_db=force_from_db)
-    return make_resp(forecast, result)
+    region = get_region(insee)
+    if region.Service.is_active:
+        forecast = region.Forecast()
+        result = forecast.get(date_=date_, insee=insee, force_from_db=force_from_db)
+        return make_resp(forecast, result)
+    else:
+        return {
+            "error": "Inactive region",
+            "metadata": make_metadata(region)
+        }, 400
+
 
 def chunks(lst, n):
     """Yield successive n-sized chunks from lst."""
@@ -62,17 +73,20 @@ def chunks(lst, n):
 
 def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_allergenes=False):
     from indice_pollution.history.models import IndiceHistory, EpisodeHistory
-    from .regions.solvers import region as get_region
+    from .regions.solvers import get_region
     date_ = date_ or today()
 
     insees = set(insee_region_names.keys())
-    region_not_found_insees = set()
+    insees_errors = set()
     close_insees = set()
     for insee in insees:
         try:
             region = get_region(region_name=insee_region_names[insee])
+            if not region.Service.is_active:
+                insees_errors.add(insee)
+                continue
         except KeyError:
-            region_not_found_insees.add(insee)
+            insees_errors.add(insee)
             continue
         try:
             close_insee = region.Forecast().get_close_insee(insee)
@@ -80,7 +94,7 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
             continue
         close_insees.add(close_insee)
     insees.update(close_insees)
-    for insee in region_not_found_insees:
+    for insee in insees_errors:
         insees.remove(insee)
         del insee_region_names[insee]
 
@@ -98,6 +112,8 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
         if insee in indices:
             continue
         region = get_region(region_name=insee_region_names[insee])
+        if not region.Service.is_active:
+            continue
         f = region.Forecast()
         try:
             close_insee = f.get_close_insee(insee)
@@ -112,6 +128,8 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
             if insee in episodes:
                 continue
             region = get_region(region_name=insee_region_names[insee])
+            if not region.Service.is_active:
+                continue
             e = region.Episode()
             try:
                 close_insee = e.get_close_insee(insee)
@@ -171,7 +189,14 @@ def today():
     return datetime.now(tz=zone).date()
 
 def episodes(insee, date_=None):
-    from .regions.solvers import region
+    from .regions.solvers import get_region
     date_ = date_ or today()
-    episode = region(insee).Episode()
-    return make_resp(episode, episode.get(date_=date_, insee=insee))
+    region = get_region(insee)
+    if region.Service.is_active:
+        episode = region.Episode()
+        return make_resp(episode, episode.get(date_=date_, insee=insee))
+    else:
+        return {
+            "error": "Inactive region",
+            "metadata": make_metadata(region)
+        }, 400

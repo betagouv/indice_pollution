@@ -36,6 +36,16 @@ class Episode(Service, EpisodeMixin):
     def attributes_getter(self, feature):
         return feature['properties']
 
+    def getter(self, attributes):
+        polluant_code_pol = {
+            "O3": "7",
+            "NO2": "8",
+            "Particules PM10": "5"
+        }
+        if not 'code_pol' in attributes and 'lib_pol' in attributes:
+            attributes['code_pol'] = polluant_code_pol.get(attributes['lib_pol'])
+        return super().getter(attributes)
+
 
 class Forecast(Service, ForecastMixin):
     url = 'https://opendata.atmo-na.org/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
