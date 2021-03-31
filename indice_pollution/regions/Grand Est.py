@@ -1,6 +1,7 @@
 from . import ServiceMixin, ForecastMixin, EpisodeMixin
 
 class Service(ServiceMixin):
+    is_active = True
     website = 'http://www.atmo-grandest.eu/'
     nom_aasqa = 'ATMO Grand Est'
     insee_list = [

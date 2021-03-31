@@ -6,6 +6,7 @@ import requests
 from datetime import date, timedelta
 
 class Service(object):
+    is_active = True
     website = 'https://www.atmo-bfc.org/'
     nom_aasqa = 'ATMO Bourgogne-Franche-Comté'
 

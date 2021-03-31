@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 from datetime import date, timedelta
 
 class Service(object):
+    is_active = True
     website = 'https://www.airparif.asso.fr/'
     nom_aasqa = 'Airparif'
     insee_list = ['75056']

@@ -1,6 +1,7 @@
 from . import ServiceMixin, ForecastMixin, EpisodeMixin
 
 class Service(ServiceMixin):
+    is_active = True
     website =  'https://www.qualitaircorse.org/'
     nom_aasqa = 'Qualitair Corse'
     #insee_list = ['2B033', '2A004', '2B096']

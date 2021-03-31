@@ -8,6 +8,7 @@ from ..history.models import Commune
 import logging
 
 class Service(object):
+    is_active = True
     website = 'https://www.atmo-nouvelleaquitaine.org/'
     nom_aasqa = 'ATMO Nouvelle-Aquitaine'
     attributes_key = 'properties'

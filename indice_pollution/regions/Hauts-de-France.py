@@ -3,6 +3,7 @@ from datetime import timedelta
 from dateutil.parser import parse
 
 class Service(ServiceMixin):
+    is_active = True
     date_format = '%Y-%m-%d'
     website = 'https://www.atmo-hdf.fr/'
     nom_aasqa = 'ATMO Hauts-de-France'

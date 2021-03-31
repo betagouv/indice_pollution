@@ -18,6 +18,7 @@ class TLSAdapter(adapters.HTTPAdapter):
                 ssl_context=ctx)
 
 class Service(object):
+    is_active = True
     website = 'https://www.airbreizh.asso.fr/'
     nom_aasqa = 'Airbreizh'
 

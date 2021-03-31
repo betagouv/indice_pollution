@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from dateutil.parser import parse
 
 class Service(object):
+    is_active_= True
     website = 'https://www.atmo-occitanie.org/'
     nom_aasqa = 'ATMO Occitanie'
     attributes_key = 'attributes'

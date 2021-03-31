@@ -9,6 +9,7 @@ from itertools import takewhile
 from string import printable
 
 class Service(object):
+    is_active = True
     website = 'http://www.atmonormandie.fr/'
     nom_aasqa = 'ATMO Normandie'
     attributes_key = 'properties'

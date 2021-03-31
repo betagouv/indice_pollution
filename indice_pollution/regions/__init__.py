@@ -12,6 +12,7 @@ from indice_pollution.history.models import IndiceHistory, EpisodeHistory
 from indice_pollution.models import db
 
 class ServiceMixin(object):
+    is_active = True
     url = ""
     epci_list = []
     insee_epci = dict()

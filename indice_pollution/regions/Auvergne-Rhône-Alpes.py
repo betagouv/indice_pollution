@@ -6,6 +6,7 @@ from datetime import datetime
 from flask import current_app
 
 class Service(object):
+    is_active = True
     website = 'https://www.atmo-auvergnerhonealpes.fr/'
     nom_aasqa = 'Atmo Auvergne-Rhône-Alpes'
 

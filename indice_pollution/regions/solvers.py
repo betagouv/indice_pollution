@@ -34,7 +34,7 @@ def get_region_name(insee):
     r.raise_for_status()
     return r.json()['region']['nom']
 
-def region(insee=None, region_name=None):
+def get_region(insee=None, region_name=None):
     region_name = region_name or get_region_name(insee)
     try:
         region = import_module(f'.{region_name}', 'indice_pollution.regions')

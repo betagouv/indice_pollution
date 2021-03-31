@@ -2,6 +2,7 @@ from . import ForecastMixin, EpisodeMixin
 from datetime import timedelta, datetime
 
 class Service(object):
+    is_active = True
     website = 'https://www.atmosud.org/'
     nom_aasqa = 'AtmoSud'
     attributes_key = 'properties'

@@ -4,6 +4,7 @@ from datetime import timedelta, date, datetime
 from .pays_de_la_loire_epcis import dict_commune_ecpi
 
 class Service(object):
+    is_active = True
     website = 'http://www.airpl.org/'
     nom_aasqa = 'Air Pays de la Loire'
     use_dateutil_parser = True

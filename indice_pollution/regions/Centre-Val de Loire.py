@@ -4,6 +4,7 @@ import requests
 from . import EpisodeMixin, ForecastMixin
 
 class Service(object):
+    is_active = True
     website = 'http://www.ligair.fr/'
     nom_aasqa = "Lig'Air"
 
