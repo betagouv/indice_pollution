@@ -19,7 +19,7 @@ DEPENDENCIES = [
 
 setup(
     name='indice_pollution',
-    version='0.8.5',
+    version='0.8.6',
     description='API giving air pollution level in France',
     url='https://github.com/l-vincent-l/indice_pollution',
     download_url='https://github.com/l-vincent-l/indice_pollution/archive/0.1.2.tar.gz',
