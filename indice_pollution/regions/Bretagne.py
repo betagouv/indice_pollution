@@ -226,7 +226,7 @@ class Episode(Service, EpisodeMixin):
 
     def params(self, date_, insee):
         commune = Commune.get(insee)
-        filter_zone = f"<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{commune.code_departement}</Literal></PropertyIsEqualTo>"
+        filter_zone = f"<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{commune.departement.code}</Literal></PropertyIsEqualTo>"
 
         return {
             'where': '',

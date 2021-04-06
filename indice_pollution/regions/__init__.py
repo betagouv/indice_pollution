@@ -115,7 +115,7 @@ class ServiceMixin(object):
             return insee
         commune = Commune.get(insee)
         try:
-            return next(pref_insee for pref_insee in self.insee_list if pref_insee[:2] == commune.code_departement)
+            return next(pref_insee for pref_insee in self.insee_list if pref_insee[:2] == commune.departement.code)
         except StopIteration:
             logging.error(f'Impossible de trouver le code insee de la préfecture de {insee}')
             raise KeyError
@@ -300,6 +300,6 @@ class EpisodeMixin(ServiceMixin):
     def get(self, date_, insee, attempts=0, force_from_db=False):
         commune = Commune.get(insee)
         return list(filter(
-            self.filtre_post_get(commune.code_departement, date_),
+            self.filtre_post_get(commune.departement.code, date_),
             super().get(date_, insee, attempts=attempts, force_from_db=force_from_db)
         ))

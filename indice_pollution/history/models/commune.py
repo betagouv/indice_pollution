@@ -1,4 +1,7 @@
+from indice_pollution.history.models.region import Region
 from indice_pollution.models import db
+from indice_pollution.history.models.departement import Departement
+from sqlalchemy.orm import relationship
 import requests
 import json
 
@@ -8,11 +11,16 @@ class Commune(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     insee = db.Column(db.String)
     nom = db.Column(db.String)
-    code_departement = db.Column(db.String)
-    code_region = db.Column(db.String)
+    departement_id = db.Column(db.Integer, db.ForeignKey("indice_schema.departement.id"))
+    departement = relationship("indice_pollution.history.models.departement.Departement")
     code_zone = db.Column(db.String)
-    nom_region = db.Column(db.String)
     _centre = db.Column('centre', db.String)
+
+    def __init__(self, nom, codeDepartement, centre, code):
+        self.nom = nom
+        self.insee = code
+        self.departement = Departement.get(codeDepartement)
+        self.centre = centre
 
     @property
     def centre(self):
@@ -24,26 +32,23 @@ class Commune(db.Model):
 
     @classmethod
     def get(cls, insee):
-        result = db.session.query(cls).filter_by(insee=insee).first()
-        if result:
-            return result
+        return db.session.query(cls).filter_by(insee=insee).first() or cls.get_and_init_from_api(insee)
+
+    @classmethod
+    def get_and_init_from_api(cls, insee):
+        o = cls(**cls.get_from_api(insee))
+        db.session.add(o)
+        db.session.commit()
+        return o
+
+    @classmethod
+    def get_from_api(cls, insee):
         r = requests.get(
             f'https://geo.api.gouv.fr/communes/{insee}',
             params={
-                "fields": "code,nom,codeDepartement,region,centre",
+                "fields": "code,nom,codeDepartement,centre",
                 "format": "json",
             }
         )
         r.raise_for_status()
-
-        o = cls(
-            insee=insee,
-            nom=r.json()['nom'],
-            code_departement=r.json()['codeDepartement'],
-            code_region=r.json()['region']['code'],
-            nom_region=r.json()['region']['nom'],
-            centre=r.json()['centre']
-        )
-        db.session.add(o)
-        db.session.commit()
-        return o
+        return r.json()

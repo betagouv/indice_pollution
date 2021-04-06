@@ -25,7 +25,7 @@ class Episode(Service, EpisodeMixin):
             "service": "WFS",
             "outputFormat": "application/json",
             "request": "GetFeature",
-            "CQL_FILTER": f"date_ech >= {date_}T00:00:00Z AND code_zone='{commune.code_departement}'"
+            "CQL_FILTER": f"date_ech >= {date_}T00:00:00Z AND code_zone='{commune.departement.code}'"
         }
 
 class Forecast(Service, ForecastMixin):

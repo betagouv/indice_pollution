@@ -1,4 +1,5 @@
 from importlib import import_module
+from indice_pollution.history.models.commune import Commune
 from itertools import chain
 import requests
 import logging
@@ -24,18 +25,8 @@ def insee_list():
         for region_name in regions
     ]))
 
-def get_region_name(insee):
-    try:
-        insee = f'{int(insee):05}'
-    except ValueError:
-        pass
-
-    r = requests.get(f'https://geo.api.gouv.fr/communes/{insee}', params={"fields": "region"})
-    r.raise_for_status()
-    return r.json()['region']['nom']
-
 def get_region(insee=None, region_name=None):
-    region_name = region_name or get_region_name(insee)
+    region_name = region_name or Commune.get(insee).region.nom
     try:
         region = import_module(f'.{region_name}', 'indice_pollution.regions')
     except ModuleNotFoundError as e:
