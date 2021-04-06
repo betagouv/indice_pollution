@@ -1,3 +1,4 @@
+from indice_pollution.history.models.commune import Commune
 from indice_pollution.regions import ForecastMixin, EpisodeMixin
 from dateutil.parser import parse
 from datetime import timedelta, date, datetime
@@ -17,14 +18,14 @@ class Episode(Service, EpisodeMixin):
     attributes_key = 'properties'
 
     def params(self, date_, insee):
-        departement = self.departement(insee)
+        commune = Commune.get(insee)
         return {
             "version": "2.0.0",
             "typeName": "alrt3j_pays_de_la_loire:alrt3j_pays_de_la_loire",
             "service": "WFS",
             "outputFormat": "application/json",
             "request": "GetFeature",
-            "CQL_FILTER": f"date_ech >= {date_}T00:00:00Z AND code_zone='{departement}'"
+            "CQL_FILTER": f"date_ech >= {date_}T00:00:00Z AND code_zone='{commune.code_departement}'"
         }
 
 class Forecast(Service, ForecastMixin):

@@ -1,3 +1,4 @@
+from indice_pollution.history.models.commune import Commune
 from . import EpisodeMixin, ForecastMixin
 import requests as requests_
 from requests import adapters
@@ -224,8 +225,8 @@ class Episode(Service, EpisodeMixin):
     url = 'https://data.airbreizh.asso.fr/geoserver/alrt3j_bretagne/ows'
 
     def params(self, date_, insee):
-        departement = self.departement(insee)
-        filter_zone = f"<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{departement}</Literal></PropertyIsEqualTo>"
+        commune = Commune.get(insee)
+        filter_zone = f"<PropertyIsEqualTo><PropertyName>code_zone</PropertyName><Literal>{commune.code_departement}</Literal></PropertyIsEqualTo>"
 
         return {
             'where': '',

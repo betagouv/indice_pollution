@@ -1,3 +1,4 @@
+from indice_pollution.history.models.commune import Commune
 from indice_pollution.regions.solvers import insee_list
 import requests
 import logging
@@ -112,9 +113,9 @@ class ServiceMixin(object):
     def get_close_insee(self, insee):
         if insee in self.insee_list or self.insee_list == []:
             return insee
-        departement = insee[:2]
+        commune = Commune.get(insee)
         try:
-            return next(pref_insee for pref_insee in self.insee_list if pref_insee[:2] == departement)
+            return next(pref_insee for pref_insee in self.insee_list if pref_insee[:2] == commune.code_departement)
         except StopIteration:
             logging.error(f'Impossible de trouver le code insee de la préfecture de {insee}')
             raise KeyError
@@ -280,13 +281,6 @@ class EpisodeMixin(ServiceMixin):
         r.raise_for_status()
         return r.json()['centre']['coordinates']
 
-    def departement(self, insee):
-        r = requests.get(
-            f'https://geo.api.gouv.fr/communes/{insee}',
-            params={"fields": "codeDepartement", "format": "json"}
-        )
-        r.raise_for_status()
-        return r.json()['codeDepartement']
 
     def params(self, date_, insee):
         centre = self.centre(insee)

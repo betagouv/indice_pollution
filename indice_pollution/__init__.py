@@ -173,7 +173,7 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
                 continue
             if len(insee) == 5:
                 commune = Commune.get(insee)
-                code_departement = f"{commune.code_departement:0>2}" if commune.code_departement != '2A' and commune.code_departement != '2B' else '20'
+                code_departement = commune.code_departement
             elif len(insee) == 2:
                 code_departement = f"{insee:0>2}" if insee != '2A' and insee != '2B' else '20'
             else:
