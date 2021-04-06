@@ -281,7 +281,6 @@ class EpisodeMixin(ServiceMixin):
         r.raise_for_status()
         return r.json()['centre']['coordinates']
 
-
     def params(self, date_, insee):
         centre = self.centre(insee)
 
@@ -294,3 +293,13 @@ class EpisodeMixin(ServiceMixin):
             'outSR': '4326',
             'geometryType': 'esriGeometryPoint'
         }
+
+    def filtre_post_get(self, code_zone, date_):
+        return lambda f: f.get('code_zone') == code_zone and f.get('date') == str(date_)
+
+    def get(self, date_, insee, attempts=0, force_from_db=False):
+        commune = Commune.get(insee)
+        return list(filter(
+            self.filtre_post_get(commune.code_departement, date_),
+            super().get(date_, insee, attempts=attempts, force_from_db=force_from_db)
+        ))

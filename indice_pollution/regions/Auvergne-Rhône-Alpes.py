@@ -44,3 +44,6 @@ class Forecast(Service, ForecastMixin):
 
 class Episode(Service, EpisodeMixin):
     url = 'https://services3.arcgis.com/o7Q3o5SkiSeZD5LK/arcgis/rest/services/Episodes%20de%20pollution%20pr%C3%A9vus%20ou%20constat%C3%A9s/FeatureServer/0/query'
+
+    def filtre_post_get(self, code_zone, date_):
+        return lambda f: f.get('date') == str(date_)
