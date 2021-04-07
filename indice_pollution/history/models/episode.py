@@ -70,7 +70,7 @@ class EpisodeHistory(db.Model):
         if not code_zone:
             if insee and len(insee) == 5:
                 commune = Commune.get(insee)
-                if not commune.code_zone:
+                if not commune.code_zone and 'code_zone' in features:
                     commune.code_zone = str(features['code_zone'])
                     db.session.add(commune)
                     db.session.commit()

@@ -26,7 +26,11 @@ def insee_list():
     ]))
 
 def get_region(insee=None, region_name=None):
-    region_name = region_name or Commune.get(insee).region.nom
+    if not region_name and insee:
+        region_name = Commune.get(insee).region.nom
+    if not region_name:
+        logging.error("No region or insee given, couldn't find region")
+        raise KeyError
     try:
         region = import_module(f'.{region_name}', 'indice_pollution.regions')
     except ModuleNotFoundError as e:
