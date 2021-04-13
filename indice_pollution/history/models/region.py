@@ -12,7 +12,7 @@ class Region(db.Model):
 
     @classmethod
     def get(cls, code):
-        return db.session.query(cls).query.filter_by(code=code) or cls.get_and_init_from_db(code)
+        return db.session.query(cls).filter_by(code=code).first() or cls.get_and_init_from_api(code)
 
     @classmethod
     def get_and_init_from_api(cls, code):
