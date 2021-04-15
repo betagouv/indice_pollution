@@ -1,5 +1,4 @@
 import requests
-from .regions.solvers import insee_list
 
 def autocomplete(query_string):
     headers = {

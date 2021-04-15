@@ -1,8 +1,6 @@
 from . import ForecastMixin, EpisodeMixin
 import os
 import requests
-from bs4 import BeautifulSoup
-from datetime import datetime
 from flask import current_app
 
 class Service(object):
@@ -24,14 +22,6 @@ class Forecast(Service, ForecastMixin):
         except requests.HTTPError as e:
             current_app.logger.error(e)
             return []
-        indice_qual = {
-            "Bon": "bon",
-            "Moyen": "moyen",
-            "Dégradé": "degrade",
-            "Mauvais": "mauvais",
-            "Très mauvais": "tres_mauvais",
-            "Extrêmement mauvais": "extremement_mauvais"
-        }
 
         return [
             self.getter({

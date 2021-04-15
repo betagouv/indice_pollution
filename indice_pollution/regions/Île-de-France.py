@@ -2,7 +2,6 @@ from . import ForecastMixin, EpisodeMixin
 import os
 import requests
 from flask import current_app
-from bs4 import BeautifulSoup
 from datetime import date, timedelta
 
 class Service(object):
@@ -31,14 +30,6 @@ class Forecast(Service, ForecastMixin):
 
     def get_from_scraping(self, previous_results, date_, insee):
         api_key = os.getenv('AIRPARIF_API_KEY')
-        indice_qual = {
-            "Bon": "bon",
-            "Moyen": "moyen",
-            "Dégradé": "degrade",
-            "Mauvais": "mauvais",
-            "Très mauvais": "tres_mauvais",
-            "Extrêmement mauvais": "extremement_mauvais"
-        }
         if not api_key:
             return []
         r = requests.get(
