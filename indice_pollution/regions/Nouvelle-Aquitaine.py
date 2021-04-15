@@ -84,7 +84,7 @@ class Forecast(Service, ForecastMixin):
         return [
             self.getter({
                 "date": str(datetime.fromtimestamp(int(day.attrs.get('data-rasterid'))).date()),
-                "indice": int(int(day.attrs.get('data-index'))/10),
+                "indice": int(day.attrs.get('data-index')),
             })
             for day in days
         ]

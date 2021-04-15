@@ -26,36 +26,15 @@ class Forecast(Service, ForecastMixin):
             'outSR': '4326'
         }
 
-    IQA_TO_QUALIF = {
-        "1": "tres_bon",
-        "2": "bon",
-        "3": "bon",
-        "4": "bon",
-        "5": "moyen",
-        "6": "mediocre",
-        "7": "mediocre",
-        "8": "mediocre",
-        "9": "mauvais",
-        "10": "tres_mauvais"
-    }
-
     def get_from_scraping(self, previous_results, date_, insee):
         r = requests.get(self.get_url(insee))
         soup = BeautifulSoup(r.text, 'html.parser')
         script = soup.find_all('script', {"data-drupal-selector": "drupal-settings-json"})[0]
         j = json.loads(script.contents[0])
         city_iqa = j['atmo_mesures']['city_iqa']
-        occitanie_indice_dict = {
-            '1': 'bon',
-            '2': 'moyen',
-            '3': 'degrade',
-            '4': 'mauvais',
-            '5': 'tres_mauvais',
-            '6': 'extrement_mauvais'
-        }
         return [
             self.getter({
-                "indice": occitanie_indice_dict.get(v['iqa']),
+                "indice": int(v['iqa']) - 1,
                 "date": str(parse(v['date']).date())
             })
             for v in city_iqa

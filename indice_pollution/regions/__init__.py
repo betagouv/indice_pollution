@@ -187,17 +187,12 @@ class ForecastMixin(ServiceMixin):
         if indice != None:
             if type(indice) == int:
                 return {
-                    0: "tres_bon",
-                    1: "tres_bon",
-                    2: "bon",
-                    3: "bon",
-                    4: "bon",
-                    5: "moyen",
-                    6: "mediocre",
-                    7: "mediocre",
-                    8: "mediocre",
-                    9: "mauvais",
-                    10: "tres_mauvais"
+                    0: "bon",
+                    1: "moyen",
+                    2: "degrade",
+                    3: "mauvais",
+                    4: "tres_mauvais",
+                    5: "extrememen_mauvais",
                 }.get(indice)
             if type(indice) == str:
                 # Certaines régions mettent des accents, d’autres pas
