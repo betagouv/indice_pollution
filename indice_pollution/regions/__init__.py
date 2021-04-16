@@ -1,5 +1,4 @@
 from indice_pollution.history.models.commune import Commune
-from indice_pollution.regions.solvers import insee_list
 import requests
 import logging
 import time
