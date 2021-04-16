@@ -18,7 +18,7 @@ class Forecast(Service, ForecastMixin):
     url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/Indice_quotidien_de_qualit%C3%A9_de_l%E2%80%99air_pour_les_collectivit%C3%A9s_territoriales_en_Occitanie/FeatureServer/0/query'
 
     def params(self, date_, insee):
-        zone = insee if not insee_epci else insee_epci[insee]
+        zone = insee_epci.get(insee, insee)
         return {
             'where': f"(date_ech >= CURRENT_DATE - INTERVAL '2' DAY) AND code_zone ='{zone}'",
             'outFields': "*",
