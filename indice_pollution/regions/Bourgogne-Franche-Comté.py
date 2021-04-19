@@ -18,29 +18,30 @@ class Forecast(Service, ForecastMixin):
             'service': 'WFS',
             'version': '2.0.0',
             'request': 'GetFeature',
-            'typeName': f'indice:ind_bfc',
+            'typeName': 'indice:ind_bfc',
             'outputFormat': 'application/json',
             'CQL_FILTER': f"date_ech >= '{date_}T00:00:00Z' AND code_zone={insee}"
         }
 
 
 class Episode(Service, EpisodeMixin):
-    url = 'http://atmo-bfc.iad-informatique.com/geoserver/wfs'
+    url = 'https://atmo-bfc.iad-informatique.com/geoserver/ows'
     attributes_key = 'properties'
 
     def params(self, date_, insee):
         centre = self.centre(insee)
 
         return {
-            'where': '',
-            'outfields': self.outfields,
+            'service': 'WFS',
+            'version': '2.0.0',
+            'request': 'GetFeature',
+            'typeName': 'alerte:alrt3j_bfc_2',
             'outputFormat': 'application/json',
-            'geometry': f'{centre[0]},{centre[1]}',
+            'CQL_FILTER': f"date_ech >= '{date_}T00:00:00Z'",
             'inSR': '4326',
             'outSR': '4326',
+            'geometry': f'{centre[0]},{centre[1]}',
             'geometryType': 'esriGeometryPoint',
-            'request': 'GetFeature',
-            'typeName': 'alerte:alrt3j_bfc'
         }
 
     def getter(self, attributes):
