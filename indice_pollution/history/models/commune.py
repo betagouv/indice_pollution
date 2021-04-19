@@ -4,6 +4,7 @@ from indice_pollution.history.models.departement import Departement
 from sqlalchemy.orm import relationship
 import requests
 import json
+from flask import current_app
 
 class Commune(db.Model):
     __table_args__ = {"schema": "indice_schema"}
@@ -36,7 +37,10 @@ class Commune(db.Model):
 
     @classmethod
     def get_and_init_from_api(cls, insee):
-        o = cls(**cls.get_from_api(insee))
+        res_api = cls.get_from_api(insee)
+        if not res_api:
+            return None
+        o = cls(**res_api)
         db.session.add(o)
         db.session.commit()
         return o
@@ -50,5 +54,13 @@ class Commune(db.Model):
                 "format": "json",
             }
         )
-        r.raise_for_status()
+        try:
+            r.raise_for_status()
+        except requests.HTTPError as e:
+            current_app.logger.error(f"HTTP Error getting commune: '{insee}' {e}")
+            return None
+        if not 'codeDepartement' in r.json() or not 'centre' in r.json():
+            current_app.logger.error(f'Error getting info about: "{insee}" we need "codeDepartement" and "centre" in "{r.json()}"')
+            return None
+
         return r.json()
