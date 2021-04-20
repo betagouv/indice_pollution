@@ -165,9 +165,20 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
             decoded_content.splitlines(),
             delimiter=';'
         )
-        allergenes = dict()
+        liste_allergenes = ["cypres", "noisetier", "aulne", "peuplier", "saule", "frene", "charme", "bouleau", "platane", "chene", "olivier", "tilleul", "chataignier", "rumex", "graminees", "plantain", "urticacees", "armoises", "ambroisies"]
+        liste_allergenes_fr = {"cypres": "cyprès", "frene": "frêne", "chene": "chêne", "chataignier": "châtaignier", "graminees": "graminées", "urticacees": "urticacées"}
+
+        total_par_departement = dict()
+        liste_allergenes_par_departement = dict()
         for r in reader:
-            allergenes[f"{r[first_column_name]:0>2}"] = r['Total']
+            departement = f"{r[first_column_name]:0>2}"
+            total_par_departement[departement] = r['Total']
+            max_allergene = max([r[allergene] for allergene in liste_allergenes])
+            liste_allergenes_par_departement[departement] = [
+                liste_allergenes_fr.get(allergene, allergene)
+                for allergene in liste_allergenes
+                if r[allergene] == max_allergene
+            ]
         for insee in insees:
             if not insee in to_return:
                 continue
@@ -177,9 +188,10 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
                 code_departement = f"{insee:0>2}" if insee != '2A' and insee != '2B' else '20'
             else:
                 code_departement = ""
-            if code_departement in allergenes:
+            if code_departement in total_par_departement:
                 to_return[insee].update({
-                    "raep" : allergenes[code_departement]
+                    "raep" : total_par_departement[code_departement],
+                    "allergenes": liste_allergenes_par_departement[code_departement]
                 })
     return to_return
 
