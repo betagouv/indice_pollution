@@ -73,6 +73,38 @@ def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
+def make_dict_allergenes():
+    r = requests.get(os.getenv("ALLERGIES_URL"))
+    decoded_content = r.content.decode('utf-8')
+    first_column_name = decoded_content[:10] #Il s'agit de la date
+    reader = csv.DictReader(
+        decoded_content.splitlines(),
+        delimiter=';'
+    )
+    liste_allergenes = ["cypres", "noisetier", "aulne", "peuplier", "saule", "frene", "charme", "bouleau", "platane", "chene", "olivier", "tilleul", "chataignier", "rumex", "graminees", "plantain", "urticacees", "armoises", "ambroisies"]
+    liste_allergenes_fr = {"cypres": "cyprès", "frene": "frêne", "chene": "chêne", "chataignier": "châtaignier", "graminees": "graminées", "urticacees": "urticacées"}
+
+    to_return = dict()
+    for r in reader:
+        departement = f"{r[first_column_name]:0>2}"
+        max_allergene = max([r[allergene] for allergene in liste_allergenes])
+        to_return[departement] = {
+            "total": r['Total'],
+            "liste_allergenes": [
+                liste_allergenes_fr.get(allergene, allergene)
+                for allergene in liste_allergenes
+                if r[allergene] == max_allergene
+            ]
+        }
+    return to_return
+
+def make_code_departement(insee):
+    if len(insee) == 5:
+        return Commune.get(insee).departement.code
+    elif len(insee) == 2:
+        return f"{insee:0>2}" if insee != '2A' and insee != '2B' else '20'
+    return ""
+
 def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_allergenes=False):
     from indice_pollution.history.models import IndiceHistory, EpisodeHistory
     from .regions.solvers import get_region
@@ -160,41 +192,13 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
                 }
             )
     if fetch_allergenes and os.getenv('ALLERGIES_URL'):
-        r = requests.get(os.getenv("ALLERGIES_URL"))
-        decoded_content = r.content.decode('utf-8')
-        first_column_name = decoded_content[:10] #Il s'agit de la date
-        reader = csv.DictReader(
-            decoded_content.splitlines(),
-            delimiter=';'
-        )
-        liste_allergenes = ["cypres", "noisetier", "aulne", "peuplier", "saule", "frene", "charme", "bouleau", "platane", "chene", "olivier", "tilleul", "chataignier", "rumex", "graminees", "plantain", "urticacees", "armoises", "ambroisies"]
-        liste_allergenes_fr = {"cypres": "cyprès", "frene": "frêne", "chene": "chêne", "chataignier": "châtaignier", "graminees": "graminées", "urticacees": "urticacées"}
-
-        total_par_departement = dict()
-        liste_allergenes_par_departement = dict()
-        for r in reader:
-            departement = f"{r[first_column_name]:0>2}"
-            total_par_departement[departement] = r['Total']
-            max_allergene = max([r[allergene] for allergene in liste_allergenes])
-            liste_allergenes_par_departement[departement] = [
-                liste_allergenes_fr.get(allergene, allergene)
-                for allergene in liste_allergenes
-                if r[allergene] == max_allergene
-            ]
+        allergenes_par_departement = make_dict_allergenes()
         for insee in insees:
             if not insee in to_return:
                 continue
-            if len(insee) == 5:
-                code_departement = Commune.get(insee).departement.code
-            elif len(insee) == 2:
-                code_departement = f"{insee:0>2}" if insee != '2A' and insee != '2B' else '20'
-            else:
-                code_departement = ""
-            if code_departement in total_par_departement:
-                to_return[insee].update({
-                    "raep" : total_par_departement[code_departement],
-                    "allergenes": liste_allergenes_par_departement[code_departement]
-                })
+            code_departement = make_code_departement(insee)
+            if code_departement in allergenes_par_departement:
+                to_return[insee].update(allergenes_par_departement[code_departement])
     return to_return
 
 def today():
@@ -213,3 +217,13 @@ def episodes(insee, date_=None):
             "error": "Inactive region",
             "metadata": make_metadata(region)
         }, 400
+
+def raep(insee):
+    departement = Commune.get(insee).departement
+    return {
+        "departement": {
+            "nom": departement.nom,
+            "code": departement.code
+        },
+        "data": make_dict_allergenes().get(make_code_departement(insee))
+    }
