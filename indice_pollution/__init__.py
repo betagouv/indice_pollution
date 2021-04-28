@@ -36,7 +36,9 @@ def create_app(test_config=None):
 
     return app
 
-def make_resp(r, result):
+def make_resp(r, result, date_=None):
+    if date_:
+        result = [v for v in result if v['date'] == str(date_)]
     return {
         "data": result,
         "metadata": make_metadata(r)
@@ -58,7 +60,7 @@ def forecast(insee, date_=None, force_from_db=False):
     if region.Service.is_active:
         forecast = region.Forecast()
         result = forecast.get(date_=date_, insee=insee, force_from_db=force_from_db)
-        return make_resp(region, result)
+        return make_resp(region, result, date_)
     else:
         return {
             "error": "Inactive region",
@@ -205,7 +207,7 @@ def episodes(insee, date_=None):
     region = get_region(insee)
     if region.Service.is_active:
         episode = region.Episode()
-        return make_resp(region, episode.get(date_=date_, insee=insee))
+        return make_resp(region, episode.get(date_=date_, insee=insee), date_)
     else:
         return {
             "error": "Inactive region",
