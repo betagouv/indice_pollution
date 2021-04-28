@@ -27,7 +27,10 @@ class Forecast(Service, ForecastMixin):
         }
 
     def get_from_scraping(self, previous_results, date_, insee):
-        r = requests.get(self.get_url(insee))
+        url = self.get_url(insee)
+        if not url:
+            return []
+        r = requests.get(url)
         soup = BeautifulSoup(r.text, 'html.parser')
         script = soup.find_all('script', {"data-drupal-selector": "drupal-settings-json"})[0]
         j = json.loads(script.contents[0])
@@ -58,4 +61,4 @@ class Forecast(Service, ForecastMixin):
             },
             allow_redirects=False
         )
-        return r.headers['Location']
+        return r.headers.get('Location')
