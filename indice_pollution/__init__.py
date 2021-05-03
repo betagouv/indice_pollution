@@ -90,11 +90,11 @@ def make_dict_allergenes():
         max_allergene = max([r[allergene] for allergene in liste_allergenes])
         to_return[departement] = {
             "total": r['Total'],
-            "liste_allergenes": [
-                liste_allergenes_fr.get(allergene, allergene)
+            "allergenes": {
+                liste_allergenes_fr.get(allergene, allergene): r[allergene]
                 for allergene in liste_allergenes
-                if r[allergene] == max_allergene
-            ]
+            },
+
         }
     return to_return
 
@@ -198,7 +198,7 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
                 continue
             code_departement = make_code_departement(insee)
             if code_departement in allergenes_par_departement:
-                to_return[insee].update(allergenes_par_departement[code_departement])
+                to_return[insee].update({'raep': allergenes_par_departement[code_departement]})
     return to_return
 
 def today():
