@@ -35,7 +35,7 @@ class Episode(Service, EpisodeMixin):
             'service': 'WFS',
             'version': '2.0.0',
             'request': 'GetFeature',
-            'typeName': 'alerte:alrt3j_bfc_2',
+            'typeName': 'alerte:alrt3j_bfc',
             'outputFormat': 'application/json',
             'CQL_FILTER': f"date_ech >= '{date_}T00:00:00Z'",
             'inSR': '4326',
