@@ -60,7 +60,7 @@ class ServiceMixin(object):
                 logging.error(f'Errors in response: {r.text}')
         else:
             features = []
-        if attempts >= 3 or len(features) > 0:
+        if attempts >= 1 or len(features) > 0:
             return features
         else:
             time.sleep(0.5 * (attempts + 1))
@@ -76,10 +76,10 @@ class ServiceMixin(object):
             indice = self.HistoryModel.get(date_, insee)
             if indice:
                 return [indice.features]
-        if not to_return and not self.get_only_from_scraping:
-            to_return = self.get_no_cache(date_, insee, attempts)
         if not to_return:
             to_return = self.HistoryModel.get_after(date_, insee)
+        if not to_return and not self.get_only_from_scraping:
+            to_return = self.get_no_cache(date_, insee, attempts)
         if not any(map(lambda r: (r['date'] if 'date' in r else r['date_dif']) == str(date_), to_return)):
             if hasattr(self, "get_from_scraping"):
                 to_return = self.get_from_scraping(to_return, date_, insee)
