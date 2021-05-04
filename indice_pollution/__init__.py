@@ -82,7 +82,6 @@ def make_dict_allergenes():
         delimiter=';'
     )
     liste_allergenes = ["cypres", "noisetier", "aulne", "peuplier", "saule", "frene", "charme", "bouleau", "platane", "chene", "olivier", "tilleul", "chataignier", "rumex", "graminees", "plantain", "urticacees", "armoises", "ambroisies"]
-    liste_allergenes_fr = {"cypres": "cyprès", "frene": "frêne", "chene": "chêne", "chataignier": "châtaignier", "graminees": "graminées", "urticacees": "urticacées"}
 
     to_return = dict()
     for r in reader:
@@ -90,7 +89,7 @@ def make_dict_allergenes():
         to_return[departement] = {
             "total": r['Total'],
             "allergenes": {
-                liste_allergenes_fr.get(allergene, allergene): r[allergene]
+                allergene: r[allergene]
                 for allergene in liste_allergenes
             },
 
