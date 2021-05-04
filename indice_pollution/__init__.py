@@ -87,7 +87,6 @@ def make_dict_allergenes():
     to_return = dict()
     for r in reader:
         departement = f"{r[first_column_name]:0>2}"
-        max_allergene = max([r[allergene] for allergene in liste_allergenes])
         to_return[departement] = {
             "total": r['Total'],
             "allergenes": {
