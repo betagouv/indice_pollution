@@ -216,6 +216,16 @@ def episodes(insee, date_=None):
             "metadata": make_metadata(region)
         }, 400
 
+def availability(insee):
+    from .regions.solvers import get_region
+    try:
+        return get_region(insee).Service.is_active
+    except KeyError:
+        return False
+    except AttributeError:
+        return False
+
+
 def raep(insee):
     departement = Commune.get(insee).departement
     return {
