@@ -6,6 +6,7 @@ from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
 from flask_migrate import Migrate
 from datetime import datetime, timedelta
+import pytz
 import os
 from .helpers import today
 
@@ -219,7 +220,7 @@ def episodes(insee, date_=None):
         return {
             "error": "Inactive region",
             "metadata": make_metadata(region)
-        }
+        }, 400
 
 def availability(insee):
     from .regions.solvers import get_region
