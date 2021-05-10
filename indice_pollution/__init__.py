@@ -94,6 +94,8 @@ def make_dict_allergenes():
             },
 
         }
+    to_return['2A'] = to_return['20']
+    to_return['2B'] = to_return['20']
     return to_return
 
 def make_code_departement(insee):
@@ -154,7 +156,7 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
         if close_insee in indices:
             indices[insee] = indices[close_insee]
             continue
-        indices[insee] = f.get(date_=date_, insee=insee, force_from_db=False)
+        indices[insee] = f.get(date_=date_, insee=insee, force_from_db=True)
     if fetch_episodes:
         for insee in insee_region_names.keys():
             if insee in episodes:
@@ -170,7 +172,7 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
             if close_insee in episodes:
                 episodes[insee] = episodes[close_insee]
                 continue
-            episodes[insee] = e.get(date_=date_, insee=insee, force_from_db=False)
+            episodes[insee] = e.get(date_=date_, insee=insee, force_from_db=True)
     to_return = {
         insee: {
             "forecast": make_resp(
