@@ -3,7 +3,7 @@ from indice_pollution.regions import EpisodeMixin, ServiceMixin, ForecastMixin
 class Service(ServiceMixin):
     is_active = True
     website = 'https://www.madininair.fr/'
-    nom_aasqa = "Madinair"
+    nom_aasqa = "Madininair"
 
 class Forecast(Service, ForecastMixin):
     url = 'https://services1.arcgis.com/y8pKCLYeLI1K2217/arcgis/rest/services/ind_martinique/FeatureServer/0/query'
