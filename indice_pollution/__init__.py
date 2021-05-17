@@ -5,7 +5,7 @@ from flask import Flask
 from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
 from flask_migrate import Migrate
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
 import os
 
@@ -77,6 +77,9 @@ def make_dict_allergenes():
     r = requests.get(os.getenv("ALLERGIES_URL"))
     decoded_content = r.content.decode('utf-8')
     first_column_name = decoded_content[:10] #Il s'agit de la date
+    date_format = "%d/%m/%Y"
+    debut_validite = datetime.strptime(first_column_name, date_format)
+    fin_validite = debut_validite + timedelta(weeks=1)
     reader = csv.DictReader(
         decoded_content.splitlines(),
         delimiter=';'
@@ -92,6 +95,10 @@ def make_dict_allergenes():
                 allergene: r[allergene]
                 for allergene in liste_allergenes
             },
+            "periode_validite": {
+                "debut": debut_validite.strftime(date_format),
+                "fin": fin_validite.strftime(date_format)
+            }
 
         }
     to_return['2A'] = to_return['20']
@@ -156,7 +163,7 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
         if close_insee in indices:
             indices[insee] = indices[close_insee]
             continue
-        indices[insee] = f.get(date_=date_, insee=insee, force_from_db=True)
+        indices[insee] = f.get(date_=date_, insee=insee, force_from_db=False)
     if fetch_episodes:
         for insee in insee_region_names.keys():
             if insee in episodes:
@@ -172,7 +179,7 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
             if close_insee in episodes:
                 episodes[insee] = episodes[close_insee]
                 continue
-            episodes[insee] = e.get(date_=date_, insee=insee, force_from_db=True)
+            episodes[insee] = e.get(date_=date_, insee=insee, force_from_db=False)
     to_return = {
         insee: {
             "forecast": make_resp(
@@ -216,7 +223,7 @@ def episodes(insee, date_=None):
         return {
             "error": "Inactive region",
             "metadata": make_metadata(region)
-        }, 400
+        }
 
 def availability(insee):
     from .regions.solvers import get_region

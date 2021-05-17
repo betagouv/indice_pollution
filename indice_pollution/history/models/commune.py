@@ -12,6 +12,8 @@ class Commune(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     insee = db.Column(db.String)
     nom = db.Column(db.String)
+    epci_id = db.Column(db.Integer, db.ForeignKey("indice_schema.epci.id"))
+    epci = relationship("indice_pollution.history.models.epci.EPCI")
     departement_id = db.Column(db.Integer, db.ForeignKey("indice_schema.departement.id"))
     departement = relationship("indice_pollution.history.models.departement.Departement")
     code_zone = db.Column(db.String)
@@ -33,7 +35,12 @@ class Commune(db.Model):
 
     @classmethod
     def get(cls, insee):
-        return db.session.query(cls).filter_by(insee=insee).first() or cls.get_and_init_from_api(insee)
+        return cls.get_query(insee).first() or cls.get_and_init_from_api(insee)
+
+    @classmethod
+    def get_query(cls, insee):
+        return db.session.query(cls).filter_by(insee=insee)
+
 
     @classmethod
     def get_and_init_from_api(cls, insee):

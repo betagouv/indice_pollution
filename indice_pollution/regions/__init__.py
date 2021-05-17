@@ -8,8 +8,9 @@ import unidecode
 from datetime import datetime
 from dateutil import parser as dateutil_parser
 from sqlalchemy import exc
-from indice_pollution.history.models import IndiceHistory, EpisodeHistory
+from indice_pollution.history.models import IndiceHistory, EpisodeHistory, IndiceATMO
 from indice_pollution.models import db
+from indice_pollution import today
 
 class ServiceMixin(object):
     is_active = True
@@ -246,6 +247,36 @@ class ForecastMixin(ServiceMixin):
             indice.lower()
         )
 
+    def save_all(self):
+        for f in self.fetch_all()['features']:
+            print(f)
+            indice = self.make_indice(f)
+            db.session.add(indice)
+        db.session.commit()
+
+    @classmethod
+    def make_indice(cls, feature):
+        properties = feature['properties']
+        zone = cls.get_zone(properties['code_zone'])
+        return IndiceATMO(
+            zone_id = zone.id,
+            date_ech = properties['date_ech'],
+            date_dif = properties['date_dif'],
+            no2 = properties['code_no2'],
+            so2 = properties['code_so2'],
+            o3 = properties['code_o3'],
+            pm10 = properties['code_pm10'],
+            pm25 = properties['code_pm25'],
+            libelle = properties['lib_qual']
+        )
+
+    def get_indice(cls, insee=None, code_epci=None, date_=None):
+        zone_subquery = cls.zone_subquery(insee=insee, code_epci=code_epci).subquery()
+        date_ = date_ or today()
+        query = IndiceATMO\
+            .query.filter_by(date_ech=date_, zone_id=zone_subquery)\
+            .order_by(IndiceATMO.date_dif.desc())
+        return query.first()
 
 class EpisodeMixin(ServiceMixin):
     HistoryModel = EpisodeHistory

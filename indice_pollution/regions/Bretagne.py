@@ -1,6 +1,6 @@
 from indice_pollution.history.models.commune import Commune
+from indice_pollution.history.models.epci import EPCI
 from . import EpisodeMixin, ForecastMixin
-import requests as requests_
 from requests import adapters
 import ssl
 from urllib3 import poolmanager
@@ -221,23 +221,27 @@ class Forecast(Service, ForecastMixin):
         }
 
     def fetch_all(self):
-        return [
-            self.get_one_attempt(
-                self.url,
-                {
-                    'service': 'WFS',
-                    'version': '1.0.0',
-                    'request': 'GetFeature',
-                    'typeName': typename,
-                    'outputFormat': 'application/json',
-                }
-            ).json()
-            for typename in ['ind_bretagne:ind_bretagne_j', 'ind_bretagne_j1']
-        ]
-        
+        return self.get_one_attempt(
+            self.url,
+            {
+                'service': 'WFS',
+                'version': '1.0.0',
+                'request': 'GetFeature',
+                'typeName': 'ind_bretagne_j1',
+                'outputFormat': 'application/json',
+            }
+        ).json()
 
+    @classmethod
+    def get_zone(cls, insee=None, code_epci=None):
+        if code_epci:
+            return EPCI.get(code_epci).zone
+        elif insee:
+            return Commune.get(insee).epci.zone
+        return None
 
-
+    def zone_subquery(cls, insee=None, code_epci=None):
+        return EPCI.get_query(insee=insee, code=code_epci).with_entities(EPCI.zone_id)
 
 
 class Episode(Service, EpisodeMixin):
