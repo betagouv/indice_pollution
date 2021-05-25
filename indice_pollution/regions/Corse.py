@@ -4,19 +4,18 @@ class Service(ServiceMixin):
     is_active = True
     website =  'https://www.qualitaircorse.org/'
     nom_aasqa = 'Qualitair Corse'
-    #insee_list = ['2B033', '2A004', '2B096']
 
 class Forecast(Service, ForecastMixin):
     url = 'https://services9.arcgis.com/VQopoXNvUqHYZHjY/arcgis/rest/services/indice_atmo_communal_corse/FeatureServer/0/query'
 
-    def params(self, date_, insee):
+    @property
+    def params_fetch_all(self):
         return {
             "outFields": "*",
             "outSR": "4326",
             "f":"json",
-            "where": f"code_zone='{insee}'",
             'orderByFields': 'date_ech DESC',
-            'resultRecordCount': 3
+            'where': "(date_ech >= CURRENT_DATE - INTERVAL '5' DAY)",
         }
 
 class Episode(Service, EpisodeMixin):

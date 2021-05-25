@@ -6,8 +6,8 @@ from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
 from flask_migrate import Migrate
 from datetime import datetime, timedelta
-import pytz
 import os
+from .helpers import today
 
 def create_app(test_config=None):
     app = Flask(
@@ -207,10 +207,6 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
             if code_departement in allergenes_par_departement:
                 to_return[insee].update({'raep': allergenes_par_departement[code_departement]})
     return to_return
-
-def today():
-    zone = pytz.timezone('Europe/Paris')
-    return datetime.now(tz=zone).date()
 
 def episodes(insee, date_=None):
     from .regions.solvers import get_region

@@ -220,29 +220,15 @@ class Forecast(Service, ForecastMixin):
             'CQL_FILTER': f"code_zone = {epci} AND date_ech>='{date_}'"
         }
 
-    def fetch_all(self):
-        return self.get_one_attempt(
-            self.url,
-            {
+    @property
+    def params_fetch_all(self):
+        return {
                 'service': 'WFS',
                 'version': '1.0.0',
                 'request': 'GetFeature',
                 'typeName': 'ind_bretagne_j1',
                 'outputFormat': 'application/json',
             }
-        ).json()
-
-    @classmethod
-    def get_zone(cls, insee=None, code_epci=None):
-        if code_epci:
-            return EPCI.get(code_epci).zone
-        elif insee:
-            return Commune.get(insee).epci.zone
-        return None
-
-    def zone_subquery(cls, insee=None, code_epci=None):
-        return EPCI.get_query(insee=insee, code=code_epci).with_entities(EPCI.zone_id)
-
 
 class Episode(Service, EpisodeMixin):
     url = 'https://data.airbreizh.asso.fr/geoserver/alrt3j_bretagne/ows'

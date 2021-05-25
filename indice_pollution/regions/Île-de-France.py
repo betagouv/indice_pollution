@@ -28,6 +28,17 @@ class Forecast(Service, ForecastMixin):
             'CQL_FILTER': f"date_ech >= '{date_}T00:00:00Z' AND code_zone={insee}"
         }
 
+    @property
+    def params_fetch_all(self):
+        return {
+            'service': 'WFS',
+            'version': '2.0.0',
+            'request': 'GetFeature',
+            'typeName': f'DIDON:indice_atmo_2020',
+            'outputFormat': 'application/json',
+            'CQL_FILTER': f'(date_dif >= {date.today()}) OR (date_ech = {date.today()})'
+        }
+
     def get_from_scraping(self, previous_results, date_, insee):
         api_key = os.getenv('AIRPARIF_API_KEY')
         if not api_key:

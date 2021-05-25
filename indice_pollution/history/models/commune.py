@@ -1,4 +1,3 @@
-from indice_pollution.history.models.region import Region
 from indice_pollution.models import db
 from indice_pollution.history.models.departement import Departement
 from sqlalchemy.orm import relationship
@@ -17,6 +16,8 @@ class Commune(db.Model):
     departement_id = db.Column(db.Integer, db.ForeignKey("indice_schema.departement.id"))
     departement = relationship("indice_pollution.history.models.departement.Departement")
     code_zone = db.Column(db.String)
+    zone_id = db.Column(db.Integer, db.ForeignKey("indice_schema.zone.id"))
+    zone = relationship("indice_pollution.history.models.zone.Zone")
     _centre = db.Column('centre', db.String)
 
     def __init__(self, nom, codeDepartement, centre, code):
@@ -38,9 +39,13 @@ class Commune(db.Model):
         return cls.get_query(insee).first() or cls.get_and_init_from_api(insee)
 
     @classmethod
-    def get_query(cls, insee):
-        return db.session.query(cls).filter_by(insee=insee)
-
+    def get_query(cls, insee=None, code=None):
+        if insee:
+            return db.session.query(cls).filter_by(insee=insee)
+        elif code:
+            from indice_pollution.history.models.epci import EPCI
+            subquery = EPCI.get_query(code=code).with_entities(EPCI.id).subquery()
+            return cls.query.filter(cls.epci_id==subquery).limit(1)
 
     @classmethod
     def get_and_init_from_api(cls, insee):

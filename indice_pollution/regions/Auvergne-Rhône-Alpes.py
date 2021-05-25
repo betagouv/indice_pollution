@@ -10,6 +10,7 @@ class Service(object):
 
 class Forecast(Service, ForecastMixin):
     get_only_from_scraping = True
+    url = 'https://services3.arcgis.com/o7Q3o5SkiSeZD5LK/arcgis/rest/services/Indice_ATMO/FeatureServer/0/query'
 
     def get_from_scraping(self, previous_results, date_, insee):
         api_key = os.getenv('AURA_API_KEY')
