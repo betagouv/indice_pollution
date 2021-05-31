@@ -48,32 +48,3 @@ class IndiceATMO(db.Model):
             return EPCI.get_query(insee=insee).with_entities(EPCI.zone_id)
         elif code_epci:
             return Commune.get_query(code=code_epci).with_entities(Commune.zone_id)
-
-    @classmethod
-    def save_all(cls):
-        regions = [
-            'Auvergne-Rhône-Alpes',
-            'Bourgogne-Franche-Comté',
-            'Bretagne',
-            'Centre-Val de Loire',
-            'Corse',
-            'Grand Est',
-            'Guadeloupe',
-            'Guyane',
-            'Hauts-de-France',
-            'Île-de-France',
-            'Martinique',
-            'Mayotte',
-            'Normandie',
-            'Nouvelle-Aquitaine',
-            'Occitanie',
-            'Pays de la Loire',
-            "Provence-Alpes-Côte d'Azur",
-            "Réunion",
-            "Sud"
-        ]
-        for region in regions:
-            module = import_module(f"indice_pollution.regions.{region}")
-            if not module.Service.is_active:
-                continue
-            module.Forecast().save_all()

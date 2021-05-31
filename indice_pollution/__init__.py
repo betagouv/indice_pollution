@@ -6,9 +6,9 @@ from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
 from flask_migrate import Migrate
 from datetime import datetime, timedelta
-import pytz
 import os
 from .helpers import today
+from importlib import import_module
 
 def create_app(test_config=None):
     app = Flask(
@@ -241,3 +241,33 @@ def raep(insee):
         },
         "data": make_dict_allergenes().get(make_code_departement(insee))
     }
+
+
+def save_all():
+    regions = [
+        'Auvergne-Rhône-Alpes',
+        'Bourgogne-Franche-Comté',
+        'Bretagne',
+        'Centre-Val de Loire',
+        'Corse',
+        'Grand Est',
+        'Guadeloupe',
+        'Guyane',
+        'Hauts-de-France',
+        'Île-de-France',
+        'Martinique',
+        'Mayotte',
+        'Normandie',
+        'Nouvelle-Aquitaine',
+        'Occitanie',
+        'Pays de la Loire',
+        "Provence-Alpes-Côte d'Azur",
+        "Réunion",
+        "Sud"
+    ]
+    for region in regions:
+        module = import_module(f"indice_pollution.regions.{region}")
+        if not module.Service.is_active:
+            continue
+        module.Forecast().save_all()
+        module.Episode().save_all()
