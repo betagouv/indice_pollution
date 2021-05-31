@@ -181,8 +181,6 @@ class ServiceMixin(object):
             self.url_fetch_all if hasattr(self, "url_fetch_all") else self.url,
             self.params_fetch_all
         )
-        if not response:
-            print("Pas de réponse")
         j = response.json()
         yield j['features']
         i = len(j['features'])
