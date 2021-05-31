@@ -1,4 +1,5 @@
 from . import ServiceMixin, ForecastMixin, EpisodeMixin
+from indice_pollution.history.models import Zone
 
 class Service(ServiceMixin):
     is_active = True
@@ -12,6 +13,12 @@ class Service(ServiceMixin):
 class Forecast(Service, ForecastMixin):
     url = 'https://services3.arcgis.com/Is0UwT37raQYl9Jj/arcgis/rest/services/ind_grandest_5j/FeatureServer/0/query'
     outfields = ['*']
+
+    @classmethod
+    def get_zone(cls, properties):
+        int_code = properties['code_zone']
+        code = f"{int_code:05}"
+        return Zone.get(code=code, type_=properties['type_zone'].lower())
 
 class Episode(Service, EpisodeMixin):
     url = 'https://services3.arcgis.com/Is0UwT37raQYl9Jj/arcgis/rest/services/alrt3j_grandest/FeatureServer/0/query'

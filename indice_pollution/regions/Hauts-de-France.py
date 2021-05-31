@@ -12,5 +12,7 @@ class Forecast(Service, ForecastMixin):
     url = 'https://services8.arcgis.com/rxZzohbySMKHTNcy/arcgis/rest/services/ind_hdf_2021/FeatureServer/0/query'
     outfields = '*'
 
+    url_fetch_all = "https://services8.arcgis.com/rxZzohbySMKHTNcy/arcgis/rest/services/ind_hdf_3j/FeatureServer/0/query"
+
 class Episode(Service, EpisodeMixin):
     url = 'https://services8.arcgis.com/rxZzohbySMKHTNcy/arcgis/rest/services/alrt3j_hdf/FeatureServer/0/query'

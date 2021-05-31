@@ -1,4 +1,6 @@
 from . import EpisodeMixin, ForecastMixin
+from datetime import date, timedelta
+from indice_pollution.history.models import EPCI, Commune
 
 class Service(object):
     is_active = True
@@ -23,6 +25,16 @@ class Forecast(Service, ForecastMixin):
             'CQL_FILTER': f"date_ech >= '{date_}T00:00:00Z' AND code_zone={insee}"
         }
 
+    @property
+    def params_fetch_all(self):
+        return {
+            'service': 'WFS',
+            'version': '2.0.0',
+            'request': 'GetFeature',
+            'typeName': 'indice:ind_bfc',
+            'outputFormat': 'application/json',
+            'CQL_FILTER': f"date_ech >= {date.today() - timedelta(days=2)}"
+        }
 
 class Episode(Service, EpisodeMixin):
     url = 'https://atmo-bfc.iad-informatique.com/geoserver/ows'
@@ -46,3 +58,14 @@ class Episode(Service, EpisodeMixin):
 
     def getter(self, attributes):
         return super().getter({'code_pol': attributes['id_poll_ue'], **attributes})
+
+    @property
+    def params_fetch_all(self):
+        return {
+            'service': 'WFS',
+            'version': '2.0.0',
+            'request': 'GetFeature',
+            'typeName': 'alerte:alrt3j_bfc',
+            'outputFormat': 'application/json',
+            'CQL_FILTER': f"date_ech >= {date.today() - timedelta(days=2)}'"
+        }

@@ -1,10 +1,8 @@
-from datetime import timedelta
+from datetime import date
 from . import ForecastMixin, EpisodeMixin
 import requests
-from dateutil import parser as dateutil_parser
 from bs4 import BeautifulSoup
 from datetime import datetime
-from ..history.models import Commune
 import logging
 
 class Service(object):
@@ -24,6 +22,14 @@ class Service(object):
 
 class Episode(Service, EpisodeMixin):
     url = 'https://opendata.atmo-na.org/api/v1/alerte/data/'
+    url_fetch_all = 'https://opendata.atmo-na.org/geoserver/alrt3j_nouvelle_aquitaine/wfs'
+
+    params_fetch_all = {
+        'service': 'wfs',
+        'request': 'getfeature',
+        'typeName': 'alrt3j_nouvelle_aquitaine:alrt3j_nouvelle_aquitaine',
+        'outputFormat': 'json',
+    }
 
     def params(cls, date_, insee):
         return {
@@ -50,6 +56,7 @@ class Episode(Service, EpisodeMixin):
 
 class Forecast(Service, ForecastMixin):
     url = 'https://opendata.atmo-na.org/geoserver/ind_nouvelle_aquitaine_agglo/wfs'
+    url_fetch_all = 'https://opendata.atmo-na.org/geoserver/ind_nouvelle_aquitaine/wfs'
 
     @classmethod
     def params(cls, date_, insee):
@@ -60,6 +67,17 @@ class Forecast(Service, ForecastMixin):
             'request': 'getfeature',
             'typeName': 'ind_nouvelle_aquitaine_agglo:ind_nouvelle_aquitaine_agglo',
             'Filter': f"<Filter><And>{filter_zone}{filter_date}</And></Filter>",
+            'outputFormat': 'json',
+        }
+
+    @property
+    def params_fetch_all(self):
+        filter_date_ech = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Literal>2021-05-19T00:00:00Z</Literal></PropertyIsGreaterThanOrEqualTo>'
+        return {
+            'service': 'wfs',
+            'request': 'getfeature',
+            'typeName': 'ind_nouvelle_aquitaine:ind_nouvelle_aquitaine',
+            'Filter': f"<Filter>{filter_date_ech}</Filter>",
             'outputFormat': 'json',
         }
 

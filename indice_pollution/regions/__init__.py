@@ -1,15 +1,16 @@
-from indice_pollution.history.models.commune import Commune
 import requests
 import logging
 import time
 import pytz
 import json
 import unidecode
+import itertools
 from datetime import datetime
 from dateutil import parser as dateutil_parser
-from sqlalchemy import exc
-from indice_pollution.history.models import IndiceHistory, EpisodeHistory
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+from indice_pollution.history.models import IndiceHistory, EpisodeHistory, IndiceATMO, Zone, Commune, EPCI, EpisodePollution
 from indice_pollution.models import db
+from indice_pollution import today
 
 class ServiceMixin(object):
     is_active = True
@@ -128,25 +129,80 @@ class ServiceMixin(object):
 
 
     def date_getter(self, attributes):
-        str_date = attributes.get('date_ech', attributes.get('date'))
-        if not str_date:
+        return self.date_parser(attributes.get('date_ech', attributes.get('date')))
+
+    @classmethod
+    def date_parser(cls, date_field):
+        if not date_field:
             return
-        if not self.use_dateutil_parser and type(str_date) == int:
+        if not cls.use_dateutil_parser and type(date_field) == int:
             zone = pytz.timezone('Europe/Paris')
-            return datetime.fromtimestamp(str_date/1000, tz=zone)
+            return datetime.fromtimestamp(date_field/1000, tz=zone)
         else:
             try:
-                return dateutil_parser.parse(str_date)
+                return dateutil_parser.parse(date_field)
             except dateutil_parser.ParserError as e:
-                logging.error(f'Unable to parse date: "{str_date}"')
+                logging.error(f'Unable to parse date: "{date_field}"')
                 logging.error(e)
                 return
+
+    def save_all(self):
+        indices = filter(lambda v: v, map(self.make_indice_dict, itertools.chain(*self.fetch_all())))
+
+        def grouper_it(n, iterable):
+            it = iter(iterable)
+            while True:
+                chunk_it = itertools.islice(it, n)
+                try:
+                    first_el = next(chunk_it)
+                except StopIteration:
+                    return
+                yield itertools.chain((first_el,), chunk_it)
+
+        for chunk in grouper_it(100, indices):
+            l = list(chunk)
+            statement = pg_insert(self.DB_OBJECT)\
+                .values(l)\
+                .on_conflict_do_nothing()
+            db.session.execute(statement)
+        db.session.commit()
+
+    params_fetch_all = {
+        'where': '(date_dif >= CURRENT_DATE) OR (date_ech = CURRENT_DATE)',
+        'outFields': "*",
+        'f': 'json',
+        'orderByFields': 'date_ech DESC',
+        'outSR': '4326'
+    }
+
+    def fetch_all(self):
+        get_one_attempt = self.get_one_attempt_fetch_all if hasattr(self, "get_one_attempt_fetch_all") else self.get_one_attempt
+        response = get_one_attempt(
+            self.url_fetch_all if hasattr(self, "url_fetch_all") else self.url,
+            self.params_fetch_all
+        )
+        j = response.json()
+        yield j['features']
+        i = len(j['features'])
+        while j.get('exceededTransferLimit'):
+            j = get_one_attempt(
+                self.url_fetch_all if hasattr(self, "url_fetch_all") else self.url,
+                {
+                    **self.params_fetch_all,
+                    **{
+                        'resultOffset': i
+                    }
+                }
+            ).json()
+            yield j['features']
+            i += len(j['features'])
 
 class ForecastMixin(ServiceMixin):
     HistoryModel = IndiceHistory
     outfields = ['date_ech', 'valeur', 'qualif', 'val_no2', 'val_so2',
      'val_o3', 'val_pm10', 'val_pm25'
     ]
+    DB_OBJECT = IndiceATMO
 
     def where(self, date_, insee):
         zone = insee if not self.insee_epci else self.insee_epci[insee]
@@ -246,8 +302,45 @@ class ForecastMixin(ServiceMixin):
             indice.lower()
         )
 
+    @classmethod
+    def get_zone_id(cls, properties):
+        type_zone = properties.get('type_zone', 'commune').lower()
+        code_zone = properties['code_zone'] if type(properties['code_zone']) == str else f"{properties['code_zone']:05}"
+        if type_zone == "commune":
+            commune = Commune.get(insee=str(code_zone))
+            return commune.zone_id if commune else None
+        elif type_zone == "epci":
+            epci = EPCI.get(code=code_zone)
+            return epci.zone_id if epci else None
+        return None
+
+    @classmethod
+    def make_indice_dict(cls, feature):
+        if type(feature) != dict:
+            print(feature)
+        properties = feature.get('properties') or feature.get('attributes')
+        zone_id = cls.get_zone_id(properties)
+
+        if not zone_id:
+            return None
+        
+        if not 'date_ech' in properties or not 'date_dif' in properties:
+            return None
+
+        return {
+            "zone_id" :zone_id,
+            "date_ech" :cls.date_parser(properties['date_ech']),
+            "date_dif" :cls.date_parser(properties['date_dif']),
+            "no2" :properties.get('code_no2'),
+            "so2" :properties.get('code_so2'),
+            "o3" :properties.get('code_o3'),
+            "pm10" :properties.get('code_pm10'),
+            "pm25" :properties.get('code_pm25'),
+            "valeur" :properties.get('code_qual') or properties['valeur']
+        }
 
 class EpisodeMixin(ServiceMixin):
+    DB_OBJECT = EpisodePollution
     HistoryModel = EpisodeHistory
     outfields = ['date_ech', 'lib_zone', 'code_zone', 'date_dif', 'code_pol',
      'lib_pol', 'etat', 'com_court', 'com_long']
@@ -297,3 +390,38 @@ class EpisodeMixin(ServiceMixin):
             self.filtre_post_get(commune.departement.code, date_),
             super().get(date_, insee, attempts=attempts, force_from_db=force_from_db)
         ))
+
+    @classmethod
+    def make_indice_dict(cls, feature):
+        properties = feature.get('properties') or feature.get('attributes')
+        zone_id = cls.get_zone_id(properties)
+
+        if not zone_id:
+            return None
+
+        if not 'date_ech' in properties:
+            return None
+
+        date_ech = cls.date_parser(properties['date_ech'])
+        date_dif = cls.date_parser(properties.get('date_dif'))
+
+        return {
+            "zone_id" : zone_id,
+            "date_ech" : date_ech,
+            "date_dif" : date_dif or date_ech,
+            "code_pol" : properties['code_pol'],
+            "etat" : properties.get('etat'),
+            "com_court" : properties.get('com_court'),
+            "com_long" : properties.get('com_long'),
+        }
+
+
+    @classmethod
+    def get_zone_id(cls, properties):
+        code = properties['code_zone']
+        if type(code) == int:
+            code = f"{code:02}"
+        zone = Zone.get(code=code, type_='departement')
+        if not zone:
+            return 
+        return zone.id

@@ -1,5 +1,5 @@
 from . import ForecastMixin, EpisodeMixin
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 
 class Service(object):
     is_active = True
@@ -26,6 +26,23 @@ class Episode(Service, EpisodeMixin):
             'geometryType': 'esriGeometryPoint',
         }
 
+    @property
+    def params_fetch_all(self):
+        date_ = date.today()
+        tomorrow_date = date_ + timedelta(days=1)
+
+        fr_date = date_.strftime(self.fr_date_format)
+        fr_tomorrow = tomorrow_date.strftime(self.fr_date_format)
+
+        return {
+            'service': 'WFS',
+            'version': '1.1.0',
+            'request': 'GetFeature',
+            'typeName': 'alrt_sudpaca_dep:alrt3j_sudpaca',
+            'CQL_FILTER': f"(date_ech='{fr_date}' OR date_ech='{fr_tomorrow}')",
+            'outputFormat': 'json'
+        }
+
 class Forecast(Service, ForecastMixin):
     url = 'https://geoservices.atmosud.org/geoserver/ind_sudpaca/ows'
 
@@ -48,5 +65,24 @@ class Forecast(Service, ForecastMixin):
             'CQL_FILTER': f"code_zone='{insee}' AND (date_ech='{fr_date}' OR date_ech='{fr_tomorrow}')",
             'outputFormat': 'json'
         }
+
+    @property
+    def params_fetch_all(self):
+        date_ = date.today()
+        tomorrow_date = date_ + timedelta(days=1)
+
+        fr_date = date_.strftime(self.fr_date_format)
+        fr_tomorrow = tomorrow_date.strftime(self.fr_date_format)
+
+        return {
+            'service': 'WFS',
+            'version': '1.1.0',
+            'request': 'GetFeature',
+            'typeName': 'ind_sudpaca:ind_sudpaca',
+            'CQL_FILTER': f"(date_ech='{fr_date}' OR date_ech='{fr_tomorrow}')",
+            'outputFormat': 'json'
+        }
+
+
     def date_getter(self, attributes):
         return datetime.strptime(attributes['date_ech'], self.fr_date_format)

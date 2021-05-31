@@ -11,4 +11,9 @@ class Forecast(Service, ForecastMixin):
 
 class Episode(Service, EpisodeMixin):
     url = 'https://services8.arcgis.com/7RrxpwWeFIQ8JGGp/arcgis/rest/services/alrt3j_guadeloupe_1/FeatureServer/0/query'
+    url_fetch_all = 'https://opendata.arcgis.com/api/v3/datasets/bc24118d02804ad2a3eb277ac780dafc_0/downloads/data'
+    params_fetch_all = {
+        'format': 'geojson',
+        'spatialRefId': '4326'
+    }
     outfields = ['*']

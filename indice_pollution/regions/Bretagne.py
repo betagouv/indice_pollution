@@ -1,6 +1,6 @@
 from indice_pollution.history.models.commune import Commune
+from indice_pollution.history.models.epci import EPCI
 from . import EpisodeMixin, ForecastMixin
-import requests as requests_
 from requests import adapters
 import ssl
 from urllib3 import poolmanager
@@ -220,6 +220,15 @@ class Forecast(Service, ForecastMixin):
             'CQL_FILTER': f"code_zone = {epci} AND date_ech>='{date_}'"
         }
 
+    @property
+    def params_fetch_all(self):
+        return {
+                'service': 'WFS',
+                'version': '1.0.0',
+                'request': 'GetFeature',
+                'typeName': 'ind_bretagne_j1',
+                'outputFormat': 'application/json',
+            }
 
 class Episode(Service, EpisodeMixin):
     url = 'https://data.airbreizh.asso.fr/geoserver/alrt3j_bretagne/ows'
@@ -240,3 +249,13 @@ class Episode(Service, EpisodeMixin):
             'service': 'WFS',
             'Filter': f'<Filter>{filter_zone}</Filter>',
         }
+
+    @property
+    def params_fetch_all(self):
+        return {
+                'service': 'WFS',
+                'version': '1.0.0',
+                'request': 'GetFeature',
+                'typeName': 'alrt3j_bretagne',
+                'outputFormat': 'application/json',
+            }

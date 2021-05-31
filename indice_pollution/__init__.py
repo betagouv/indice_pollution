@@ -5,9 +5,9 @@ from flask import Flask
 from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
 from flask_migrate import Migrate
-from datetime import datetime
-import pytz
+from datetime import datetime, timedelta
 import os
+from .helpers import today
 
 def create_app(test_config=None):
     app = Flask(
@@ -77,6 +77,9 @@ def make_dict_allergenes():
     r = requests.get(os.getenv("ALLERGIES_URL"))
     decoded_content = r.content.decode('utf-8')
     first_column_name = decoded_content[:10] #Il s'agit de la date
+    date_format = "%d/%m/%Y"
+    debut_validite = datetime.strptime(first_column_name, date_format)
+    fin_validite = debut_validite + timedelta(weeks=1)
     reader = csv.DictReader(
         decoded_content.splitlines(),
         delimiter=';'
@@ -92,8 +95,14 @@ def make_dict_allergenes():
                 allergene: r[allergene]
                 for allergene in liste_allergenes
             },
+            "periode_validite": {
+                "debut": debut_validite.strftime(date_format),
+                "fin": fin_validite.strftime(date_format)
+            }
 
         }
+    to_return['2A'] = to_return['20']
+    to_return['2B'] = to_return['20']
     return to_return
 
 def make_code_departement(insee):
@@ -199,10 +208,6 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
                 to_return[insee].update({'raep': allergenes_par_departement[code_departement]})
     return to_return
 
-def today():
-    zone = pytz.timezone('Europe/Paris')
-    return datetime.now(tz=zone).date()
-
 def episodes(insee, date_=None):
     from .regions.solvers import get_region
     date_ = date_ or today()
@@ -214,7 +219,7 @@ def episodes(insee, date_=None):
         return {
             "error": "Inactive region",
             "metadata": make_metadata(region)
-        }, 400
+        }
 
 def availability(insee):
     from .regions.solvers import get_region

@@ -61,6 +61,12 @@ class Forecast(Service, ForecastMixin):
         )
         return list(r.json().values())[0]
 
+    params_fetch_all = {
+        'where': "1=1",
+        'outFields': "*",
+        'f': 'json',
+        'outSR': '4326'
+    }
 
 class Episode(Service, EpisodeMixin):
     url = "https://services1.arcgis.com/HzzPcgRsxxyIZdlU/arcgis/rest/services/alerte_3j1/FeatureServer/0/query"
