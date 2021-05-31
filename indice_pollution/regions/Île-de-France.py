@@ -1,6 +1,8 @@
+from indice_pollution.history.models.zone import Zone
 from . import ForecastMixin, EpisodeMixin
 import os
 import requests
+import itertools
 from flask import current_app
 from datetime import date, timedelta
 
@@ -64,7 +66,10 @@ class Forecast(Service, ForecastMixin):
 
 
 class Episode(Service, EpisodeMixin):
+    url_fetch_all = 'https://opendata.arcgis.com/datasets/f4e0877c9e05459b8edf94077f1d2dbc_0.geojson'
     get_only_from_scraping = True
+
+    params_fetch_all = {}
 
     def get_from_scraping(self, to_return, date_, insee):
         api_key = os.getenv('AIRPARIF_API_KEY')
@@ -101,3 +106,6 @@ class Episode(Service, EpisodeMixin):
                 }]
         return to_return
 
+    @classmethod
+    def get_zone_id(cls, properties):
+        return Zone.query.filter_by(code='11', type='region').first().id

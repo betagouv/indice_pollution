@@ -107,6 +107,15 @@ class Episode(Service, EpisodeMixin):
             'bbox': f'{centre[0]},{centre[1]},{centre[0]},{centre[1]},{srsname}',
         }
 
+    params_fetch_all = {
+            'service': 'wfs',
+            'version': '2.0.0',
+            'request': 'getfeature',
+            'typeName': 'alrt3j_normandie:alrt3j_normandie',
+            'outputFormat': 'geojson',
+            'srsName': 'urn:ogc:def:crs:EPSG::4326',
+    }
+
     def date_getter(self, attributes):
         str_date = attributes.get('date_ech')
         if not str_date:

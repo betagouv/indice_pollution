@@ -26,6 +26,23 @@ class Episode(Service, EpisodeMixin):
             'geometryType': 'esriGeometryPoint',
         }
 
+    @property
+    def params_fetch_all(self):
+        date_ = date.today()
+        tomorrow_date = date_ + timedelta(days=1)
+
+        fr_date = date_.strftime(self.fr_date_format)
+        fr_tomorrow = tomorrow_date.strftime(self.fr_date_format)
+
+        return {
+            'service': 'WFS',
+            'version': '1.1.0',
+            'request': 'GetFeature',
+            'typeName': 'alrt_sudpaca_dep:alrt3j_sudpaca',
+            'CQL_FILTER': f"(date_ech='{fr_date}' OR date_ech='{fr_tomorrow}')",
+            'outputFormat': 'json'
+        }
+
 class Forecast(Service, ForecastMixin):
     url = 'https://geoservices.atmosud.org/geoserver/ind_sudpaca/ows'
 

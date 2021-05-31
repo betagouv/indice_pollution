@@ -1,8 +1,8 @@
 from indice_pollution.history.models.commune import Commune
 from indice_pollution.regions import ForecastMixin, EpisodeMixin
-from dateutil.parser import parse
-from datetime import timedelta, date, datetime
+from datetime import timedelta, date
 from .pays_de_la_loire_epcis import dict_commune_ecpi
+from indice_pollution.helpers import today
 
 class Service(object):
     is_active = True
@@ -26,6 +26,17 @@ class Episode(Service, EpisodeMixin):
             "outputFormat": "application/json",
             "request": "GetFeature",
             "CQL_FILTER": f"date_ech >= {date_}T00:00:00Z AND code_zone='{commune.departement.code}'"
+        }
+
+    @property
+    def params_fetch_all(self):
+        return {
+            "version": "2.0.0",
+            "typeName": "alrt3j_pays_de_la_loire:alrt3j_pays_de_la_loire",
+            "service": "WFS",
+            "outputFormat": "application/json",
+            "request": "GetFeature",
+            "CQL_FILTER": f"date_ech >= {today()}T00:00:00Z"
         }
 
 class Forecast(Service, ForecastMixin):

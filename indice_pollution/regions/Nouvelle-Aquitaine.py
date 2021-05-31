@@ -22,6 +22,14 @@ class Service(object):
 
 class Episode(Service, EpisodeMixin):
     url = 'https://opendata.atmo-na.org/api/v1/alerte/data/'
+    url_fetch_all = 'https://opendata.atmo-na.org/geoserver/alrt3j_nouvelle_aquitaine/wfs'
+
+    params_fetch_all = {
+        'service': 'wfs',
+        'request': 'getfeature',
+        'typeName': 'alrt3j_nouvelle_aquitaine:alrt3j_nouvelle_aquitaine',
+        'outputFormat': 'json',
+    }
 
     def params(cls, date_, insee):
         return {

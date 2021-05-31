@@ -249,3 +249,13 @@ class Episode(Service, EpisodeMixin):
             'service': 'WFS',
             'Filter': f'<Filter>{filter_zone}</Filter>',
         }
+
+    @property
+    def params_fetch_all(self):
+        return {
+                'service': 'WFS',
+                'version': '1.0.0',
+                'request': 'GetFeature',
+                'typeName': 'alrt3j_bretagne',
+                'outputFormat': 'application/json',
+            }

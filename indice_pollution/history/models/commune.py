@@ -17,8 +17,10 @@ class Commune(db.Model):
     departement = relationship("indice_pollution.history.models.departement.Departement")
     code_zone = db.Column(db.String)
     zone_id = db.Column(db.Integer, db.ForeignKey("indice_schema.zone.id"))
-    zone = relationship("indice_pollution.history.models.zone.Zone")
+    zone = relationship("indice_pollution.history.models.zone.Zone", foreign_keys=zone_id)
     _centre = db.Column('centre', db.String)
+    zone_pollution_id = db.Column(db.Integer, db.ForeignKey("indice_schema.zone.id"))
+    zone_pollution = relationship("indice_pollution.history.models.zone.Zone", foreign_keys=zone_pollution_id)
 
     def __init__(self, nom, codeDepartement, centre, code):
         self.nom = nom
