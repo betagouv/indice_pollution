@@ -38,6 +38,8 @@ def upgrade():
 
     departements = dict(op.get_bind().execute("SELECT code, id FROM indice_schema.departement").fetchall())
 
+    op.execute("TRUNCATE indice_schema.epci")
+
     with open("migrations/versions/epci.csv") as f:
         reader = csv.reader(f)
         next(reader)
