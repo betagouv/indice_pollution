@@ -29,3 +29,30 @@ class EpisodePollution(db.Model):
             )\
             .order_by(cls.date_dif.desc())
         return query.all()
+
+    @property
+    def lib_pol(self):
+        return {
+            1: 'Dioxyde de soufre',
+            3: 'Dioxyde d’azote',
+            4: 'Monoxyde de carbone',
+            5: 'Particules PM 10',
+            7: 'Ozone',
+            8: 'Dioxyde d’azote',
+            24: 'Particules PM10',
+            39: 'Particules PM25',
+        }.get(self.code_pol)
+
+    def dict(self):
+        return {
+            "code_pol": f"{self.code_pol:02}",
+            "code_zone": self.zone.code,
+            "com_court": self.com_court,
+            "com_long": self.com_long,
+            "date": self.date_ech.date().isoformat(),
+            "date_ech": self.date_ech.date().isoformat(),
+            "date_dif": self.date_dif.date().isoformat(),
+            "etat": self.etat,
+            "lib_pol": self.lib_pol
+        }
+

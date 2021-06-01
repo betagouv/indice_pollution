@@ -1,6 +1,8 @@
 import requests
 import csv
 from indice_pollution.history.models.commune import Commune
+from indice_pollution.history.models.indice_atmo import IndiceATMO
+from indice_pollution.history.models.episode_pollution import EpisodePollution
 from flask import Flask
 from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
@@ -38,8 +40,11 @@ def create_app(test_config=None):
     return app
 
 def make_resp(r, result, date_=None):
-    if date_:
-        result = [v for v in result if v['date'] == str(date_)]
+    if type(result) == list:
+        if date_:
+            result = [v for v in result if v['date'] == str(date_)]
+    else:
+        result = result.dict()
     return {
         "data": result,
         "metadata": make_metadata(r)
@@ -59,9 +64,8 @@ def forecast(insee, date_=None, force_from_db=False):
     date_ = date_ or today()
     region = get_region(insee)
     if region.Service.is_active:
-        forecast = region.Forecast()
-        result = forecast.get(date_=date_, insee=insee, force_from_db=force_from_db)
-        return make_resp(region, result, date_)
+        indice = IndiceATMO.get(insee=insee)
+        return make_resp(region, indice, date_)
     else:
         return {
             "error": "Inactive region",
@@ -214,8 +218,8 @@ def episodes(insee, date_=None):
     date_ = date_ or today()
     region = get_region(insee)
     if region.Service.is_active:
-        episode = region.Episode()
-        return make_resp(region, episode.get(date_=date_, insee=insee), date_)
+        result = list(map(lambda e: e.dict(), EpisodePollution.get(insee=insee)))
+        return make_resp(region, result, date_)
     else:
         return {
             "error": "Inactive region",

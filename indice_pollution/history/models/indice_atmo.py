@@ -48,3 +48,61 @@ class IndiceATMO(db.Model):
             return EPCI.get_query(insee=insee).with_entities(EPCI.zone_id)
         elif code_epci:
             return Commune.get_query(code=code_epci).with_entities(Commune.zone_id)
+
+    @classmethod
+    def couleur_from_valeur(cls, valeur):
+        return {
+            "bon": "#50F0E6",
+            "moyen": "#50CCAA",
+            "degrade" :"#F0E641",
+            "mauvais": "#FF5050",
+            "tres_mauvais": "#960032",
+            "extrement_mauvais": "#960032",
+        }.get(cls.indice_from_valeur(valeur))
+
+    @classmethod
+    def label_from_valeur(cls, valeur):
+        return {
+            "bon": "Bon",
+            "moyen": "Moyen",
+            "degrade": "Dégradé",
+            "mauvais": "Mauvais",
+            "tres_mauvais": "Très mauvais",
+            "extrement_mauvais": "Extrêment mauvais",
+        }.get(cls.indice_from_valeur(valeur))
+
+    @classmethod
+    def indice_from_valeur(cls, valeur):
+        return [
+            "bon",
+            "moyen",
+            "degrade",
+            "mauvais",
+            "tres_mauvais",
+            "extrement_mauvais",
+        ][valeur - 1]
+
+    @classmethod
+    def indice_dict(cls, valeur):
+        return {
+            'indice': cls.indice_from_valeur(valeur),
+            'label': cls.label_from_valeur(valeur),
+            'couleur': cls.couleur_from_valeur(valeur),
+        }
+
+    @classmethod
+    def sous_indice_dict(cls, code, valeur):
+        return {
+            **{'polluant_name': code.upper()},
+            **cls.indice_dict(valeur)
+        }
+
+    def dict(self):
+        return {
+            **{
+                'sous_indices': [self.sous_indice_dict(k, getattr(self, k)) for k in ['no2', 'so2', 'o3', 'pm10', 'pm25']],
+                'date': self.date_ech.date().isoformat(),
+                'valeur': self.valeur
+            },
+            **self.indice_dict(self.valeur)
+        }
