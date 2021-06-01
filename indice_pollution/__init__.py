@@ -44,7 +44,7 @@ def make_resp(r, result, date_=None):
         if date_:
             result = [v for v in result if v['date'] == str(date_)]
     else:
-        result = result.dict()
+        result = [result.dict()]
     return {
         "data": result,
         "metadata": make_metadata(r)
