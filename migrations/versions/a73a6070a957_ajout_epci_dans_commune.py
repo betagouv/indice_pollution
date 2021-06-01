@@ -80,7 +80,7 @@ def upgrade():
     for epci, communes in epcis.items():
         op.get_bind().execute(sa.text("""
             UPDATE indice_schema.commune
-            SET epci_id = (SELECT id FROM indice_schema.epci WHERE code = :code_epci)
+            SET epci_id = (SELECT id FROM indice_schema.epci WHERE code = :code_epci AND type='epci')
             WHERE insee = ANY(:codes_commune)
         """), {
             "code_epci": epci,
