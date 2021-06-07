@@ -1,8 +1,9 @@
+from indice_pollution.history.models.zone import Zone
 from requests.models import codes
 from indice_pollution.models import db
 from indice_pollution.helpers import today
 from indice_pollution.history.models import Commune, EPCI
-from sqlalchemy import  Date
+from sqlalchemy import Date, text
 from dataclasses import dataclass
 from datetime import datetime
 from importlib import import_module
@@ -37,41 +38,44 @@ class IndiceATMO(db.Model):
         return query.first()
 
     @classmethod
-    def bulk(cls, insees=None, codes_epci=None, date_=None):
-        zone_subquery = cls.zone_subquery(insees=insees, codes_epci=codes_epci).subquery()
-        zone_subquery_or = cls.zone_subquery_or(insee=insees).subquery()
+    def bulk_query(cls, insees=None, date_=None):
         date_ = date_ or today()
-        query = IndiceATMO\
-            .query.filter(
-                IndiceATMO.date_ech.cast(Date)==date_,
-                ((IndiceATMO.zone_id.in_(zone_subquery))|
-                (IndiceATMO.zone_id.in_(zone_subquery_or))
-                )
-            )\
-            .order_by(IndiceATMO.date_dif.desc())
-        return query.first()
+        return text(
+            """
+            SELECT 
+                DISTINCT ON (i.date_ech, i.zone_id) i.*, i.date_ech date, coalesce(c.insee, c2.insee) insee
+            FROM
+                indice_schema."indiceATMO" i
+            JOIN indice_schema.zone z ON i.zone_id = z.id
+            LEFT JOIN indice_schema.commune c ON z.type = 'commune' AND z.id = c.zone_id
+            LEFT JOIN indice_schema.epci e ON z.type = 'epci' AND z.id = e.zone_id
+            LEFT JOIN indice_schema.commune c2 ON c2.epci_id = e.id
+            WHERE date(date_ech) = :date_ech AND ((c.insee = ANY(:insees)) OR (c2.insee = ANY(:insees)))
+            ORDER BY i.date_ech, i.zone_id, i.date_dif DESC;
+            """
+        ).bindparams(
+            date_ech=date_,
+            insees=insees
+        )
 
     @classmethod
-    def zone_subquery(cls, insee=None, code_epci=None, insees=None, codes_epci=None):
+    def bulk(cls, insees=None, codes_epci=None, date_=None):
+        return db.session.execute(IndiceATMO.bulk_query(insees=insees, date_=date_))
+        
+
+    @classmethod
+    def zone_subquery(cls, insee=None, code_epci=None):
         if insee:
             return Commune.get_query(insee=insee).with_entities(Commune.zone_id)
         elif code_epci:
             return EPCI.get_query(code=code_epci).with_entities(EPCI.zone_id)
-        elif insees:
-            return Commune.bulk_query(insees=insees)
-        elif codes_epci:
-            return EPCI.bulk_query(codes=codes_epci)
 
     @classmethod
-    def zone_subquery_or(cls, insee=None, code_epci=None, insees=None, codes_epci=None):
+    def zone_subquery_or(cls, insee=None, code_epci=None):
         if insee:
             return EPCI.get_query(insee=insee).with_entities(EPCI.zone_id)
         elif code_epci:
             return Commune.get_query(code=code_epci).with_entities(Commune.zone_id)
-        if insees:
-            return EPCI.bulk_query(insees=insees)
-        elif codes_epci:
-            return Commune.bulk_query(codes=codes_epci)
 
     @classmethod
     def couleur_from_valeur(cls, valeur):
@@ -130,3 +134,26 @@ class IndiceATMO(db.Model):
             },
             **self.indice_dict(self.valeur)
         }
+
+    @classmethod
+    def make_dict(cls, valeur, date_):
+        return {
+            **{
+                'date': date_.date().isoformat(),
+                'valeur': valeur
+            },
+            **cls.indice_dict(valeur)
+        }
+
+    @property
+    def insee(self):
+        zone = Zone.query.get(self.zone_id)
+        if zone.type == 'commune':
+            return zone.code
+        if zone.type == 'epci':
+            r = db.session.query(
+                EPCI, Commune
+            ).filter(
+                EPCI.zone_id == self.zone_id
+            ).limit(1).first()
+            return r.Commune.insee

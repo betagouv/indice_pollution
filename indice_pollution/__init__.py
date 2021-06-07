@@ -95,8 +95,10 @@ def make_resp(r, result, date_=None):
     if type(result) == list:
         if date_:
             result = [v for v in result if v['date'] == str(date_)]
-    else:
+    elif hasattr(result, 'dict'):
         result = [result.dict()]
+    else:
+        result = [result]
     return {
         "data": result,
         "metadata": make_metadata(r)
@@ -170,13 +172,12 @@ def make_code_departement(insee):
     return ""
 
 def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_allergenes=False):
-    from indice_pollution.history.models import IndiceHistory, EpisodeHistory
+    from indice_pollution.history.models import IndiceATMO, EpisodePollution
     from .regions.solvers import get_region
     date_ = date_ or today()
 
     insees = set(insee_region_names.keys())
     insees_errors = set()
-    close_insees = set()
     for insee in insees:
         try:
             region = get_region(region_name=insee_region_names[insee])
@@ -186,57 +187,20 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
         except KeyError:
             insees_errors.add(insee)
             continue
-        try:
-            close_insee = region.Forecast().get_close_insee(insee)
-        except KeyError:
-            continue
-        close_insees.add(close_insee)
-    insees.update(close_insees)
     for insee in insees_errors:
         insees.remove(insee)
         del insee_region_names[insee]
 
     indices = dict()
     episodes = dict()
-    for chunk in chunks(list(insees), 10):
+    for chunk in chunks(list(insees), 100):
         indices.update(
-            {i.insee: [i.features] for i in IndiceHistory.get_bulk(date_, chunk)}
+            {i['insee']: IndiceATMO.make_dict(i['valeur'], i['date_ech']) for i in IndiceATMO.bulk(date_=date_, insees=chunk)}
         )
         if fetch_episodes:
             episodes.update(
-                {i.code_zone: [i.features] for i in EpisodeHistory.get_bulk(date_, chunk)}
+                {e['insee']: dict(e) for e in EpisodePollution.bulk(date_=date_, insees=chunk)}
             )
-    for insee in insee_region_names.keys():
-        if insee in indices:
-            continue
-        region = get_region(region_name=insee_region_names[insee])
-        if not region.Service.is_active:
-            continue
-        f = region.Forecast()
-        try:
-            close_insee = f.get_close_insee(insee)
-        except KeyError:
-            continue
-        if close_insee in indices:
-            indices[insee] = indices[close_insee]
-            continue
-        indices[insee] = f.get(date_=date_, insee=insee, force_from_db=False)
-    if fetch_episodes:
-        for insee in insee_region_names.keys():
-            if insee in episodes:
-                continue
-            region = get_region(region_name=insee_region_names[insee])
-            if not region.Service.is_active:
-                continue
-            e = region.Episode()
-            try:
-                close_insee = e.get_close_insee(insee)
-            except KeyError:
-                continue
-            if close_insee in episodes:
-                episodes[insee] = episodes[close_insee]
-                continue
-            episodes[insee] = e.get(date_=date_, insee=insee, force_from_db=False)
     to_return = {
         insee: {
             "forecast": make_resp(
@@ -244,10 +208,10 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
                 indices.get(insee, [])
                ),
         }
-        for insee in insee_region_names.keys()
+        for insee in insees
     }
     if fetch_episodes:
-        for insee in insee_region_names:
+        for insee in insees:
             to_return[insee].update({
                 "episode": make_resp(
                     get_region(region_name=insee_region_names[insee]),

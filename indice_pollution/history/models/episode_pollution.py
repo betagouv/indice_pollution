@@ -3,7 +3,7 @@ from indice_pollution.history.models.commune import Commune
 from indice_pollution.models import db
 from datetime import datetime
 from indice_pollution.helpers import today
-from sqlalchemy import  Date
+from sqlalchemy import  Date, text
 
 class EpisodePollution(db.Model):
     __table_args__ = {"schema": "indice_schema"}
@@ -30,6 +30,28 @@ class EpisodePollution(db.Model):
             .order_by(cls.date_dif.desc())
         return query.all()
 
+    @classmethod
+    def bulk_query(cls, insees=None, codes_epci=None, date_=None):
+        return text(
+            """
+            SELECT
+                DISTINCT ON (e.zone_id, e.date_ech) e.*, e.date_ech e, c.insee
+            FROM
+                indice_schema.episode_pollution e
+                LEFT JOIN indice_schema.commune c ON c.zone_pollution_id = e.zone_id
+                WHERE c.insee = ANY(:insees) AND date_ech=:date_ech
+                ORDER BY e.zone_id, e.date_ech, e.date_dif DESC
+            """
+        ).bindparams(
+            date_ech=date_,
+            insees=insees
+        )
+    
+    @classmethod
+    def bulk(cls, insees=None, codes_epcis=None, date_=None):
+        return db.session.execute(cls.bulk_query(insees=insees, date_=date_))
+
+
     @property
     def lib_pol(self):
         return {
@@ -55,4 +77,3 @@ class EpisodePollution(db.Model):
             "etat": self.etat,
             "lib_pol": self.lib_pol
         }
-

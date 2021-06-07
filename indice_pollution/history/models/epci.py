@@ -27,7 +27,7 @@ class EPCI(db.Model):
             return cls.query.filter(cls.id==subquery)
 
     @classmethod
-    def bulk_query(cls, codes, insees):
+    def bulk_query(cls, codes=None, insees=None):
         if codes:
             return cls.query.filter(cls.code.in_(codes))
         elif insees:

@@ -226,7 +226,7 @@ class Forecast(Service, ForecastMixin):
                 'service': 'WFS',
                 'version': '1.0.0',
                 'request': 'GetFeature',
-                'typeName': 'ind_bretagne_j1',
+                'typeName': 'ind_bretagne:ind_bretagne_j1',
                 'outputFormat': 'application/json',
             }
 
