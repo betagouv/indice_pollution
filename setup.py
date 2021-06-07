@@ -7,6 +7,7 @@ DEPENDENCIES = [
     'flask',
     'flask-celery',
     'flask-cors',
+    'Flask-Manage-Webpack',
     'flask-migrate',
     'flask-sqlalchemy',
     'requests',
