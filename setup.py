@@ -2,9 +2,11 @@ from setuptools import find_packages, setup
 
 DEPENDENCIES = [
     'alembic',
+    'celery',
+    'celery[redis]',
     'flask',
+    'flask-celery',
     'flask-cors',
-    'Flask-Manage-Webpack',
     'flask-migrate',
     'flask-sqlalchemy',
     'requests',
@@ -14,7 +16,9 @@ DEPENDENCIES = [
     'beautifulsoup4',
     'html5lib',
     'psycopg2',
-    'unidecode'
+    'unidecode',
+    'sentry-sdk[flask]',
+    'redis'
 ]
 
 setup(

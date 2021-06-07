@@ -9,8 +9,56 @@ from flask_cors import CORS
 from flask_migrate import Migrate
 from datetime import datetime, timedelta
 import os
+import logging
 from .helpers import today
+from .extensions import celery
 from importlib import import_module
+from kombu import Queue
+from celery.schedules import crontab
+
+def configure_celery(flask_app):
+    """Configure tasks.celery:
+    * read configuration from flask_app.config and update celery config
+    * create a task context so tasks can access flask.current_app
+    Doing so is recommended by flask documentation:
+    https://flask.palletsprojects.com/en/1.1.x/patterns/celery/
+    """
+    # Settings list:
+    # https://docs.celeryproject.org/en/stable/userguide/configuration.html
+    celery_conf = {
+        key[len('CELERY_'):].lower(): value
+        for key, value in flask_app.config.items()
+        if key.startswith('CELERY_')
+    }
+    celery.conf.update(celery_conf)
+    celery.conf.task_queues = (
+        Queue("default", routing_key='task.#'),
+        Queue("save_indices", routing_key='save_indices.#'),
+    )
+    celery.conf.task_default_exchange = 'tasks'
+    celery.conf.task_default_exchange_type = 'topic'
+    celery.conf.task_default_routing_key = 'task.default'
+
+
+    class ContextTask(celery.Task):
+        def __call__(self, *args, **kwargs):
+            with flask_app.app_context():
+                return self.run(*args, **kwargs)
+
+    celery.Task = ContextTask
+
+@celery.task()
+def save_all_indices():
+    save_all()
+
+@celery.on_after_configure.connect
+def setup_periodic_tasks(sender, **kwargs):
+    sender.add_periodic_task(
+        crontab(minute='0', hour='*/1'),
+        save_all_indices.s(),
+        queue='save_indices',
+        routing_key='save_indices.save_all'
+    )
 
 def create_app(test_config=None):
     app = Flask(
@@ -23,6 +71,9 @@ def create_app(test_config=None):
         SQLALCHEMY_DATABASE_URI=os.getenv('SQLALCHEMY_DATABASE_URI') or os.getenv('POSTGRESQL_ADDON_URI'),
         SQLALCHEMY_TRACK_MODIFICATIONS=False
     )
+    app.config['CELERY_RESULT_BACKEND'] = os.getenv('CELERY_RESULT_BACKEND') or f"db+{app.config['SQLALCHEMY_DATABASE_URI']}"
+    app.config['CELERY_BROKER_URL'] = os.getenv('CELERY_BROKER_URL') or f"sqla+{app.config['SQLALCHEMY_DATABASE_URI']}"
+
     CORS(app, send_wildcard=True)
 
     manage_webpack = FlaskManageWebpack()
@@ -31,6 +82,7 @@ def create_app(test_config=None):
     from .models import db
     db.init_app(app)
     migrate = Migrate(app, db)
+    configure_celery(app)
 
     with app.app_context():
         import indice_pollution.api
@@ -248,6 +300,8 @@ def raep(insee):
 
 
 def save_all():
+    logger = logging.getLogger(__name__)
+    logger.info('Begin of "save_all" task')
     regions = [
         'Auvergne-Rhône-Alpes',
         'Bourgogne-Franche-Comté',
@@ -270,8 +324,12 @@ def save_all():
         "Sud"
     ]
     for region in regions:
+        logger.info(f'Saving {region} region')
         module = import_module(f"indice_pollution.regions.{region}")
         if not module.Service.is_active:
             continue
+        logger.info(f'Saving Forecast of {region}')
         module.Forecast().save_all()
+        logger.info(f'Saving Episode of {region}')
         module.Episode().save_all()
+        logger.info(f'Saving of {region} ended')
