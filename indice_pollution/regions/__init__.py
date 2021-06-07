@@ -7,7 +7,8 @@ import unidecode
 import itertools
 from datetime import datetime
 from dateutil import parser as dateutil_parser
-from sqlalchemy.dialects.postgresql import insert as pg_insert
+from sqlalchemy import and_, bindparam, select
+from sqlalchemy.dialects.postgresql import Insert, insert as pg_insert
 from indice_pollution.history.models import IndiceHistory, EpisodeHistory, IndiceATMO, Zone, Commune, EPCI, EpisodePollution
 from indice_pollution.models import db
 from indice_pollution import today
@@ -158,13 +159,12 @@ class ServiceMixin(object):
                 except StopIteration:
                     return
                 yield itertools.chain((first_el,), chunk_it)
-
         for chunk in grouper_it(100, indices):
-            l = list(chunk)
-            statement = pg_insert(self.DB_OBJECT)\
-                .values(l)\
+            values = list(chunk)
+            ins = pg_insert(self.DB_OBJECT)\
+                .values(values)\
                 .on_conflict_do_nothing()
-            db.session.execute(statement)
+            db.session.execute(ins)
         db.session.commit()
 
     params_fetch_all = {
@@ -319,16 +319,22 @@ class ForecastMixin(ServiceMixin):
         if type(feature) != dict:
             print(feature)
         properties = feature.get('properties') or feature.get('attributes')
-        zone_id = cls.get_zone_id(properties)
-
-        if not zone_id:
-            return None
-        
         if not 'date_ech' in properties or not 'date_dif' in properties:
             return None
+    
+        zone_code = properties['code_zone'] if type(properties['code_zone']) == str else f"{properties['code_zone']:05}"
+        zone_type = properties.get('type_zone', 'commune').lower()
 
+        sel = select(
+               [Zone.id]
+            ).where(
+                and_(
+                    Zone.type==zone_type,
+                    Zone.code==zone_code
+                )
+        )
         return {
-            "zone_id" :zone_id,
+            "zone_id": sel,
             "date_ech" :cls.date_parser(properties['date_ech']),
             "date_dif" :cls.date_parser(properties['date_dif']),
             "no2" :properties.get('code_no2'),
@@ -342,6 +348,7 @@ class ForecastMixin(ServiceMixin):
 class EpisodeMixin(ServiceMixin):
     DB_OBJECT = EpisodePollution
     HistoryModel = EpisodeHistory
+    zone_type = 'departement'
     outfields = ['date_ech', 'lib_zone', 'code_zone', 'date_dif', 'code_pol',
      'lib_pol', 'etat', 'com_court', 'com_long']
     
@@ -394,10 +401,6 @@ class EpisodeMixin(ServiceMixin):
     @classmethod
     def make_indice_dict(cls, feature):
         properties = feature.get('properties') or feature.get('attributes')
-        zone_id = cls.get_zone_id(properties)
-
-        if not zone_id:
-            return None
 
         if not 'date_ech' in properties:
             return None
@@ -405,8 +408,21 @@ class EpisodeMixin(ServiceMixin):
         date_ech = cls.date_parser(properties['date_ech'])
         date_dif = cls.date_parser(properties.get('date_dif'))
 
+        code = properties['code_zone']
+        if type(code) == int:
+            code = f"{code:02}"
+
+        sel = select(
+               [Zone.id]
+            ).where(
+                and_(
+                    Zone.type==cls.zone_type,
+                    Zone.code==code
+                )
+        ) 
+
         return {
-            "zone_id" : zone_id,
+            "zone_id": sel,
             "date_ech" : date_ech,
             "date_dif" : date_dif or date_ech,
             "code_pol" : properties['code_pol'],

@@ -2,7 +2,7 @@ from datetime import date
 from . import ForecastMixin, EpisodeMixin
 import requests
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, date
 import logging
 
 class Service(object):
@@ -72,7 +72,7 @@ class Forecast(Service, ForecastMixin):
 
     @property
     def params_fetch_all(self):
-        filter_date_ech = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Literal>2021-05-19T00:00:00Z</Literal></PropertyIsGreaterThanOrEqualTo>'
+        filter_date_ech = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Literal>{date.today()}T00:00:00Z</Literal></PropertyIsGreaterThanOrEqualTo>'
         return {
             'service': 'wfs',
             'request': 'getfeature',

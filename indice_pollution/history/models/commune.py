@@ -50,6 +50,15 @@ class Commune(db.Model):
             return cls.query.filter(cls.epci_id==subquery).limit(1)
 
     @classmethod
+    def bulk_query(cls, insees=None, codes=None):
+        if insees:
+            return db.session.query(cls).filter(cls.insee.in_(insees))
+        elif codes:
+            from indice_pollution.history.models.epci import EPCI
+            subquery = EPCI.bulk_query(codes=codes).with_entities(EPCI.id).subquery()
+            return cls.query.filter(cls.epci_id.in_(subquery)).limit(1)
+
+    @classmethod
     def get_and_init_from_api(cls, insee):
         res_api = cls.get_from_api(insee)
         if not res_api:

@@ -1,3 +1,4 @@
+from requests.models import codes
 from indice_pollution.models import db
 from indice_pollution.helpers import today
 from indice_pollution.history.models import Commune, EPCI
@@ -36,18 +37,41 @@ class IndiceATMO(db.Model):
         return query.first()
 
     @classmethod
-    def zone_subquery(cls, insee=None, code_epci=None):
+    def bulk(cls, insees=None, codes_epci=None, date_=None):
+        zone_subquery = cls.zone_subquery(insees=insees, codes_epci=codes_epci).subquery()
+        zone_subquery_or = cls.zone_subquery_or(insee=insees).subquery()
+        date_ = date_ or today()
+        query = IndiceATMO\
+            .query.filter(
+                IndiceATMO.date_ech.cast(Date)==date_,
+                ((IndiceATMO.zone_id.in_(zone_subquery))|
+                (IndiceATMO.zone_id.in_(zone_subquery_or))
+                )
+            )\
+            .order_by(IndiceATMO.date_dif.desc())
+        return query.first()
+
+    @classmethod
+    def zone_subquery(cls, insee=None, code_epci=None, insees=None, codes_epci=None):
         if insee:
             return Commune.get_query(insee=insee).with_entities(Commune.zone_id)
         elif code_epci:
             return EPCI.get_query(code=code_epci).with_entities(EPCI.zone_id)
+        elif insees:
+            return Commune.bulk_query(insees=insees)
+        elif codes_epci:
+            return EPCI.bulk_query(codes=codes_epci)
 
     @classmethod
-    def zone_subquery_or(cls, insee=None, code_epci=None):
+    def zone_subquery_or(cls, insee=None, code_epci=None, insees=None, codes_epci=None):
         if insee:
             return EPCI.get_query(insee=insee).with_entities(EPCI.zone_id)
         elif code_epci:
             return Commune.get_query(code=code_epci).with_entities(Commune.zone_id)
+        if insees:
+            return EPCI.bulk_query(insees=insees)
+        elif codes_epci:
+            return Commune.bulk_query(codes=codes_epci)
 
     @classmethod
     def couleur_from_valeur(cls, valeur):
