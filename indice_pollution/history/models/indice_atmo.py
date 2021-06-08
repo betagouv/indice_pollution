@@ -43,7 +43,7 @@ class IndiceATMO(db.Model):
         return text(
             """
             SELECT 
-                DISTINCT ON (i.date_ech, i.zone_id) i.*, i.date_ech date, coalesce(c.insee, c2.insee) insee
+                DISTINCT ON (i.date_ech, coalesce(c.insee, c2.insee)) i.*, i.date_ech date, coalesce(c.insee, c2.insee) insee
             FROM
                 indice_schema."indiceATMO" i
             JOIN indice_schema.zone z ON i.zone_id = z.id
@@ -51,7 +51,7 @@ class IndiceATMO(db.Model):
             LEFT JOIN indice_schema.epci e ON z.type = 'epci' AND z.id = e.zone_id
             LEFT JOIN indice_schema.commune c2 ON c2.epci_id = e.id
             WHERE date(date_ech) = :date_ech AND ((c.insee = ANY(:insees)) OR (c2.insee = ANY(:insees)))
-            ORDER BY i.date_ech, i.zone_id, i.date_dif DESC;
+            ORDER BY i.date_ech, coalesce(c.insee, c2.insee), i.date_dif DESC;
             """
         ).bindparams(
             date_ech=date_,
