@@ -325,14 +325,10 @@ class ForecastMixin(ServiceMixin):
         zone_code = properties['code_zone'] if type(properties['code_zone']) == str else f"{properties['code_zone']:05}"
         zone_type = properties.get('type_zone', 'commune').lower()
 
-        sel = select(
-               [Zone.id]
-            ).where(
-                and_(
-                    Zone.type==zone_type,
-                    Zone.code==zone_code
-                )
-        )
+        if zone_type == "commune":
+            sel = select([Commune.zone_id]).where(Commune.insee == zone_code)
+        else:
+            sel = select([Zone.id]).where(and_(Zone.type==zone_type, Zone.code==zone_code))
         return {
             "zone_id": sel,
             "date_ech" :cls.date_parser(properties['date_ech']),
