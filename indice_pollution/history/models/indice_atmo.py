@@ -24,14 +24,14 @@ class IndiceATMO(db.Model):
 
     @classmethod
     def get(cls, insee=None, code_epci=None, date_=None):
-        zone_subquery = cls.zone_subquery(insee=insee, code_epci=code_epci).subquery()
-        zone_subquery_or = cls.zone_subquery_or(insee=insee).subquery()
+        zone_subquery = cls.zone_subquery(insee=insee, code_epci=code_epci).limit(1).scalar_subquery()
+        zone_subquery_or = cls.zone_subquery_or(insee=insee).limit(1).scalar_subquery()
         date_ = date_ or today()
         query = IndiceATMO\
             .query.filter(
                 IndiceATMO.date_ech.cast(Date)==date_,
-                ((IndiceATMO.zone_id==zone_subquery)|
-                (IndiceATMO.zone_id==zone_subquery_or)
+                ((IndiceATMO.zone_id.in_(zone_subquery))|
+                (IndiceATMO.zone_id.in_(zone_subquery_or))
                 )
             )\
             .order_by(IndiceATMO.date_dif.desc())

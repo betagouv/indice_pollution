@@ -43,10 +43,10 @@ class Commune(db.Model):
     @classmethod
     def get_query(cls, insee=None, code=None):
         if insee:
-            return db.session.query(cls).filter_by(insee=insee)
+            return db.session.query(cls).filter_by(insee=insee).limit(1)
         elif code:
             from indice_pollution.history.models.epci import EPCI
-            subquery = EPCI.get_query(code=code).with_entities(EPCI.id).subquery()
+            subquery = EPCI.get_query(code=code).with_entities(EPCI.id).limit(1).subquery()
             return cls.query.filter(cls.epci_id==subquery).limit(1)
 
     @classmethod

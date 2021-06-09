@@ -20,12 +20,12 @@ class EpisodePollution(db.Model):
     @classmethod
     def get(cls, insee=None, code_epci=None, date_=None):
         if insee:
-            zone_subquery = Commune.get_query(insee=insee).with_entities(Commune.zone_pollution_id)
+            zone_subquery = Commune.get_query(insee=insee).limit(1).with_entities(Commune.zone_pollution_id).scalar_subquery()
         date_ = date_ or today()
         query = \
             cls.query.filter(
                 cls.date_ech.cast(Date)==date_,
-                cls.zone_id==zone_subquery
+                cls.zone_id.in_(zone_subquery)
             )\
             .order_by(cls.date_dif.desc())
         return query.all()
