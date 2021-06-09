@@ -24,8 +24,8 @@ class IndiceATMO(db.Model):
 
     @classmethod
     def get(cls, insee=None, code_epci=None, date_=None):
-        zone_subquery = cls.zone_subquery(insee=insee, code_epci=code_epci).limit(1).scalar_subquery()
-        zone_subquery_or = cls.zone_subquery_or(insee=insee).limit(1).scalar_subquery()
+        zone_subquery = cls.zone_subquery(insee=insee, code_epci=code_epci).limit(1).subquery()
+        zone_subquery_or = cls.zone_subquery_or(insee=insee).limit(1).subquery()
         date_ = date_ or today()
         query = IndiceATMO\
             .query.filter(
@@ -120,6 +120,8 @@ class IndiceATMO(db.Model):
 
     @classmethod
     def sous_indice_dict(cls, code, valeur):
+        if valeur is None:
+            return {}
         return {
             **{'polluant_name': code.upper()},
             **cls.indice_dict(valeur)
@@ -137,6 +139,8 @@ class IndiceATMO(db.Model):
 
     @classmethod
     def make_dict(cls, valeur, date_):
+        if valeur == None:
+            return {}
         return {
             **{
                 'date': date_.date().isoformat(),

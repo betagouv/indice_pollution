@@ -23,7 +23,7 @@ class EPCI(db.Model):
         if code:
             return cls.query.filter_by(code=code)
         elif insee:
-            subquery = Commune.get_query(insee).with_entities(Commune.epci_id).scalar_subquery()
+            subquery = Commune.get_query(insee).with_entities(Commune.epci_id).subquery()
             return cls.query.filter(cls.id.in_(subquery))
 
     @classmethod
