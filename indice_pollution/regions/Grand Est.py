@@ -11,7 +11,7 @@ class Service(ServiceMixin):
     ]
 
 class Forecast(Service, ForecastMixin):
-    url = 'https://services3.arcgis.com/Is0UwT37raQYl9Jj/arcgis/rest/services/ind_grandest_5j/FeatureServer/0/query'
+    url = 'https://services3.arcgis.com/Is0UwT37raQYl9Jj/arcgis/rest/services/ind_grandest_4j/FeatureServer/0/query'
     outfields = ['*']
 
     @classmethod
