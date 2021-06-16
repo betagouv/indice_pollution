@@ -24,8 +24,8 @@ class IndiceATMO(db.Model):
 
     @classmethod
     def get(cls, insee=None, code_epci=None, date_=None):
-        zone_subquery = cls.zone_subquery(insee=insee, code_epci=code_epci).limit(1).subquery()
-        zone_subquery_or = cls.zone_subquery_or(insee=insee).limit(1).subquery()
+        zone_subquery = cls.zone_subquery(insee=insee, code_epci=code_epci).limit(1)
+        zone_subquery_or = cls.zone_subquery_or(insee=insee).limit(1)
         date_ = date_ or today()
         query = IndiceATMO\
             .query.filter(
