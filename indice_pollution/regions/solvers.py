@@ -4,7 +4,11 @@ import logging
 
 def get_region(insee=None, region_name=None):
     if not region_name and insee:
-        region_name = Commune.get(insee).departement.region.nom
+        commune = Commune.get(insee).departement.region.nom
+        if commune.departement and commune.departement.region:
+            return commune.departement.region.nom
+        logging.error(f"No region for {insee}")
+        raise KeyError
     if not region_name:
         logging.error("No region or insee given, couldn't find region")
         raise KeyError
