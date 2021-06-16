@@ -4,7 +4,7 @@ import logging
 
 def get_region(insee=None, region_name=None):
     if not region_name and insee:
-        commune = Commune.get(insee).departement.region.nom
+        commune = Commune.get(insee)
         if commune.departement and commune.departement.region:
             return commune.departement.region.nom
         logging.error(f"No region for {insee}")
