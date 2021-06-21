@@ -38,6 +38,8 @@ class Commune(db.Model):
 
     @classmethod
     def get(cls, insee):
+        if insee is None:
+            return None
         return cls.get_query(insee).first() or cls.get_and_init_from_api(insee)
 
     @classmethod

@@ -259,6 +259,8 @@ def availability(insee):
 
 
 def raep(insee):
+    if insee is None:
+        return {}
     departement = Commune.get(insee).departement
     return {
         "departement": {

@@ -7,3 +7,4 @@ from .epci import EPCI # noqa
 from .zone import Zone # noqa
 from .indice_atmo import IndiceATMO #noqa
 from .episode_pollution import EpisodePollution #noqa
+from .potentiel_radon import PotentielRadon #noqa
