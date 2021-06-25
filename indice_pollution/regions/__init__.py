@@ -421,7 +421,7 @@ class EpisodeMixin(ServiceMixin):
             "zone_id": sel,
             "date_ech" : date_ech,
             "date_dif" : date_dif or date_ech,
-            "code_pol" : properties['code_pol'],
+            "code_pol" : int(properties['code_pol']),
             "etat" : properties.get('etat'),
             "com_court" : properties.get('com_court'),
             "com_long" : properties.get('com_long'),
