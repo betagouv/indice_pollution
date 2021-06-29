@@ -21,6 +21,7 @@ class Commune(db.Model):
     _centre = db.Column('centre', db.String)
     zone_pollution_id = db.Column(db.Integer, db.ForeignKey("indice_schema.zone.id"))
     zone_pollution = relationship("indice_pollution.history.models.zone.Zone", foreign_keys=zone_pollution_id)
+    pollinarium_sentinelle = db.Column(db.Boolean)
 
     def __init__(self, nom, codeDepartement, centre, code):
         self.nom = nom
