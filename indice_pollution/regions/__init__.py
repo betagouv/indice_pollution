@@ -176,12 +176,18 @@ class ServiceMixin(object):
     }
 
     def fetch_all(self):
+        url = self.url_fetch_all if hasattr(self, "url_fetch_all") else self.url
         get_one_attempt = self.get_one_attempt_fetch_all if hasattr(self, "get_one_attempt_fetch_all") else self.get_one_attempt
         response = get_one_attempt(
-            self.url_fetch_all if hasattr(self, "url_fetch_all") else self.url,
+            url,
             self.params_fetch_all
         )
-        j = response.json()
+        try:
+            j = response.json()
+        except json.JSONDecodeError:
+            logging.error(f"Unable to decode {url} {self.params_fetch_all}")
+            yield []
+            return
         yield j['features']
         i = len(j['features'])
         while j.get('exceededTransferLimit'):
