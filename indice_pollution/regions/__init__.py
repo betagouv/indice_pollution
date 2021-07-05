@@ -182,6 +182,9 @@ class ServiceMixin(object):
             url,
             self.params_fetch_all
         )
+        if not response:
+            yield []
+            return
         try:
             j = response.json()
         except json.JSONDecodeError:
