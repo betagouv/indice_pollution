@@ -109,3 +109,14 @@ class Episode(Service, EpisodeMixin):
     @classmethod
     def get_zone_id(cls, properties):
         return Zone.query.filter_by(code='11', type='region').first().id
+
+    @property
+    def params_fetch_all(self):
+        return {
+            'service': 'WFS',
+            'version': '2.0.0',
+            'request': 'GetFeature',
+            'typeName': f'DIDON:indice_atmo_2020',
+            'outputFormat': 'application/json',
+            'CQL_FILTER': f'(date_dif >= {date.today()}) OR (date_ech = {date.today()})'
+        }
