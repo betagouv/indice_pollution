@@ -139,7 +139,13 @@ def chunks(lst, n):
         yield lst[i:i + n]
 
 def make_dict_allergenes():
-    r = requests.get(os.getenv("ALLERGIES_URL"))
+    if not os.getenv('ALLERGIES_URL'):
+        return {}
+    try:
+        r = requests.get(os.getenv("ALLERGIES_URL"))
+    except Exception as e:
+        logging.error(e)
+        return {}
     decoded_content = r.content.decode('utf-8')
     first_column_name = decoded_content[:10] #Il s'agit de la date
     date_format = "%d/%m/%Y"
@@ -213,25 +219,22 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
                 get_region(region_name=insee_region_names[insee]),
                 indices.get(insee, [])
                ),
-        }
-        for insee in insees
-    }
-    if fetch_episodes:
-        for insee in insees:
-            to_return[insee].update({
+            **({
                 "episode": make_resp(
                     get_region(region_name=insee_region_names[insee]),
                     episodes.get(insee, [])
                 )
-                }
+                } if fetch_episodes else {}
             )
-    if fetch_allergenes and os.getenv('ALLERGIES_URL'):
+        }
+        for insee in insees
+    }
+    if fetch_allergenes:
         allergenes_par_departement = make_dict_allergenes()
         for insee in insees:
-            if not insee in to_return:
-                continue
             code_departement = make_code_departement(insee)
             if code_departement in allergenes_par_departement:
+                to_return.setdefault(insee, {})
                 to_return[insee].update({'raep': allergenes_par_departement[code_departement]})
     return to_return
 
