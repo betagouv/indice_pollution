@@ -6,7 +6,7 @@ from indice_pollution.history.models import Commune, EPCI
 from sqlalchemy import Date, text
 from dataclasses import dataclass
 from datetime import datetime
-from importlib import import_module
+from operator import attrgetter, itemgetter
 
 @dataclass
 class IndiceATMO(db.Model):
@@ -119,7 +119,7 @@ class IndiceATMO(db.Model):
         }
 
     @classmethod
-    def sous_indice_dict(cls, code, valeur):
+    def make_sous_indice_dict(cls, code, valeur):
         if valeur is None:
             return {}
         return {
@@ -128,25 +128,18 @@ class IndiceATMO(db.Model):
         }
 
     def dict(self):
-        return {
-            **{
-                'sous_indices': [self.sous_indice_dict(k, getattr(self, k)) for k in ['no2', 'so2', 'o3', 'pm10', 'pm25']],
-                'date': self.date_ech.date().isoformat(),
-                'valeur': self.valeur
-            },
-            **self.indice_dict(self.valeur)
-        }
+        return self.make_dict(self)
 
     @classmethod
-    def make_dict(cls, valeur, date_):
-        if valeur == None:
-            return {}
+    def make_dict(cls, indice):
+        getter = itemgetter if type(indice) == dict else attrgetter
         return {
             **{
-                'date': date_.date().isoformat(),
-                'valeur': valeur
+                'sous_indices': [cls.make_sous_indice_dict(k, getter(k)(indice)) for k in ['no2', 'so2', 'o3', 'pm10', 'pm25']],
+                'date': getter('date_ech')(indice).date().isoformat(),
+                'valeur': getter('valeur')(indice)
             },
-            **cls.indice_dict(valeur)
+            **cls.indice_dict(getter('valeur')(indice))
         }
 
     @property

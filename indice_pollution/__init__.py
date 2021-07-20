@@ -207,7 +207,7 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
     episodes = dict()
     for chunk in chunks(list(insees), 100):
         indices.update(
-            {i['insee']: IndiceATMO.make_dict(i['valeur'], i['date_ech']) for i in IndiceATMO.bulk(date_=date_, insees=chunk)}
+            {i['insee']: IndiceATMO.make_dict(i) for i in IndiceATMO.bulk(date_=date_, insees=chunk)}
         )
         if fetch_episodes:
             episodes.update(
