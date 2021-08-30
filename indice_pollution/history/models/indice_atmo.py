@@ -1,3 +1,4 @@
+from sqlalchemy.orm import relationship
 from indice_pollution.history.models.zone import Zone
 from requests.models import codes
 from indice_pollution.models import db
@@ -13,6 +14,7 @@ class IndiceATMO(db.Model):
     __table_args__ = {"schema": "indice_schema"}
 
     zone_id: int = db.Column(db.Integer, db.ForeignKey('indice_schema.zone.id'), primary_key=True)
+    zone: Zone = relationship("indice_pollution.history.models.zone.Zone")
     date_ech: datetime = db.Column(db.DateTime, primary_key=True)
     date_dif: datetime = db.Column(db.DateTime, primary_key=True)
     no2: int = db.Column(db.Integer)
@@ -116,6 +118,7 @@ class IndiceATMO(db.Model):
             'indice': cls.indice_from_valeur(valeur),
             'label': cls.label_from_valeur(valeur),
             'couleur': cls.couleur_from_valeur(valeur),
+            'valeur': valeur
         }
 
     @classmethod
@@ -154,3 +157,11 @@ class IndiceATMO(db.Model):
                 EPCI.zone_id == self.zone_id
             ).limit(1).first()
             return r.Commune.insee
+
+    @property
+    def details(self):
+        return [self.make_sous_indice_dict(k, getattr(self, k)) for k in ['no2', 'so2', 'o3', 'pm10', 'pm25']]
+
+    @property
+    def indice(self):
+        return self.indice_from_valeur(self.valeur)

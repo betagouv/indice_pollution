@@ -113,7 +113,7 @@ def make_metadata(r):
         }
     }
 
-def forecast(insee, date_=None, force_from_db=False):
+def forecast(insee, date_=None, use_make_resp=True):
     from .regions.solvers import get_region
     date_ = date_ or today()
     try:
@@ -125,7 +125,12 @@ def forecast(insee, date_=None, force_from_db=False):
         }, 400
     if region.Service.is_active:
         indice = IndiceATMO.get(insee=insee)
-        return make_resp(region, indice, date_)
+        if use_make_resp:
+            return make_resp(region, indice, date_)
+        else:
+            indice.region = region
+            indice.commune = Commune.get(insee)
+            return indice
     else:
         return {
             "error": "Inactive region",
@@ -261,17 +266,20 @@ def availability(insee):
         return False
 
 
-def raep(insee):
+def raep(insee, extended=False):
     if insee is None:
         return {}
     departement = Commune.get(insee).departement
-    return {
-        "departement": {
-            "nom": departement.nom,
-            "code": departement.code
-        },
-        "data": make_dict_allergenes().get(make_code_departement(insee))
-    }
+    if extended:
+        pass
+    else:
+        return {
+            "departement": {
+                "nom": departement.nom,
+                "code": departement.code
+            },
+            "data": make_dict_allergenes().get(make_code_departement(insee))
+        }
 
 
 def save_all():
