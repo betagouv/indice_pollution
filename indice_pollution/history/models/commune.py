@@ -1,5 +1,6 @@
 from indice_pollution.extensions import db
 from indice_pollution.history.models.departement import Departement
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship
 import requests
 import json
@@ -22,12 +23,14 @@ class Commune(db.Model):
     zone_pollution_id = db.Column(db.Integer, db.ForeignKey("indice_schema.zone.id"))
     zone_pollution = relationship("indice_pollution.history.models.zone.Zone", foreign_keys=zone_pollution_id)
     pollinarium_sentinelle = db.Column(db.Boolean)
+    codes_postaux = db.Column(postgresql.ARRAY(db.String))
 
-    def __init__(self, nom, codeDepartement, centre, code):
+    def __init__(self, nom, code, codeDepartement=None, centre=None, codes_postaux=None):
         self.nom = nom
         self.insee = code
-        self.departement = Departement.get(codeDepartement)
+        self.departement = Departement.get(codeDepartement) if codeDepartement else None
         self.centre = centre
+        self.codes_postaux = codes_postaux
 
     @property
     def centre(self):
@@ -76,7 +79,7 @@ class Commune(db.Model):
         r = requests.get(
             f'https://geo.api.gouv.fr/communes/{insee}',
             params={
-                "fields": "code,nom,codeDepartement,centre",
+                "fields": "code,nom,codeDepartement,centre,codesPostaux",
                 "format": "json",
             }
         )
@@ -88,5 +91,12 @@ class Commune(db.Model):
         if not 'codeDepartement' in r.json() or not 'centre' in r.json():
             current_app.logger.error(f'Error getting info about: "{insee}" we need "codeDepartement" and "centre" in "{r.json()}"')
             return None
+        j = r.json()
+        if 'codesPostaux' in j:
+            j['codes_postaux'] = j['codesPostaux']
+            del j['codesPostaux']
+        return j
 
-        return r.json()
+    @property
+    def code(self):
+        return self.insee
