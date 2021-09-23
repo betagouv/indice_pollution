@@ -12,3 +12,7 @@ class PotentielRadon(db.Model):
     @classmethod
     def get(cls, insee):
         return cls.query.join(Commune, Commune.zone_id == cls.zone_id).filter(Commune.insee == insee).first()
+
+    @property
+    def label(self):
+        return f"Catégorie {self.classe_potentiel}"
