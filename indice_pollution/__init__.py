@@ -79,7 +79,7 @@ def create_app(test_config=None):
     manage_webpack = FlaskManageWebpack()
     manage_webpack.init_app(app)
 
-    from .models import db
+    from .extensions import db
     db.init_app(app)
     migrate = Migrate(app, db)
     configure_celery(app)

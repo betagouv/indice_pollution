@@ -1,6 +1,6 @@
 from sqlalchemy.orm import relationship
 from indice_pollution.history.models.commune import Commune
-from indice_pollution.models import db
+from indice_pollution.extensions import db
 from datetime import datetime
 from indice_pollution.helpers import today
 from sqlalchemy import  Date, text

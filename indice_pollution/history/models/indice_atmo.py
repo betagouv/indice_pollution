@@ -1,7 +1,7 @@
 from sqlalchemy.orm import relationship
 from indice_pollution.history.models.zone import Zone
 from requests.models import codes
-from indice_pollution.models import db
+from indice_pollution.extensions import db
 from indice_pollution.helpers import today
 from indice_pollution.history.models import Commune, EPCI
 from sqlalchemy import Date, text

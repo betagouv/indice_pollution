@@ -1,4 +1,4 @@
-from indice_pollution.models import db
+from indice_pollution.extensions import db
 from indice_pollution.history.models.region import Region
 from sqlalchemy.orm import relation, relationship
 import requests

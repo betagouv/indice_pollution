@@ -1,6 +1,5 @@
-from indice_pollution.models import db
+from indice_pollution.extensions import db
 import requests
-from sqlalchemy.orm import relationship
 
 class Region(db.Model):
     __table_args__ = {"schema": "indice_schema"}

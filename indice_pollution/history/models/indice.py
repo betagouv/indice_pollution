@@ -1,5 +1,4 @@
-from indice_pollution.models import db
-import json
+from indice_pollution.extensions import db
 
 class IndiceHistory(db.Model):
     __table_args__ = {"schema": "indice_schema"}

@@ -1,5 +1,4 @@
-from indice_pollution.models import db
-from indice_pollution.history.models import EPCI, Commune
+from indice_pollution.extensions import db
 
 class Zone(db.Model):
     __table_args__ = {"schema": "indice_schema"}

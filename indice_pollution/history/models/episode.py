@@ -1,5 +1,5 @@
 from sqlalchemy.sql.elements import _corresponding_column_or_error
-from indice_pollution.models import db
+from indice_pollution.extensions import db
 import json
 from .commune import Commune
 from flask import current_app

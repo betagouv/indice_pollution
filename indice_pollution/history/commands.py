@@ -1,5 +1,4 @@
 from indice_pollution import today
-from indice_pollution.models import db
 from indice_pollution.history.models import IndiceHistory
 from flask import current_app
 from datetime import timedelta

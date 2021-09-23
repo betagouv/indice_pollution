@@ -1,4 +1,4 @@
-from indice_pollution.models import db
+from indice_pollution.extensions import db
 from sqlalchemy.orm import relationship
 from indice_pollution.history.models import Commune
 
