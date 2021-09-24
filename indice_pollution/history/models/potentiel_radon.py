@@ -15,4 +15,8 @@ class PotentielRadon(db.Model):
 
     @property
     def label(self):
-        return f"Catégorie {self.classe_potentiel}"
+        return {
+            1: "Faible",
+            2: "Moyen",
+            3: "Élevé"
+        }.get(self.classe_potentiel)
