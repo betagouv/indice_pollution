@@ -138,7 +138,7 @@ class IndiceATMO(db.Model):
         getter = itemgetter if type(indice) == dict else attrgetter
         return {
             **{
-                'sous_indices': [cls.make_sous_indice_dict(k, getter(k)(indice)) for k in ['no2', 'so2', 'o3', 'pm10', 'pm25']],
+                'sous_indices': [cls.make_sous_indice_dict(k, getter(k)(indice)) for k in ['pm25', 'pm10', 'no2', 'o3', 'so2']],
                 'date': getter('date_ech')(indice).date().isoformat(),
                 'valeur': getter('valeur')(indice)
             },
