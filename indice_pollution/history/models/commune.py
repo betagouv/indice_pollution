@@ -25,13 +25,12 @@ class Commune(db.Model):
     pollinarium_sentinelle = db.Column(db.Boolean)
     codes_postaux = db.Column(postgresql.ARRAY(db.String))
 
-    def __init__(self, nom, code, codeDepartement=None, centre=None, codes_postaux=None, zone_id=None):
-        self.nom = nom
-        self.insee = code
-        self.departement = Departement.get(codeDepartement) if codeDepartement else None
-        self.centre = centre
-        self.codes_postaux = codes_postaux
-        self.zone_id = zone_id
+    def __init__(self, **kwargs):
+        if 'code' in kwargs:
+            kwargs['insee'] = kwargs.pop('code')
+        if 'codeDepartement' in kwargs:
+            kwargs['departement'] = Departement.get(kwargs.pop('codeDepartement'))
+        super().__init__(**kwargs)
 
     @property
     def centre(self):
