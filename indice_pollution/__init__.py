@@ -177,8 +177,9 @@ def make_dict_allergenes():
             }
 
         }
-    to_return['2A'] = to_return['20']
-    to_return['2B'] = to_return['20']
+    if '20' in to_return:
+        to_return['2A'] = to_return['20']
+        to_return['2B'] = to_return['20']
     return to_return
 
 def make_code_departement(insee):
