@@ -46,20 +46,21 @@ def upgrade():
     lines = decoded_content.splitlines()
     reader = csv.reader(lines, delimiter=';')
 
-    def format_insee(i):
+    def format_insee(i: str):
         try:
-            return f"{int(i):05}"
+            return f"{int(i.strip()):05}"
         except ValueError:
             return i
 
     def insert_potentiel(rows):
         for row in rows:
-            if not row[2] or format_insee(row[2]) in oudated_communes:
+            insee = format_insee(row[2]) if row[2] else None
+            if not row[2] or insee in oudated_communes:
                 continue
             op.execute(
                 insert(potentiel_radon).values(
                     {
-                        "zone_id": sa.select((commune_table.c.zone_id,)).where(commune_table.c.insee==format_insee(row[2])),
+                        "zone_id": sa.select((commune_table.c.zone_id,)).where(commune_table.c.insee==insee),
                         "classe_potentiel": int(row[3])
                     }
                 ).on_conflict_do_nothing()
