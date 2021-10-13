@@ -7,7 +7,7 @@ from flask import Flask
 from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
 from flask_migrate import Migrate
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import os
 import logging
 from .helpers import today
@@ -247,9 +247,12 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
 def episodes(insee, date_=None):
     from .regions.solvers import get_region
     date_ = date_ or today()
+    if type(date_) == str:
+        date_ = date.fromisoformat(date_)
+
     region = get_region(insee)
     if region.Service.is_active:
-        result = list(map(lambda e: e.dict(), EpisodePollution.get(insee=insee)))
+        result = list(map(lambda e: e.dict(), EpisodePollution.get(insee=insee, date_=date_)))
         return make_resp(region, result, date_)
     else:
         return {
