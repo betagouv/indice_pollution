@@ -19,6 +19,7 @@ class Forecast(Service, ForecastMixin):
     url = 'https://magellan.airparif.asso.fr/geoserver/DIDON/wfs'
     attributes_key = 'properties'
     use_dateutil_parser = True
+    get_only_from_scraping = True
 
     def params(self, date_, insee):
         return {
@@ -66,12 +67,10 @@ class Forecast(Service, ForecastMixin):
 
 
 class Episode(Service, EpisodeMixin):
-    url_fetch_all = 'https://opendata.arcgis.com/datasets/f4e0877c9e05459b8edf94077f1d2dbc_0.geojson'
     get_only_from_scraping = True
+    fetch_only_from_scraping = True
 
-    params_fetch_all = {}
-
-    def get_from_scraping(self, to_return, date_, insee):
+    def get_from_scraping(self, to_return=[], date_=None, insee=None):
         api_key = os.getenv('AIRPARIF_API_KEY')
         polluant_code_pol = {
             "O3": "7",
@@ -96,27 +95,16 @@ class Episode(Service, EpisodeMixin):
         except ValueError as e:
             current_app.logger.error(e)
             return []
-        for k, date_ in [('jour', date.today()), ('demain', date.today() + timedelta(days=1))]:
+        for k, d in [('jour', date.today()), ('demain', date.today() + timedelta(days=1))]:
             for polluant in r.json()[k]['polluants']:
                 to_return += [{
                     'code_pol': polluant_code_pol.get(polluant['nom']),
-                    'date': str(date_),
+                    'date': str(d),
                     'etat': "PAS DE DEPASSEMENT" if polluant['niveau'] == "-" else polluant['niveau'],
-                    'code_zone': insee[:2]
+                    'code_zone': '11'
                 }]
         return to_return
 
     @classmethod
     def get_zone_id(cls, properties):
         return Zone.query.filter_by(code='11', type='region').first().id
-
-    @property
-    def params_fetch_all(self):
-        return {
-            'service': 'WFS',
-            'version': '2.0.0',
-            'request': 'GetFeature',
-            'typeName': f'DIDON:indice_atmo_2020',
-            'outputFormat': 'application/json',
-            'CQL_FILTER': f'(date_dif >= {date.today()}) OR (date_ech = {date.today()})'
-        }

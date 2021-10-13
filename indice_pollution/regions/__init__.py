@@ -74,11 +74,9 @@ class ServiceMixin(object):
         except KeyError:
             return []
         if force_from_db:
-            indice = self.HistoryModel.get(date_, insee)
+            indice = self.DB_OBJECT.get(date_, insee)
             if indice:
                 return [indice.features]
-        if not to_return:
-            to_return = self.HistoryModel.get_after(date_, insee)
         if not to_return and not self.get_only_from_scraping:
             to_return = self.get_no_cache(date_, insee, attempts)
         if not any(map(lambda r: (r['date'] if 'date' in r else r['date_dif']) == str(date_), to_return)):
@@ -86,9 +84,11 @@ class ServiceMixin(object):
                 to_return = self.get_from_scraping(to_return, date_, insee)
         to_return = list(filter(lambda r: r['date']>= str(date_), to_return))
         if to_return:
-            for v in to_return:
-                indice = self.HistoryModel.get_or_create(v['date'], insee, features=v)
-                db.session.commit()
+            indices = filter(lambda v: v, map(self.make_indice_dict, to_return))
+            ins = pg_insert(self.DB_OBJECT)\
+                .values(list(indices))\
+                .on_conflict_do_nothing()
+            db.session.execute(ins)
         else:
             logging.error(f"Pas d’épisode de pollution pour '{insee}'")
         return to_return
@@ -176,37 +176,40 @@ class ServiceMixin(object):
 
     def fetch_all(self):
         url = self.url_fetch_all if hasattr(self, "url_fetch_all") else self.url
-        get_one_attempt = self.get_one_attempt_fetch_all if hasattr(self, "get_one_attempt_fetch_all") else self.get_one_attempt
-        response = get_one_attempt(
-            url,
-            self.params_fetch_all
-        )
-        if not response:
-            yield []
-            return
-        try:
-            j = response.json()
-        except json.JSONDecodeError:
-            logging.error(f"Unable to decode {url} {self.params_fetch_all}")
-            yield []
-            return
-        yield j['features']
-        i = len(j['features'])
-        while j.get('exceededTransferLimit'):
-            j = get_one_attempt(
-                self.url_fetch_all if hasattr(self, "url_fetch_all") else self.url,
-                {
-                    **self.params_fetch_all,
-                    **{
-                        'resultOffset': i
-                    }
-                }
-            ).json()
+        if hasattr(self, 'fetch_only_from_scraping'):
+            j =  self.get_from_scraping()
+            yield j
+        else:
+            get_one_attempt = self.get_one_attempt_fetch_all if hasattr(self, "get_one_attempt_fetch_all") else self.get_one_attempt
+            response = get_one_attempt(
+                url,
+                self.params_fetch_all
+            )
+            if not response:
+                yield []
+                return
+            try:
+                j = response.json()
+            except json.JSONDecodeError:
+                logging.error(f"Unable to decode {url} {self.params_fetch_all}")
+                yield []
+                return
             yield j['features']
-            i += len(j['features'])
+            i = len(j['features'])
+            while j.get('exceededTransferLimit'):
+                j = get_one_attempt(
+                    self.url_fetch_all if hasattr(self, "url_fetch_all") else self.url,
+                    {
+                        **self.params_fetch_all,
+                        **{
+                            'resultOffset': i
+                        }
+                    }
+                ).json()
+                yield j['features']
+                i += len(j['features'])
 
 class ForecastMixin(ServiceMixin):
-    HistoryModel = IndiceHistory
     outfields = ['date_ech', 'valeur', 'qualif', 'val_no2', 'val_so2',
      'val_o3', 'val_pm10', 'val_pm25'
     ]
@@ -351,7 +354,6 @@ class ForecastMixin(ServiceMixin):
 
 class EpisodeMixin(ServiceMixin):
     DB_OBJECT = EpisodePollution
-    HistoryModel = EpisodeHistory
     zone_type = 'departement'
     outfields = ['date_ech', 'lib_zone', 'code_zone', 'date_dif', 'code_pol',
      'lib_pol', 'etat', 'com_court', 'com_long']
@@ -406,10 +408,12 @@ class EpisodeMixin(ServiceMixin):
     def make_indice_dict(cls, feature):
         properties = feature.get('properties') or feature.get('attributes')
 
-        if not 'date_ech' in properties:
-            return None
+        if not properties:
+            properties = feature
 
-        date_ech = cls.date_parser(properties['date_ech'])
+        date_ech = cls.date_parser(properties.get('date_ech') or properties.get('date'))
+        if not date_ech:
+            return None
         date_dif = cls.date_parser(properties.get('date_dif'))
 
         code = properties['code_zone']
