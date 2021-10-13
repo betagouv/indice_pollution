@@ -13,10 +13,10 @@ from operator import attrgetter, itemgetter
 class IndiceATMO(db.Model):
     __table_args__ = {"schema": "indice_schema"}
 
-    zone_id: int = db.Column(db.Integer, db.ForeignKey('indice_schema.zone.id'), primary_key=True)
+    zone_id: int = db.Column(db.Integer, db.ForeignKey('indice_schema.zone.id'), primary_key=True, nullable=False)
     zone: Zone = relationship("indice_pollution.history.models.zone.Zone")
-    date_ech: datetime = db.Column(db.DateTime, primary_key=True)
-    date_dif: datetime = db.Column(db.DateTime, primary_key=True)
+    date_ech: datetime = db.Column(db.DateTime, primary_key=True, nullable=False)
+    date_dif: datetime = db.Column(db.DateTime, primary_key=True, nullable=False)
     no2: int = db.Column(db.Integer)
     so2: int = db.Column(db.Integer)
     o3:int = db.Column(db.Integer)
