@@ -132,10 +132,11 @@ def forecast(insee, date_=None, use_make_resp=True):
             indice.commune = Commune.get(insee)
             return indice
     else:
-        return {
-            "error": "Inactive region",
-            "metadata": make_metadata(region)
-        }, 400
+        indice = IndiceATMO()
+        indice.region = region
+        indice.commune = Commune.get(insee)
+        indice.error = "Inactive region"
+        return indice
 
 
 def chunks(lst, n):
