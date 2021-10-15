@@ -11,8 +11,13 @@ class Service(ServiceMixin):
     ]
 
 class Forecast(Service, ForecastMixin):
-    url = 'https://services3.arcgis.com/Is0UwT37raQYl9Jj/arcgis/rest/services/ind_grandest_4j/FeatureServer/0/query'
+    url = 'https://opendata.arcgis.com/api/v3/datasets/f9893699fa7f4c2a9c87090259cf32da_0/downloads/data'
     outfields = ['*']
+
+    params_fetch_all = {
+        'format': 'geojson',
+        'spatialRefId': 4326
+    }
 
     @classmethod
     def get_zone(cls, properties):
