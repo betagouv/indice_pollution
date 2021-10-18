@@ -11,7 +11,7 @@ class Service(ServiceMixin):
     ]
 
 class Forecast(Service, ForecastMixin):
-    url = 'https://opendata.arcgis.com/api/v3/datasets/f9893699fa7f4c2a9c87090259cf32da_0/downloads/data'
+    url = 'https://opendata.arcgis.com/api/v3/datasets/b0d57e8f0d5e4cb786cb554eb15c3bcb_0/downloads/data'
     outfields = ['*']
 
     params_fetch_all = {
