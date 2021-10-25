@@ -1,5 +1,7 @@
 import requests
 import csv
+
+from sqlalchemy.orm import joinedload
 from indice_pollution.history.models.commune import Commune
 from indice_pollution.history.models.indice_atmo import IndiceATMO
 from indice_pollution.history.models.episode_pollution import EpisodePollution
@@ -10,6 +12,9 @@ from flask_migrate import Migrate
 from datetime import datetime, timedelta, date
 import os
 import logging
+from indice_pollution.history.models.raep import RAEP
+
+from indice_pollution.history.models.zone import Zone
 from .helpers import today
 from .extensions import celery
 from importlib import import_module
@@ -144,52 +149,6 @@ def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
-def make_dict_allergenes():
-    if not os.getenv('ALLERGIES_URL'):
-        return {}
-    try:
-        r = requests.get(os.getenv("ALLERGIES_URL"))
-    except Exception as e:
-        logging.error(e)
-        return {}
-    decoded_content = r.content.decode('utf-8')
-    first_column_name = decoded_content[:10] #Il s'agit de la date
-    date_format = "%d/%m/%Y"
-    debut_validite = datetime.strptime(first_column_name, date_format)
-    fin_validite = debut_validite + timedelta(weeks=1)
-    reader = csv.DictReader(
-        decoded_content.splitlines(),
-        delimiter=';'
-    )
-    liste_allergenes = ["cypres", "noisetier", "aulne", "peuplier", "saule", "frene", "charme", "bouleau", "platane", "chene", "olivier", "tilleul", "chataignier", "rumex", "graminees", "plantain", "urticacees", "armoises", "ambroisies"]
-
-    to_return = dict()
-    for r in reader:
-        departement = f"{r[first_column_name]:0>2}"
-        to_return[departement] = {
-            "total": r['Total'],
-            "allergenes": {
-                allergene: r[allergene]
-                for allergene in liste_allergenes
-            },
-            "periode_validite": {
-                "debut": debut_validite.strftime(date_format),
-                "fin": fin_validite.strftime(date_format)
-            }
-
-        }
-    if '20' in to_return:
-        to_return['2A'] = to_return['20']
-        to_return['2B'] = to_return['20']
-    return to_return
-
-def make_code_departement(insee):
-    if len(insee) == 5:
-        return Commune.get(insee).departement.code
-    elif len(insee) == 2:
-        return f"{insee:0>2}" if insee != '2A' and insee != '2B' else '20'
-    return ""
-
 def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_allergenes=False):
     from indice_pollution.history.models import IndiceATMO, EpisodePollution
     from .regions.solvers import get_region
@@ -237,12 +196,22 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
         for insee in insees
     }
     if fetch_allergenes:
-        allergenes_par_departement = make_dict_allergenes()
+        allergenes_par_departement = {
+            r.zone_id: r
+            for r in RAEP.get_all()
+        }
+        communes = {
+            c.insee: c
+            for c in Commune.query.options(
+                    joinedload(Commune.departement)
+                ).populate_existing(
+                ).all()
+        }
         for insee in insees:
-            code_departement = make_code_departement(insee)
-            if code_departement in allergenes_par_departement:
+            c = communes[insee]
+            if c.departement.zone_id in allergenes_par_departement:
                 to_return.setdefault(insee, {})
-                to_return[insee].update({'raep': allergenes_par_departement[code_departement]})
+                to_return[insee].update({'raep': allergenes_par_departement[c.departement.zone_id].to_dict()})
     return to_return
 
 def episodes(insee, date_=None):
@@ -283,7 +252,7 @@ def raep(insee, extended=False):
                 "nom": departement.nom,
                 "code": departement.code
             },
-            "data": make_dict_allergenes().get(make_code_departement(insee))
+            "data": RAEP.get(zone_id=departement.zone_id).to_dict()
         }
 
 
@@ -307,7 +276,6 @@ def save_all():
         'Nouvelle-Aquitaine',
         'Occitanie',
         'Pays de la Loire',
-        "Provence-Alpes-Côte d'Azur",
         "Réunion",
         "Sud"
     ]
@@ -321,3 +289,4 @@ def save_all():
         logger.info(f'Saving Episode of {region}')
         module.Episode().save_all()
         logger.info(f'Saving of {region} ended')
+    RAEP.save_all()

@@ -13,6 +13,7 @@ class Departement(db.Model):
     region_id = db.Column(db.Integer, db.ForeignKey('indice_schema.region.id'))
     region = relationship("indice_pollution.history.models.region.Region")
     preposition = db.Column(db.String)
+    zone_id = db.Column(db.Integer, db.ForeignKey('indice_schema.zone.id'))
 
     def __init__(self, nom, code, codeRegion):
         self.nom = nom
