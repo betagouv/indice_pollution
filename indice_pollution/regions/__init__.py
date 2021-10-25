@@ -164,7 +164,7 @@ class ServiceMixin(object):
                 .values(values)\
                 .on_conflict_do_nothing()
             db.session.execute(ins)
-        db.session.commit()
+            db.session.commit()
 
     params_fetch_all = {
         'where': '(date_dif >= CURRENT_DATE) OR (date_ech = CURRENT_DATE)',
@@ -206,8 +206,8 @@ class ServiceMixin(object):
                         }
                     }
                 ).json()
-                yield j['features']
                 i += len(j['features'])
+                yield j['features']
 
 class ForecastMixin(ServiceMixin):
     outfields = ['date_ech', 'valeur', 'qualif', 'val_no2', 'val_so2',
