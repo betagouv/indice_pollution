@@ -3,6 +3,7 @@ import logging
 import time
 import pytz
 import json
+from sqlalchemy.sql.elements import literal
 import unidecode
 import itertools
 from datetime import datetime
@@ -149,22 +150,26 @@ class ServiceMixin(object):
     def save_all(self):
         indices = filter(lambda v: v, map(self.make_indice_dict, itertools.chain(*self.fetch_all())))
 
-        def grouper_it(n, iterable):
-            it = iter(iterable)
-            while True:
-                chunk_it = itertools.islice(it, n)
-                try:
-                    first_el = next(chunk_it)
-                except StopIteration:
-                    return
-                yield itertools.chain((first_el,), chunk_it)
-        for chunk in grouper_it(100, indices):
-            values = list(chunk)
-            ins = pg_insert(self.DB_OBJECT)\
-                .values(values)\
-                .on_conflict_do_nothing()
+        attrs =  [k for k in self.DB_OBJECT.__mapper__.attrs.keys() if not k.startswith('zone')]
+        def sorter(d):
+            return [d.get(a) for a in attrs]
+        for k, g in itertools.groupby(sorted(indices, key=sorter), key=sorter):
+            values = list(g)
+            ins = pg_insert(
+                self.DB_OBJECT
+            ).from_select(
+                attrs + ['zone_id'],
+                select(
+                    *([literal(i) for i in k] + [Zone.__table__.c.id])
+                ).where(
+                    Zone.type == values[0]['zone_type'],
+                    Zone.code.in_(
+                        [v['zone_code'] for v in values]
+                    )
+                )
+            ).on_conflict_do_nothing()
             db.session.execute(ins)
-            db.session.commit()
+        db.session.commit()
 
     params_fetch_all = {
         'where': '(date_dif >= CURRENT_DATE) OR (date_ech = CURRENT_DATE)',
@@ -335,13 +340,9 @@ class ForecastMixin(ServiceMixin):
     
         zone_code = properties['code_zone'] if type(properties['code_zone']) == str else f"{properties['code_zone']:05}"
         zone_type = properties.get('type_zone', 'commune').lower()
-
-        if zone_type == "commune":
-            sel = select([Commune.zone_id]).where(Commune.insee == zone_code)
-        else:
-            sel = select([Zone.id]).where(and_(Zone.type==zone_type, Zone.code==zone_code))
         return {
-            "zone_id": sel,
+            "zone_code": zone_code,
+            "zone_type": zone_type,
             "date_ech" :cls.date_parser(properties['date_ech']),
             "date_dif" :cls.date_parser(properties['date_dif']),
             "no2" :properties.get('code_no2'),
@@ -419,18 +420,9 @@ class EpisodeMixin(ServiceMixin):
         code = properties['code_zone']
         if type(code) == int:
             code = f"{code:02}"
-
-        sel = select(
-               [Zone.id]
-            ).where(
-                and_(
-                    Zone.type==cls.zone_type,
-                    Zone.code==code
-                )
-        ) 
-
         return {
-            "zone_id": sel,
+            "zone_code": code,
+            "zone_type": cls.zone_type,
             "date_ech" : date_ech,
             "date_dif" : date_dif or date_ech,
             "code_pol" : int(float(properties['code_pol'])),
