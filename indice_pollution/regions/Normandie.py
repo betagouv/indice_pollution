@@ -92,6 +92,7 @@ class Forecast(Service, ForecastMixin):
 
 class Episode(Service, EpisodeMixin):
     url = 'https://dservices7.arcgis.com/FPRT1cIkPKcq73uN/arcgis/services/alrt3j_normandie/WFSServer'
+    url_fetch_all = 'https://api.atmonormandie.fr/index.php/lizmap/service/'
 
     def params(self, date_, insee):
         centre = self.centre(insee)
@@ -108,12 +109,13 @@ class Episode(Service, EpisodeMixin):
         }
 
     params_fetch_all = {
-            'service': 'wfs',
-            'version': '2.0.0',
-            'request': 'getfeature',
-            'typeName': 'alrt3j_normandie:alrt3j_normandie',
-            'outputFormat': 'geojson',
-            'srsName': 'urn:ogc:def:crs:EPSG::4326',
+        'repository': 'bepisode',
+        'project': 'alerte3j_normandie',
+        'SERVICE': 'WFS',
+        'VERSION': '2.0.0',
+        'REQUEST': 'GetFeature',
+        'typename': 'alrt3j_normandie',
+        'outputformat': 'geojson'
     }
 
     def date_getter(self, attributes):
