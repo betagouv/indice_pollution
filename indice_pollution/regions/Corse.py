@@ -13,7 +13,7 @@ class Forecast(Service, ForecastMixin):
         "outSR": "4326",
         "f":"json",
         'orderByFields': 'date_ech DESC',
-        'where': "(date_ech >= CURRENT_DATE - INTERVAL '5' DAY)",
+        'where': "(date_ech >= CURRENT_DATE - INTERVAL '1' DAY)",
     }
 
 class Episode(Service, EpisodeMixin):
