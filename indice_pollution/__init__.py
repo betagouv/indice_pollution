@@ -247,12 +247,13 @@ def raep(insee, extended=False):
     if extended:
         pass
     else:
+        data = RAEP.get(zone_id=departement.zone_id)
         return {
             "departement": {
                 "nom": departement.nom,
                 "code": departement.code
             },
-            "data": RAEP.get(zone_id=departement.zone_id).to_dict()
+            "data": data.to_dict() if data else None
         }
 
 
