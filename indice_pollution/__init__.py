@@ -133,8 +133,9 @@ def forecast(insee, date_=None, use_make_resp=True):
         if use_make_resp:
             return make_resp(region, indice, date_)
         else:
-            indice.region = region
-            indice.commune = Commune.get(insee)
+            if indice is not None:
+                indice.region = region
+                indice.commune = Commune.get(insee)
             return indice
     else:
         indice = IndiceATMO()
