@@ -14,11 +14,12 @@ class Departement(db.Model):
     region = relationship("indice_pollution.history.models.region.Region")
     preposition = db.Column(db.String)
     zone_id = db.Column(db.Integer, db.ForeignKey('indice_schema.zone.id'))
+    zone = relationship("indice_pollution.history.models.zone.Zone")
 
-    def __init__(self, nom, code, codeRegion):
-        self.nom = nom
-        self.code = code
-        self.region = Region.get(codeRegion)
+    def __init__(self, **kwargs):
+        if 'codeRegion' in kwargs:
+            self.region = Region.get(kwargs.pop('codeRegion'))
+        super().__init__(**kwargs)
 
     @classmethod
     def get(cls, code):
