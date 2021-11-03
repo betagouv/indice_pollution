@@ -226,7 +226,7 @@ def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_all
                 to_return[insee].update({'raep': allergenes_par_departement[c.departement.zone_id].to_dict()})
     return to_return
 
-def episodes(insee, date_=None):
+def episodes(insee, date_=None, use_make_resp=True):
     from .regions.solvers import get_region
     date_ = date_ or today()
     if type(date_) == str:
@@ -234,13 +234,27 @@ def episodes(insee, date_=None):
 
     region = get_region(insee)
     if region.Service.is_active:
-        result = list(map(lambda e: e.dict(), EpisodePollution.get(insee=insee, date_=date_)))
-        return make_resp(region, result, date_)
+        result = EpisodePollution.get(insee=insee, date_=date_)
+        if use_make_resp:
+            result = list(map(lambda e: e.dict(), result))
+            return make_resp(region, result, date_)
+        else:
+            for r in result:
+                r.region = region
+                r.commune = Commune.get(insee)
+            return result
     else:
-        return {
-            "error": "Inactive region",
-            "metadata": make_metadata(region)
-        }, 400
+        if use_make_resp:
+            return {
+                "error": "Inactive region",
+                "metadata": make_metadata(region)
+            }, 400
+        else:
+            episode = EpisodePollution()
+            episode.region = region
+            episode.commune = Commune.get(insee)
+            episode.error = "Inactive region"
+            return [episode]
 
 def availability(insee):
     from .regions.solvers import get_region

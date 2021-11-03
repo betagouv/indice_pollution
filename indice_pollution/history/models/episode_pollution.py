@@ -1,3 +1,4 @@
+from typing import List
 from sqlalchemy.orm import relationship
 from indice_pollution.history.models.commune import Commune
 from indice_pollution.extensions import db
@@ -67,6 +68,10 @@ class EpisodePollution(db.Model):
 
     @property
     def lib_pol(self):
+        return self.get_lib_pol(self.code_pol)
+
+    @classmethod
+    def get_lib_pol(cls, code_pol):
         return {
             1: 'Dioxyde de soufre',
             3: 'Dioxyde d’azote',
@@ -76,17 +81,70 @@ class EpisodePollution(db.Model):
             8: 'Dioxyde d’azote',
             24: 'Particules PM10',
             39: 'Particules PM25',
-        }.get(self.code_pol)
+        }.get(code_pol)
+
+    @property
+    def lib_pol_normalized(self):
+        return self.get_lib_pol_normalized(self.code_pol)
+
+    @classmethod
+    def get_lib_pol_normalized(cls, code_pol):
+        return {
+            1: 'dioxyde_soufre',
+            3: 'dioxyde_azote',
+            5: 'particules_fines',
+            7: 'ozone',
+            8: 'dioxyde_azote',
+            24: 'pm10',
+            39: 'pm25',
+        }.get(code_pol)
+
+    @property
+    def code_etat(self):
+        return self.get_code_etat(self.etat)
+
+    @classmethod
+    def get_code_etat(cls, etat):
+        etat = etat.lower()
+        if "ssement" in etat:
+            return 0
+        elif "information" in etat:
+            return 1
+        elif "alerte" in etat:
+            return 2
+        else:
+            return None
+
+    @property
+    def lib_etat(self):
+        return self.get_lib_etat(self.code_etat)
+
+    @classmethod
+    def get_lib_etat(cls, code_etat):
+        if  code_etat is None:
+            return None
+        return ["pas de dépassement", "information", "alerte"][code_etat]
 
     def dict(self):
         return {
             "code_pol": f"{self.code_pol:02}",
-            "code_zone": self.zone.code,
+            "code_zone": self.zone.code if self.zone else "",
             "com_court": self.com_court,
             "com_long": self.com_long,
             "date": self.date_ech.date().isoformat(),
             "date_ech": self.date_ech.date().isoformat(),
             "date_dif": self.date_dif.date().isoformat(),
             "etat": self.etat,
-            "lib_pol": self.lib_pol
+            "lib_pol": self.lib_pol,
+            "lib_pol_normalized": self.lib_pol_normalized
         }
+
+    @classmethod
+    def filter_etat_haut(cls, episodes):
+        valid_etats = [e.code_etat for e in episodes if e.code_etat != None]
+        if len(valid_etats) == 0:
+            return []
+        max_etat = max(valid_etats)
+        if max_etat == 0:
+            return []
+        return [e for e in episodes if e.code_etat == max_etat]
