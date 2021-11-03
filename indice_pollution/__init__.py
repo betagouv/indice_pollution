@@ -150,6 +150,17 @@ def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
+def get_all(date_):
+    from indice_pollution.history.models import IndiceATMO, EpisodePollution
+    date_ = date_ or today()
+    indices = IndiceATMO.get_all(date_)
+    episodes = EpisodePollution.get_all(date_)
+    allergenes_par_departement = {
+            r.zone_id: r
+            for r in RAEP.get_all()
+        }
+    return (indices, episodes, allergenes_par_departement)
+
 def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_allergenes=False):
     from indice_pollution.history.models import IndiceATMO, EpisodePollution
     from .regions.solvers import get_region

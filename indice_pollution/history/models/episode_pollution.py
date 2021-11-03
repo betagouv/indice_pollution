@@ -51,6 +51,19 @@ class EpisodePollution(db.Model):
     def bulk(cls, insees=None, codes_epcis=None, date_=None):
         return db.session.execute(cls.bulk_query(insees=insees, date_=date_))
 
+    @classmethod
+    def get_all_query(cls, date_):
+        return db.session.query(
+                cls.zone_id, cls
+            ).filter(
+                cls.date_ech == date_
+            ).order_by(
+                cls.zone_id, cls.date_ech, cls.date_dif
+            ).distinct(cls.zone_id, cls.date_ech)
+
+    @classmethod
+    def get_all(cls, date_):
+        return dict(cls.get_all_query(date_).all())
 
     @property
     def lib_pol(self):

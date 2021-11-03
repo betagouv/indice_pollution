@@ -1,4 +1,6 @@
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import and_
+from sqlalchemy.sql.functions import coalesce
 from indice_pollution.history.models.zone import Zone
 from requests.models import codes
 from indice_pollution.extensions import db
@@ -8,6 +10,7 @@ from sqlalchemy import Date, text
 from dataclasses import dataclass
 from datetime import datetime
 from operator import attrgetter, itemgetter
+
 
 @dataclass
 class IndiceATMO(db.Model):
@@ -62,7 +65,34 @@ class IndiceATMO(db.Model):
     @classmethod
     def bulk(cls, insees=None, codes_epci=None, date_=None):
         return db.session.execute(IndiceATMO.bulk_query(insees=insees, date_=date_))
-        
+
+    @classmethod
+    def get_all_query(cls, date_):
+        commune_alias = db.aliased(Commune)
+        commune_id = coalesce(Commune.id, commune_alias.id)
+        return db.session.query(
+                commune_id, IndiceATMO
+            ).select_from(
+                IndiceATMO
+            ).join(
+                Zone
+            ).join(
+                Commune, and_(Zone.type == 'commune', Zone.id == Commune.zone_id), isouter=True
+            ).join(
+                EPCI, and_(Zone.type == 'epci', Zone.id == EPCI.zone_id), isouter=True
+            ).join(
+                commune_alias, commune_alias.epci_id == EPCI.id, isouter=True
+            ).filter(
+                IndiceATMO.date_ech == date_
+            ).order_by(
+                IndiceATMO.date_ech
+            ).distinct(
+                IndiceATMO.date_ech, commune_id
+            )
+
+    @classmethod
+    def get_all(cls, date_):
+        return dict(cls.get_all_query(date_).all())
 
     @classmethod
     def zone_subquery(cls, insee=None, code_epci=None):
