@@ -69,6 +69,7 @@ class Forecast(Service, ForecastMixin):
 class Episode(Service, EpisodeMixin):
     get_only_from_scraping = True
     fetch_only_from_scraping = True
+    zone_type = 'region'
 
     def get_from_scraping(self, to_return=[], date_=None, insee=None):
         api_key = os.getenv('AIRPARIF_API_KEY')
@@ -97,13 +98,12 @@ class Episode(Service, EpisodeMixin):
             return []
         for k, d in [('jour', date.today()), ('demain', date.today() + timedelta(days=1))]:
             for polluant in r.json()[k]['polluants']:
-                for code_zone in ['75', '77', '78', '91', '92', '93', '94', '95']:
-                    to_return += [{
-                        'code_pol': polluant_code_pol.get(polluant['nom']),
-                        'date': str(d),
-                        'etat': "PAS DE DEPASSEMENT" if polluant['niveau'] == "-" else polluant['niveau'],
-                        'code_zone': code_zone
-                    }]
+                to_return += [{
+                    'code_pol': polluant_code_pol.get(polluant['nom']),
+                    'date': str(d),
+                    'etat': "PAS DE DEPASSEMENT" if polluant['niveau'] == "-" else polluant['niveau'],
+                    'code_zone': '11'
+                }]
         return to_return
 
     @classmethod
