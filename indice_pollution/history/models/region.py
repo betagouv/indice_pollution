@@ -8,6 +8,8 @@ class Region(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nom = db.Column(db.String)
     code = db.Column(db.String)
+    aasqa_website = db.Column(db.String)
+    aasqa_nom = db.Column(db.String)
 
     @classmethod
     def get(cls, code):

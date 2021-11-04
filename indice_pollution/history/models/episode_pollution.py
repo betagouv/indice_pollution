@@ -9,10 +9,10 @@ from sqlalchemy import  Date, text
 class EpisodePollution(db.Model):
     __table_args__ = {"schema": "indice_schema"}
 
-    zone_id: int = db.Column(db.Integer, db.ForeignKey('indice_schema.zone.id'), primary_key=True, nullable=True)
+    zone_id: int = db.Column(db.Integer, db.ForeignKey('indice_schema.zone.id'), primary_key=True)
     zone = relationship("indice_pollution.history.models.zone.Zone")
-    date_ech: datetime = db.Column(db.DateTime, primary_key=True, nullable=True)
-    date_dif: datetime = db.Column(db.DateTime, primary_key=True, nullable=True)
+    date_ech: datetime = db.Column(db.DateTime, primary_key=True)
+    date_dif: datetime = db.Column(db.DateTime, primary_key=True)
     code_pol: int = db.Column(db.Integer, primary_key=True)
     etat: str = db.Column(db.String)
     com_court: str = db.Column(db.String)
