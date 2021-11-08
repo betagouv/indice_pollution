@@ -1,5 +1,6 @@
 from typing import List
 from sqlalchemy.orm import relationship
+from sqlalchemy import func
 from indice_pollution.history.models.commune import Commune
 from indice_pollution.extensions import db
 from datetime import datetime
@@ -57,7 +58,7 @@ class EpisodePollution(db.Model):
         return db.session.query(
                 cls.zone_id, cls
             ).filter(
-                cls.date_ech == date_
+                func.date(cls.date_ech) == date_
             ).order_by(
                 cls.zone_id, cls.date_ech, cls.date_dif
             ).distinct(cls.zone_id, cls.date_ech)

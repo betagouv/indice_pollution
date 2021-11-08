@@ -1,6 +1,7 @@
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import and_
 from sqlalchemy.sql.functions import coalesce
+from sqlalchemy import func
 from indice_pollution.history.models.zone import Zone
 from requests.models import codes
 from indice_pollution.extensions import db
@@ -83,7 +84,7 @@ class IndiceATMO(db.Model):
             ).join(
                 commune_alias, commune_alias.epci_id == EPCI.id, isouter=True
             ).filter(
-                IndiceATMO.date_ech == date_
+                func.date(IndiceATMO.date_ech) == date_
             ).order_by(
                 IndiceATMO.date_ech
             ).distinct(
