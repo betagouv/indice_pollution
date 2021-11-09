@@ -91,7 +91,8 @@ class RAEP(db.Model):
         db.session.commit()
 
     @classmethod
-    def get(cls, insee=None, zone_id=None):
+    def get(cls, insee=None, zone_id=None, date_=None):
+        date_ = date_ or date.today()
         if insee:
             if len(insee) == 5:
                 zone_id = Commune.get(insee).departement.zone_id
@@ -103,7 +104,7 @@ class RAEP(db.Model):
             return None
         return cls.query.filter(
             cls.zone_id == zone_id,
-            cls.validity.contains(date.today())
+            cls.validity.contains(date_)
         ).order_by(
             func.upper(cls.validity).desc()
         ).first()

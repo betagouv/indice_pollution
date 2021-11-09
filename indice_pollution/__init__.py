@@ -266,13 +266,13 @@ def availability(insee):
         return False
 
 
-def raep(insee, extended=False):
+def raep(insee, date_=None, extended=False):
     if insee is None:
         return {}
     departement = Commune.get(insee).departement
     if not departement:
         return {}
-    data = RAEP.get(zone_id=departement.zone_id)
+    data = RAEP.get(zone_id=departement.zone_id, date_=date_)
     return {
         "departement": {
             "nom": departement.nom,
