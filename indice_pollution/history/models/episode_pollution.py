@@ -37,7 +37,7 @@ class EpisodePollution(db.Model):
         return text(
             """
             SELECT
-                DISTINCT ON (e.zone_id, e.date_ech) e.*, e.date_ech e, c.insee
+                DISTINCT ON (e.zone_id, e.date_ech, e.col_pol) e.*, e.date_ech e, c.insee
             FROM
                 indice_schema.episode_pollution e
                 LEFT JOIN indice_schema.commune c ON c.zone_pollution_id = e.zone_id
@@ -60,12 +60,16 @@ class EpisodePollution(db.Model):
             ).filter(
                 func.date(cls.date_ech) == date_
             ).order_by(
-                cls.zone_id, cls.date_ech, cls.date_dif
-            ).distinct(cls.zone_id, cls.date_ech)
+                cls.zone_id, cls.code_pol, cls.date_ech, cls.date_dif
+            ).distinct(cls.zone_id, cls.date_ech, cls.code_pol)
 
     @classmethod
     def get_all(cls, date_):
-        return dict(cls.get_all_query(date_).all())
+        to_return = dict()
+        for zone_id, e in cls.get_all_query(date_).all():
+            to_return.setdefault(zone_id, [])
+            to_return[zone_id].append(e)
+        return to_return
 
     @property
     def lib_pol(self):
