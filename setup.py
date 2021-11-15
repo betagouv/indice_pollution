@@ -8,8 +8,8 @@ DEPENDENCIES = [
     'flask-celery',
     'flask-cors',
     'Flask-Manage-Webpack',
-    'flask-migrate',
-    'flask-sqlalchemy',
+    'flask-Migrate',
+    'flask-SQLAlchemy',
     'requests',
     'python-dateutil',
     'orjson',
@@ -19,7 +19,8 @@ DEPENDENCIES = [
     'psycopg2',
     'unidecode',
     'sentry-sdk[flask]',
-    'redis'
+    'sqlalchemy',
+    'redis',
 ]
 
 setup(
