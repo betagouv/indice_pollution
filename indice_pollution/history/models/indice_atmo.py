@@ -119,6 +119,9 @@ class IndiceATMO(db.Model):
             "tres_mauvais": "#960032",
             "extrement_mauvais": "#960032",
         }.get(cls.indice_from_valeur(valeur))
+    @property
+    def couleur(self):
+        return self.couleur_from_valeur(self.valeur)
 
     @classmethod
     def label_from_valeur(cls, valeur):
@@ -130,6 +133,9 @@ class IndiceATMO(db.Model):
             "tres_mauvais": "Très mauvais",
             "extrement_mauvais": "Extrêment mauvais",
         }.get(cls.indice_from_valeur(valeur))
+    @property
+    def label(self):
+        return self.label_from_valeur(self.valeur)
 
     @classmethod
     def indice_from_valeur(cls, valeur):
@@ -141,6 +147,9 @@ class IndiceATMO(db.Model):
             "tres_mauvais",
             "extrement_mauvais",
         ][valeur - 1]
+    @property
+    def indice(self):
+        return self.indice_from_valeur(self.valeur)
 
     @classmethod
     def indice_dict(cls, valeur):
@@ -159,6 +168,9 @@ class IndiceATMO(db.Model):
             **{'polluant_name': code.upper()},
             **cls.indice_dict(valeur)
         }
+    @property
+    def sous_indices(self):
+        return [self.make_sous_indice_dict(k, getattr(self, k)) for k in ['pm25', 'pm10', 'no2', 'o3', 'so2']]
 
     def dict(self):
         return self.make_dict(self)
