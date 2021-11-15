@@ -1,3 +1,4 @@
+from sqlalchemy.orm import relationship
 from indice_pollution.extensions import db
 import requests
 
@@ -10,6 +11,8 @@ class Region(db.Model):
     code = db.Column(db.String)
     aasqa_website = db.Column(db.String)
     aasqa_nom = db.Column(db.String)
+    zone_id = db.Column(db.Integer, db.ForeignKey("indice_schema.zone.id"))
+    zone = relationship("indice_pollution.history.models.zone.Zone")
 
     @classmethod
     def get(cls, code):
