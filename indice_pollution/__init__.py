@@ -1,6 +1,3 @@
-import requests
-import csv
-
 from sqlalchemy.orm import joinedload
 from indice_pollution.history.models.commune import Commune
 from indice_pollution.history.models.indice_atmo import IndiceATMO
@@ -9,12 +6,11 @@ from flask import Flask
 from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
 from flask_migrate import Migrate
-from datetime import datetime, timedelta, date
+from datetime import date
 import os
 import logging
 from indice_pollution.history.models.raep import RAEP
 
-from indice_pollution.history.models.zone import Zone
 from .helpers import today
 from .extensions import celery
 from importlib import import_module
