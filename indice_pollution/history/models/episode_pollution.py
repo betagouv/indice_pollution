@@ -81,7 +81,7 @@ class EpisodePollution(db.Model):
             1: 'Dioxyde de soufre',
             3: 'Dioxyde d’azote',
             4: 'Monoxyde de carbone',
-            5: 'Particules PM 10',
+            5: 'Particules PM10',
             7: 'Ozone',
             8: 'Dioxyde d’azote',
             24: 'Particules PM10',
