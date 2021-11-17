@@ -60,7 +60,7 @@ class Forecast(Service, ForecastMixin):
             "service": "WFS",
             "outputFormat": "application/json",
             "request": "GetFeature",
-            "CQL_FILTER": f"date_ech >= {date.today()}T00:00:00Z"
+            "CQL_FILTER": f"date_ech >= {date.today()}T00:00:00Z AND type_zone='EPCI'"
         }
 
     def features(self, r):
