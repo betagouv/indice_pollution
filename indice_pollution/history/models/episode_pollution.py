@@ -71,6 +71,24 @@ class EpisodePollution(db.Model):
             to_return[zone_id].append(e)
         return to_return
 
+
+    @property
+    def lib_pol_abbr(self):
+        return self.get_lib_pol(self.code_pol)
+
+    @classmethod
+    def get_lib_pol_abbr(cls, code_pol):
+        return {
+            1: 'SO2',
+            3: 'NO2',
+            4: 'CO',
+            5: 'PM10',
+            7: 'O3',
+            8: 'NO2',
+            24: 'PM10',
+            39: 'PM25',
+        }.get(code_pol)
+
     @property
     def lib_pol(self):
         return self.get_lib_pol(self.code_pol)
