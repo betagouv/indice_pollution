@@ -1,5 +1,6 @@
 from indice_pollution.extensions import db
 from importlib import import_module
+from indice_pollution.extensions import cache
 
 class Zone(db.Model):
     __table_args__ = {"schema": "indice_schema"}
@@ -13,6 +14,7 @@ class Zone(db.Model):
         return Zone.query.filter_by(code=code, type=type_).first()
 
     @property
+    @cache.memoize(timeout=None)
     def lib(self, with_preposition=True, with_article=True):
         types = {
             "region": {"article": "la ", "preposition": "région", "module": "region", "clsname": "Region"},
@@ -26,7 +28,7 @@ class Zone(db.Model):
             return ""
         m = import_module(f"indice_pollution.history.models.{t['module']}")
         c = getattr(m, t["clsname"])
-        o = c.query.filter(c.zone_id == self.id).first()
+        o = db.session.query(c).filter(c.zone_id == self.id).first()
         if not o:
             return ""
         r = ""

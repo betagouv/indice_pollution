@@ -5,6 +5,7 @@ DEPENDENCIES = [
     'celery',
     'celery[redis]',
     'flask',
+    'Flask-caching',
     'flask-celery',
     'flask-cors',
     'Flask-Manage-Webpack',

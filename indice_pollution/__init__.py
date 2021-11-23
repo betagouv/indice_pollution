@@ -3,16 +3,14 @@ from indice_pollution.history.models.commune import Commune
 from indice_pollution.history.models.indice_atmo import IndiceATMO
 from indice_pollution.history.models.episode_pollution import EpisodePollution
 from flask import Flask
-from flask_manage_webpack import FlaskManageWebpack
 from flask_cors import CORS
-from flask_migrate import Migrate
 from datetime import date
 import os
 import logging
 from indice_pollution.history.models.raep import RAEP
 
 from .helpers import today
-from .extensions import celery
+from .extensions import celery, cache, manage_webpack, db, migrate
 from importlib import import_module
 from kombu import Queue
 from celery.schedules import crontab
@@ -40,13 +38,25 @@ def configure_celery(flask_app):
     celery.conf.task_default_exchange_type = 'topic'
     celery.conf.task_default_routing_key = 'task.default'
 
-
     class ContextTask(celery.Task):
         def __call__(self, *args, **kwargs):
             with flask_app.app_context():
                 return self.run(*args, **kwargs)
 
     celery.Task = ContextTask
+
+def configure_cache(app):
+    conf = {
+        "CACHE_TYPE": os.getenv("CACHE_TYPE", "SimpleCache"),
+        "CACHE_DEFAULT_TIMEOUT": os.getenv("CACHE_DEFAULT_TIMEOUT", 86400),
+    }
+    if conf["CACHE_TYPE"] == "RedisCache":
+        conf["CACHE_REDIS_HOST"] = os.getenv("REDIS_HOST")
+        conf["CACHE_REDIS_PASSWORD"] = os.getenv("REDIS_PASSWORD")
+        conf["CACHE_REDIS_PORT"] = os.getenv("REDIS_PORT")
+        conf["CACHE_REDIS_TOKEN"] = os.getenv("REDIS_TOKEN")
+        conf["CACHE_REDIS_URL"] = os.getenv("REDIS_URL")
+    cache.init_app(app, conf)
 
 @celery.task()
 def save_all_indices():
@@ -60,6 +70,11 @@ def setup_periodic_tasks(sender, **kwargs):
         queue='save_indices',
         routing_key='save_indices.save_all'
     )
+
+def init_app(app):
+    db.init_app(app)
+    configure_celery(app)
+    configure_cache(app)
 
 def create_app(test_config=None):
     app = Flask(
@@ -76,14 +91,10 @@ def create_app(test_config=None):
     app.config['CELERY_BROKER_URL'] = os.getenv('CELERY_BROKER_URL') or f"sqla+{app.config['SQLALCHEMY_DATABASE_URI']}"
 
     CORS(app, send_wildcard=True)
-
-    manage_webpack = FlaskManageWebpack()
     manage_webpack.init_app(app)
 
-    from .extensions import db
-    db.init_app(app)
-    migrate = Migrate(app, db)
-    configure_celery(app)
+    init_app(app)
+    migrate.init_app(app, db)
 
     with app.app_context():
         import indice_pollution.api
