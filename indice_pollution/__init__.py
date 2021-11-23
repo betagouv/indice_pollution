@@ -56,6 +56,8 @@ def configure_cache(app):
         conf["CACHE_REDIS_PORT"] = os.getenv("REDIS_PORT")
         conf["CACHE_REDIS_TOKEN"] = os.getenv("REDIS_TOKEN")
         conf["CACHE_REDIS_URL"] = os.getenv("REDIS_URL")
+    elif conf["CACHE_TYPE"] == "SimpleCache":
+        conf["CACHE_THRESHOLD"] = 100000
     cache.init_app(app, conf)
 
 @celery.task()

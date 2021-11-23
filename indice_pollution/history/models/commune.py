@@ -1,7 +1,7 @@
-from indice_pollution.extensions import db
+from indice_pollution.extensions import db, cache
 from indice_pollution.history.models.departement import Departement
 from sqlalchemy.dialects import postgresql
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import joinedload, relationship
 import requests
 import json
 from flask import current_app
@@ -39,6 +39,18 @@ class Commune(db.Model):
     @centre.setter
     def centre(self, value):
         self._centre = json.dumps(value)
+
+    @classmethod
+    @cache.memoize(timeout=None)
+    def get_from_id(cls, id):
+        return db.session.query(
+            cls
+        ).options(
+            joinedload(cls.departement).joinedload(Departement.region)
+        ).populate_existing(
+        ).get(
+            id
+        )
 
     @classmethod
     def get(cls, insee):
