@@ -41,7 +41,7 @@ class Commune(db.Model):
         self._centre = json.dumps(value)
 
     @classmethod
-    @cache.memoize(timeout=None)
+    @cache.memoize(timeout=0)
     def get_from_id(cls, id):
         return db.session.query(
             cls

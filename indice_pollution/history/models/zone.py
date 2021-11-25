@@ -14,7 +14,7 @@ class Zone(db.Model):
         return Zone.query.filter_by(code=code, type=type_).first()
 
     @property
-    @cache.memoize(timeout=None)
+    @cache.memoize(timeout=0)
     def lib(self, with_preposition=True, with_article=True):
         types = {
             "region": {"article": "la ", "preposition": "région", "module": "region", "clsname": "Region"},
