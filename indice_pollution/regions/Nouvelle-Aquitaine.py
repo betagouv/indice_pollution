@@ -11,6 +11,7 @@ class Service(object):
     nom_aasqa = 'ATMO Nouvelle-Aquitaine'
     attributes_key = 'properties'
     use_dateutil_parser = True
+    licence = 'OdbL v1.0'
 
     insee_list = [
         '33063', '79005', '16102', '64102', '64445', '19272', '87085', '24322', '40088',

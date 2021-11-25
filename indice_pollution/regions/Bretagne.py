@@ -22,6 +22,7 @@ class Service(object):
     is_active = True
     website = 'https://www.airbreizh.asso.fr/'
     nom_aasqa = 'Airbreizh'
+    licence = 'OdbL v1.0'
 
     HTTPAdapter = TLSAdapter
 

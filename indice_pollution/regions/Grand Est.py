@@ -5,6 +5,7 @@ class Service(ServiceMixin):
     is_active = True
     website = 'http://www.atmo-grandest.eu/'
     nom_aasqa = 'ATMO Grand Est'
+    licence = 'OdbL v1.0'
     insee_list = [
         '8105', '57463', '67180', '67482', '88160', '57672', '10387', '68224', '68297',
         '57227', '68066', '52448', '51454', '54395', '51108'

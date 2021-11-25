@@ -7,6 +7,7 @@ class Service(object):
     is_active = True
     website = 'http://www.ligair.fr/'
     nom_aasqa = "Lig'Air"
+    licence = 'OdbL v1.0'
 
 
 class Forecast(Service, ForecastMixin):

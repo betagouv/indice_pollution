@@ -7,6 +7,7 @@ class Service(ServiceMixin):
     date_format = '%Y-%m-%d'
     website = 'https://www.atmo-hdf.fr/'
     nom_aasqa = 'ATMO Hauts-de-France'
+    licence = 'OdbL v1.0'
 
 class Forecast(Service, ForecastMixin):
     url = 'https://services8.arcgis.com/rxZzohbySMKHTNcy/arcgis/rest/services/ind_hdf_2021/FeatureServer/0/query'

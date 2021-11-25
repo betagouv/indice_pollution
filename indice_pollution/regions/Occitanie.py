@@ -10,6 +10,7 @@ class Service(object):
     website = 'https://www.atmo-occitanie.org/'
     nom_aasqa = 'ATMO Occitanie'
     attributes_key = 'attributes'
+    licence = 'OdbL v1.0'
 
 class Episode(Service, EpisodeMixin):
     url = 'https://services9.arcgis.com/7Sr9Ek9c1QTKmbwr/arcgis/rest/services/epipol_3j_occitanie/FeatureServer/0/query'

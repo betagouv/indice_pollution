@@ -9,6 +9,7 @@ class Service(object):
     website = 'http://www.airpl.org/'
     nom_aasqa = 'Air Pays de la Loire'
     use_dateutil_parser = True
+    licence = 'OdbL v1.0'
 
     def get_close_insee(self, insee):
         return insee
