@@ -10,3 +10,4 @@ from .episode_pollution import EpisodePollution #noqa
 from .potentiel_radon import PotentielRadon #noqa
 from .raep import RAEP #noqa
 from .bassin_dair import BassinDAir #noqa
+from .vigilance_meteo import VigilanceMeteo

@@ -8,6 +8,7 @@ from datetime import date
 import os
 import logging
 from indice_pollution.history.models.raep import RAEP
+from indice_pollution.history.models.vigilance_meteo import VigilanceMeteo
 
 from .helpers import today
 from .extensions import celery, cache, manage_webpack, db, migrate
@@ -325,3 +326,4 @@ def save_all():
         module.Episode().save_all()
         logger.info(f'Saving of {region} ended')
     RAEP.save_all()
+    VigilanceMeteo.save_all()
