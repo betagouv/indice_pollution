@@ -1,4 +1,4 @@
-from sqlalchemy.sql.expression import and_
+from sqlalchemy.sql.expression import and_, select
 from indice_pollution.extensions import db
 from psycopg2.extras import DateRange, DateTimeTZRange
 from sqlalchemy.dialects.postgresql import DATERANGE, TSTZRANGE
@@ -9,7 +9,7 @@ from io import BytesIO
 from xml.dom.minidom import parseString
 
 from indice_pollution.history.models.departement import Departement
-from indice_pollution.history.models.zone import Zone
+from indice_pollution.history.models.commune import Commune
 from datetime import date, datetime, timedelta
 
 class VigilanceMeteo(db.Model):
@@ -22,8 +22,6 @@ class VigilanceMeteo(db.Model):
 
     couleur_id = db.Column(db.Integer)
     validity = db.Column(TSTZRANGE(), nullable=False)
-
-    to_show = db.Column(DATERANGE(), nullable=False)
 
     __table_args__ = (
         db.Index('vigilance_zone_phenomene_date_export_idx', zone_id, phenomene_id, date_export),
@@ -91,30 +89,34 @@ class VigilanceMeteo(db.Model):
                         date_export=date_export,
                         couleur_id=int(phenomene.attributes['couleur'].value),
                         validity=DateTimeTZRange(debut, fin),
-                        to_show=DateRange(debut.date(), fin.date() + timedelta(days=1))
                     )
                     db.session.add(obj)
                 db.session.commit()
 
     @classmethod
-    def get(cls, departement_code, date_=None):
+    def get_query(cls, departement_code, insee, date_):
+        if not departement_code and not insee:
+            return []
         if type(date_) == datetime:
             date_ = date_.date()
-        if date_ is None:
+        elif date_ is None:
             date_ = date.today()
 
-        departement_code = cls.get_departement_code(departement_code)
-        if not departement_code:
-            return []
-        return db.session.query(
-            cls
-        ).join(
-            Zone
-        ).filter(
-            Zone.type == 'departement',
-            Zone.code == departement_code,
-            cls.to_show.contains(date_)
-        ).all()
+        query = db.session.query(cls).join(Departement, cls.zone_id == Departement.zone_id)
+        if insee:
+            query = query.join(
+                Commune, Departement.id == Commune.departement_id
+            ).filter(Commune.insee == insee)
+        elif departement_code:
+            query = query.filter(Departement.code == departement_code)
+
+        return query.filter(
+            cls.date_export == select(func.max(cls.date_export)).scalar_subquery()
+        )
+
+    @classmethod
+    def get(cls, departement_code=None, insee=None, date_=None):
+        return cls.get_query(departement_code, insee, date_).all()
 
     @property
     def couleur(self) -> str:
@@ -125,4 +127,4 @@ class VigilanceMeteo(db.Model):
         return self.phenomenes.get(self.phenomene_id)
 
     def __repr__(self) -> str:
-        return f"<VigilanceMeteo zone_id={self.zone_id} phenomene_id={self.phenomene_id} date_export={self.date_export} couleur_id={self.couleur_id} validity={self.validity} to_show={self.to_show}>"
+        return f"<VigilanceMeteo zone_id={self.zone_id} phenomene_id={self.phenomene_id} date_export={self.date_export} couleur_id={self.couleur_id} validity={self.validity}>"
