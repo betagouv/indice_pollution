@@ -112,3 +112,9 @@ class Commune(db.Model):
     @property
     def code(self):
         return self.insee
+
+    @property
+    def departement_nom(self):
+        if self.departement:
+            return self.departement.nom
+        return ""
