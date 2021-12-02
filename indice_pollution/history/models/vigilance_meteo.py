@@ -30,6 +30,25 @@ class VigilanceMeteo(db.Model):
         {"schema": "indice_schema"},
     )
 
+    couleurs = {
+        1: 'Vert',
+        2: 'Jaune',
+        3: 'Orange',
+        4: 'Rouge'
+    }
+
+    phenomenes = {
+        1: 'Vent',
+        2: 'Pluie-Inondation',
+        3: 'Orages',
+        4: 'Inondation',
+        5: 'Neige',
+        6: 'Canicule',
+        7: 'Grand Froid',
+        8: 'Avalanches',
+        9: 'Vagues-Submersion'
+    }
+
     @staticmethod
     def get_departement_code(code):
         if code == "20":
@@ -97,6 +116,13 @@ class VigilanceMeteo(db.Model):
             cls.to_show.contains(date_)
         ).all()
 
+    @property
+    def couleur(self) -> str:
+        return self.couleurs.get(self.couleur_id)
+
+    @property
+    def phenomene(self) -> str:
+        return self.phenomenes.get(self.phenomene_id)
 
     def __repr__(self) -> str:
         return f"<VigilanceMeteo zone_id={self.zone_id} phenomene_id={self.phenomene_id} date_export={self.date_export} couleur_id={self.couleur_id} validity={self.validity} to_show={self.to_show}>"
