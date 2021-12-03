@@ -11,6 +11,7 @@ from xml.dom.minidom import parseString
 from indice_pollution.history.models.departement import Departement
 from indice_pollution.history.models.commune import Commune
 from datetime import date, datetime, timedelta
+from sqlalchemy import UniqueConstraint
 
 class VigilanceMeteo(db.Model):
 
@@ -25,6 +26,7 @@ class VigilanceMeteo(db.Model):
 
     __table_args__ = (
         db.Index('vigilance_zone_phenomene_date_export_idx', zone_id, phenomene_id, date_export),
+        db.UniqueConstraint(zone_id, phenomene_id, date_export, validity),
         {"schema": "indice_schema"},
     )
 
