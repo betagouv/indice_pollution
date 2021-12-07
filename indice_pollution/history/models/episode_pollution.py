@@ -146,9 +146,7 @@ class EpisodePollution(db.Model):
 
     @classmethod
     def get_lib_etat(cls, code_etat):
-        if  code_etat is None:
-            return None
-        return ["pas de dépassement", "information", "alerte"][code_etat]
+        return {0: "pas de dépassement", 1: "information", 2: "alerte"}.get(code_etat, "")
 
     def dict(self):
         return {
