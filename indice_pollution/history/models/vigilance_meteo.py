@@ -41,7 +41,7 @@ class VigilanceMeteo(db.Model):
         1: 'Vent',
         2: 'Pluie-Inondation',
         3: 'Orages',
-        4: 'Crue',
+        4: 'Crues',
         5: 'Neige',
         6: 'Canicule',
         7: 'Grand Froid',
