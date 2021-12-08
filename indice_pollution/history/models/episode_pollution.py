@@ -128,7 +128,7 @@ class EpisodePollution(db.Model):
 
     @classmethod
     def get_code_etat(cls, etat):
-        if isinstance(etat, str):
+        if not isinstance(etat, str):
             return None
         etat = etat.lower()
         if "ssement" in etat:
