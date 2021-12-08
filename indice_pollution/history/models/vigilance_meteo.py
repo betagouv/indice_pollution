@@ -41,7 +41,7 @@ class VigilanceMeteo(db.Model):
         1: 'Vent',
         2: 'Pluie-Inondation',
         3: 'Orages',
-        4: 'Inondation',
+        4: 'Crue',
         5: 'Neige',
         6: 'Canicule',
         7: 'Grand Froid',
@@ -130,3 +130,4 @@ class VigilanceMeteo(db.Model):
 
     def __repr__(self) -> str:
         return f"<VigilanceMeteo zone_id={self.zone_id} phenomene_id={self.phenomene_id} date_export={self.date_export} couleur_id={self.couleur_id} validity={self.validity}>"
+
