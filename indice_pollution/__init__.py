@@ -139,7 +139,7 @@ def forecast(insee, date_=None, use_make_resp=True):
             "metadata": {}
         }, 400
     if region.Service.is_active:
-        indice = IndiceATMO.get(insee=insee)
+        indice = IndiceATMO.get(insee=insee, date_=date_)
         if use_make_resp:
             return make_resp(region, indice, date_)
         else:
