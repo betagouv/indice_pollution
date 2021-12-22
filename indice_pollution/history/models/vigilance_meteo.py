@@ -10,8 +10,7 @@ from xml.dom.minidom import parseString
 
 from indice_pollution.history.models.departement import Departement
 from indice_pollution.history.models.commune import Commune
-from datetime import date, datetime, timedelta
-from sqlalchemy import UniqueConstraint
+from indice_pollution.helpers import oxford_comma
 from datetime import date, datetime
 import pytz
 
@@ -146,3 +145,20 @@ class VigilanceMeteo(db.Model):
     def __repr__(self) -> str:
         return f"<VigilanceMeteo zone_id={self.zone_id} phenomene_id={self.phenomene_id} date_export={self.date_export} couleur_id={self.couleur_id} validity={self.validity}>"
 
+    @classmethod
+    def make_max_couleur(cls, vigilances):
+        return max([v.couleur_id for v in vigilances]) if vigilances else 1
+
+    @classmethod
+    def make_label(cls, vigilances, max_couleur=None):
+        if not vigilances:
+            return ""
+        max_couleur = max_couleur or cls.make_max_couleur(vigilances)
+        if max_couleur == 1:
+            label = "Pas de vigilance"
+        else:
+            couleur = VigilanceMeteo.couleurs.get(max_couleur)
+            if couleur:
+                couleur = couleur.lower()
+            label = f"Vigilances méteo : {couleur} {oxford_comma([v.phenomene.lower() for v in vigilances if v.couleur_id == max_couleur])}"
+        return label
