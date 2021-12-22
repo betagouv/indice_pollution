@@ -1,7 +1,7 @@
 from sqlalchemy.sql.expression import and_, select
 from indice_pollution.extensions import db
-from psycopg2.extras import DateRange, DateTimeTZRange
-from sqlalchemy.dialects.postgresql import DATERANGE, TSTZRANGE
+from psycopg2.extras import DateTimeTZRange
+from sqlalchemy.dialects.postgresql import TSTZRANGE
 from sqlalchemy.sql import func
 import requests
 import zipfile
@@ -12,6 +12,8 @@ from indice_pollution.history.models.departement import Departement
 from indice_pollution.history.models.commune import Commune
 from datetime import date, datetime, timedelta
 from sqlalchemy import UniqueConstraint
+from datetime import date, datetime
+import pytz
 
 class VigilanceMeteo(db.Model):
 
@@ -99,26 +101,39 @@ class VigilanceMeteo(db.Model):
     def get_query(cls, departement_code, insee, date_):
         if not departement_code and not insee:
             return []
-        if type(date_) == datetime:
-            date_ = date_.date()
+        if isinstance(date_, date):
+            date_ = datetime.combine(date_, datetime.min.time())
         elif date_ is None:
-            date_ = date.today()
+            date_ = datetime.today()
+        date_ = date_.replace(tzinfo=pytz.timezone("Europe/Paris"))
 
-        query = db.session.query(cls).join(Departement, cls.zone_id == Departement.zone_id)
+        vigilance_t = VigilanceMeteo.__table__ 
+        departement_t = Departement.__table__ 
+
+        statement = select(
+            vigilance_t
+        ).join(
+            Departement.__table__, vigilance_t.c.zone_id == departement_t.c.zone_id
+        ).filter(
+            vigilance_t.c.validity.contains(date_)
+        ).order_by(
+            vigilance_t.c.date_export.desc()
+        )
+
         if insee:
-            query = query.join(
-                Commune, Departement.id == Commune.departement_id
+            commune_t = Commune.__table__
+            statement = statement.join(
+                commune_t, departement_t.c.id == commune_t.c.departement_id
             ).filter(Commune.insee == insee)
         elif departement_code:
-            query = query.filter(Departement.code == departement_code)
+            statement = statement.filter(departement_t.c.code == departement_code)
 
-        return query.filter(
-            cls.date_export == select(func.max(cls.date_export)).scalar_subquery()
-        )
+        return statement.fetch(1, with_ties=True)
 
     @classmethod
     def get(cls, departement_code=None, insee=None, date_=None):
-        return cls.get_query(departement_code, insee, date_).all()
+        orms_obj = select(cls).from_statement(cls.get_query(departement_code, insee, date_))
+        return db.session.execute(orms_obj).all()
 
     @property
     def couleur(self) -> str:
