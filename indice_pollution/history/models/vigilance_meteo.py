@@ -132,7 +132,7 @@ class VigilanceMeteo(db.Model):
     @classmethod
     def get(cls, departement_code=None, insee=None, date_=None):
         orms_obj = select(cls).from_statement(cls.get_query(departement_code, insee, date_))
-        return db.session.execute(orms_obj).all()
+        return list(db.session.execute(orms_obj).scalars())
 
     @property
     def couleur(self) -> str:
@@ -147,7 +147,8 @@ class VigilanceMeteo(db.Model):
 
     @classmethod
     def make_max_couleur(cls, vigilances):
-        return max([v.couleur_id for v in vigilances]) if vigilances else 1
+        couleurs = [v.couleur_id for v in vigilances]
+        return max(couleurs) if couleurs else 1
 
     @classmethod
     def make_label(cls, vigilances, max_couleur=None):
