@@ -10,7 +10,6 @@ from xml.dom.minidom import parseString
 
 from indice_pollution.history.models.departement import Departement
 from indice_pollution.history.models.commune import Commune
-from indice_pollution.helpers import oxford_comma
 from datetime import date, datetime, timedelta
 
 class VigilanceMeteo(db.Model):
@@ -154,10 +153,10 @@ class VigilanceMeteo(db.Model):
             return ""
         max_couleur = max_couleur or cls.make_max_couleur(vigilances)
         if max_couleur == 1:
-            label = "Pas de vigilance"
+            label = "Pas de vigilance météo"
         else:
             couleur = VigilanceMeteo.couleurs.get(max_couleur)
             if couleur:
-                couleur = couleur.lower()
-            label = f"Vigilances méteo : {couleur} {oxford_comma([v.phenomene.lower() for v in vigilances if v.couleur_id == max_couleur])}"
-        return label
+                couleur = couleur.capitalize()
+            label = f"{couleur}"
+        return f"Vigilance météo: {label}"
