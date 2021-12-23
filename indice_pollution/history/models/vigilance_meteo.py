@@ -11,8 +11,7 @@ from xml.dom.minidom import parseString
 from indice_pollution.history.models.departement import Departement
 from indice_pollution.history.models.commune import Commune
 from indice_pollution.helpers import oxford_comma
-from datetime import date, datetime
-import pytz
+from datetime import date, datetime, timedelta
 
 class VigilanceMeteo(db.Model):
 
@@ -100,11 +99,10 @@ class VigilanceMeteo(db.Model):
     def get_query(cls, departement_code, insee, date_):
         if not departement_code and not insee:
             return []
-        if isinstance(date_, date):
-            date_ = datetime.combine(date_, datetime.min.time())
+        if isinstance(date_, datetime):
+            date_ = date_.date()
         elif date_ is None:
-            date_ = datetime.today()
-        date_ = date_.replace(tzinfo=pytz.timezone("Europe/Paris"))
+            date_ = date.today()
 
         vigilance_t = VigilanceMeteo.__table__ 
         departement_t = Departement.__table__ 
@@ -114,7 +112,7 @@ class VigilanceMeteo(db.Model):
         ).join(
             Departement.__table__, vigilance_t.c.zone_id == departement_t.c.zone_id
         ).filter(
-            vigilance_t.c.validity.contains(date_)
+            vigilance_t.c.validity.overlaps(DateTimeTZRange(date_, date_ + timedelta(hours=24)))
         ).order_by(
             vigilance_t.c.date_export.desc()
         )
