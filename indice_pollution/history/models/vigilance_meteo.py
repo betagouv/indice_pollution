@@ -48,6 +48,10 @@ class VigilanceMeteo(db.Model):
         9: 'Vagues-Submersion'
     }
 
+    hours_to_add_before_6 = 16
+    hours_to_add_before_16 = 30
+    hours_to_add_after_16 = 40
+
     @staticmethod
     def get_departement_code(code):
         if code == "20":
@@ -173,19 +177,24 @@ class VigilanceMeteo(db.Model):
             label = f"{couleur}"
         return f"Vigilance météo: {label}"
 
-    # Avant 16h, on veut commencer à afficher à partir de 6h, sinon à partir de 16h
     @classmethod
     def make_begin_date(cls, vigilances=None, date_=None):
+        return cls.make_end_date(vigilances, date_) - timedelta(days=1)
+
+    @classmethod
+    def make_end_date(cls, vigilances=None, date_=None):
         if date_ is None:
             if not isinstance(vigilances, list) or len(vigilances) < 1:
                 return None
             date_ = vigilances[0].date_export
         if not isinstance(date_, datetime):
             return None
-        hour = 6 if date_.hour < 16 else 16
-        return date_.replace(hour=hour, minute=0, second=0, microsecond=0)
 
-    # On veut afficher 24h de donnée à partir de l’heure de début déterminée
-    @classmethod
-    def make_end_date(cls, vigilances=None, date_=None):
-        return cls.make_begin_date(vigilances, date_) + timedelta(days=1)
+        if date_.hour < 6:
+            hours_to_add = cls.hours_to_add_before_6
+        elif date_.hour < 16:
+            hours_to_add = cls.hours_to_add_before_16
+        else:
+            hours_to_add = cls.hours_to_add_after_16
+
+        return date_.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(hours=hours_to_add)
