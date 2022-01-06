@@ -11,7 +11,7 @@ from xml.dom.minidom import parseString
 
 from indice_pollution.history.models.departement import Departement
 from indice_pollution.history.models.commune import Commune
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from flask import current_app
 
 class VigilanceMeteo(db.Model):
@@ -49,6 +49,9 @@ class VigilanceMeteo(db.Model):
         8: 'Avalanches',
         9: 'Vagues-Submersion'
     }
+
+    ajout_avant_16h = 30 #30h = 1Jour + 6h
+    ajout_apres_16h = 40 #40h = 1Jour + 16h
 
     @staticmethod
     def get_departement_code(code):
@@ -128,15 +131,14 @@ class VigilanceMeteo(db.Model):
             # func.date_part('hour', date_export) renvoie que la partie heure de la date
             # func.lower(validity) renvoie la borne basse du range validity
             # date_trunc('day', '2022-02-05 14:28:00') renvoie '2022-02-05 00:00:00'
-            # 30h = J1+6H
             or_(
                 and_(
                     func.date_part('hour', vigilance_t.c.date_export) < 16,
-                    func.lower(vigilance_t.c.validity) <= (func.date_trunc('day', vigilance_t.c.date_export) + text("'30:00:00'")),
+                    func.lower(vigilance_t.c.validity) < (func.date_trunc('day', vigilance_t.c.date_export) + text(f"'{cls.ajout_avant_16h}h'")),
                 ),
                 and_(
                     func.date_part('hour', vigilance_t.c.date_export) >= 16,
-                    func.lower(vigilance_t.c.validity) <= (func.date_trunc('day', vigilance_t.c.date_export) + text("'40:00:00'"))
+                    func.lower(vigilance_t.c.validity) < (func.date_trunc('day', vigilance_t.c.date_export) + text(f"'{cls.ajout_apres_16h}h'"))
                 )
             )
         ).order_by(
