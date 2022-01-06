@@ -100,8 +100,9 @@ class VigilanceMeteo(db.Model):
 
     # Cette requête selectionne les vigilances météo du dernier export fait avant date_ & time_
     # Et ne renvoie que les vigilances comprises entre :
-    #  * le date_export et date_export J+1 6h si l’heure dans le date export est < 16
-    #  * le date_export et date_export J+1 16h si l’heure dans le date export est >= 16
+    #  * le date & time passés et date_export J +16h si l’heure dans le date export est < 6
+    #  * le date & time passés et date_export J+1 6h si l’heure dans le date export est < 16
+    #  * le date & time passés et date_export J+1 16h si l’heure dans le date export est >= 16
     @classmethod
     def get_query(cls, departement_code, insee, date_, time_):
         if not departement_code and not insee:
@@ -124,7 +125,7 @@ class VigilanceMeteo(db.Model):
             vigilance_t.c.date_export <= datetime_,
             vigilance_t.c.validity.overlaps(
                 DateTimeTZRange(
-                    cls.make_begin_date(date_=datetime_),
+                    cls.make_start_date(date_=datetime_),
                     cls.make_end_date(date_=datetime_)
                 )
             )
@@ -178,8 +179,12 @@ class VigilanceMeteo(db.Model):
         return f"Vigilance météo: {label}"
 
     @classmethod
-    def make_begin_date(cls, vigilances=None, date_=None):
-        return cls.make_end_date(vigilances, date_) - timedelta(days=1)
+    def make_start_date(cls, vigilances=None, date_=None):
+        if isinstance(date_, datetime):
+            return cls.make_end_date(date_=date_) - timedelta(days=1)
+        if isinstance(vigilances, list):
+            return vigilances[0].date_export
+        return None
 
     @classmethod
     def make_end_date(cls, vigilances=None, date_=None):
