@@ -38,6 +38,13 @@ class VigilanceMeteo(db.Model):
         4: 'Rouge'
     }
 
+    labels = {
+        1: 'Vigilance verte',
+        2: 'Vigilance jaune',
+        3: 'Vigilance orange',
+        4: 'Vigilance rouge'
+    }
+
     phenomenes = {
         1: 'Vent violent',
         2: 'Pluie-Inondation',
@@ -174,21 +181,11 @@ class VigilanceMeteo(db.Model):
     @classmethod
     def make_max_couleur(cls, vigilances):
         couleurs = [v.couleur_id for v in vigilances]
-        return max(couleurs) if couleurs else 1
+        return max(couleurs) if couleurs else None
 
     @classmethod
-    def make_label(cls, vigilances, max_couleur=None):
-        if not isinstance(vigilances, list) or len(vigilances) < 1:
-            return ""
-        max_couleur = max_couleur or cls.make_max_couleur(vigilances)
-        if max_couleur == 1:
-            label = "Pas de vigilance météo"
-        else:
-            couleur = VigilanceMeteo.couleurs.get(max_couleur)
-            if couleur:
-                couleur = couleur.capitalize()
-            label = f"{couleur}"
-        return f"Vigilance météo: {label}"
+    def make_label(cls, max_couleur=None):
+        return VigilanceMeteo.labels.get(max_couleur) if max_couleur is not None else ''
 
     # Toutes les vigilances sont supposées avoir la même date d’export
     # Renvoie date_export + J+1 à 6h si l’heure de la date d’export est < 16, J+1 à 16h sinon
