@@ -1,6 +1,6 @@
 from psycopg2.extras import DateTimeTZRange
 from sqlalchemy.dialects.postgresql import TSTZRANGE
-from sqlalchemy.sql.expression import select
+from sqlalchemy.sql.expression import case, select, text
 from sqlalchemy.sql import func
 import requests
 import zipfile
@@ -128,7 +128,14 @@ class VigilanceMeteo(db.Model):
                     cls.make_start_date(date_=datetime_),
                     cls.make_end_date(date_=datetime_)
                 )
-            )
+            ),
+            # Permet de ne pas selectionner des vigilances publiées il y a trop longtemps
+            # ça donne des données parcelaires dont on ne veut pas.
+            func.date_trunc('day', vigilance_t.c.date_export) + case(
+                ((func.date_part('hour', vigilance_t.c.date_export) < 6), text(f"'{cls.hours_to_add_before_6}h'::interval")),
+                ((func.date_part('hour', vigilance_t.c.date_export) < 16), text(f"'{cls.hours_to_add_before_16}h'::interval")),
+                else_=text(f"'{cls.hours_to_add_after_16}h'::interval")
+            ) > datetime_
         ).order_by(
             vigilance_t.c.date_export.desc()
         )
