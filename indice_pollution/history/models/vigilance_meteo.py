@@ -1,18 +1,16 @@
-from sqlalchemy.sql.expression import and_, or_, select, text
-from indice_pollution.extensions import db
 from psycopg2.extras import DateTimeTZRange
 from sqlalchemy.dialects.postgresql import TSTZRANGE
+from sqlalchemy.sql.expression import case, select, text
 from sqlalchemy.sql import func
-from sqlalchemy import case
 import requests
 import zipfile
 from io import BytesIO
 from xml.dom.minidom import parseString
+from datetime import date, datetime, time, timedelta
 
+from indice_pollution.extensions import db
 from indice_pollution.history.models.departement import Departement
 from indice_pollution.history.models.commune import Commune
-from datetime import date, datetime, time, timedelta
-from flask import current_app
 
 class VigilanceMeteo(db.Model):
 
@@ -57,8 +55,9 @@ class VigilanceMeteo(db.Model):
         9: 'Vagues-Submersion'
     }
 
-    ajout_avant_16h = 30 #30h = 1Jour + 6h
-    ajout_apres_16h = 40 #40h = 1Jour + 16h
+    hours_to_add_before_6 = 16
+    hours_to_add_before_16 = 30
+    hours_to_add_after_16 = 40
 
     @staticmethod
     def get_departement_code(code):
@@ -108,17 +107,19 @@ class VigilanceMeteo(db.Model):
 
     # Cette requête selectionne les vigilances météo du dernier export fait avant date_ & time_
     # Et ne renvoie que les vigilances comprises entre :
-    #  * le date_export et date_export J+1 6h si l’heure dans le date export est < 16
-    #  * le date_export et date_export J+1 16h si l’heure dans le date export est >= 16
+    #  * le date & time passés et date_export J +16h si l’heure dans le date export est < 6
+    #  * le date & time passés et date_export J+1 6h si l’heure dans le date export est < 16
+    #  * le date & time passés et date_export J+1 16h si l’heure dans le date export est >= 16
     @classmethod
     def get_query(cls, departement_code, insee, date_, time_):
         if not departement_code and not insee:
             return []
-        if not isinstance(time_, time):
-            time_ = time.max # En l’absence de temps on souhaite avoir la dernière publication de la journée (ou bien de la veille si on est avant 6h)
         if not isinstance(date_, date):
-            date_ = datetime.now()
-        datetime_ = datetime.combine(date_, time_)
+            datetime_ = datetime.now()
+        else:
+            datetime_ = datetime.combine(date_, time.max)
+        if isinstance(time_, time):
+            datetime_ = datetime.combine(date_, time_)
 
         # On est obligé de passer par les tables sinon la fonction fetch à la fin n’est pas prise en compte
         vigilance_t = VigilanceMeteo.__table__
@@ -126,28 +127,22 @@ class VigilanceMeteo(db.Model):
         statement = select(
             vigilance_t
         ).join(
-            Departement.__table__, vigilance_t.c.zone_id == departement_t.c.zone_id
+            departement_t, vigilance_t.c.zone_id == departement_t.c.zone_id
         ).filter(
             vigilance_t.c.date_export <= datetime_,
-            # On veut faire ici quelque chose comme 
-            # if donne_moi_que_lheure(date_export) < 16 :
-            #  filtre(partiebasse(validity)) < date(date_export) + (J1+6h)
-            # Sinon
-            #  filtre(partiebasse(validity)) < date(date_export) + (J1+ 16h)
-            # On n’a pas de if, donc on fait ça avec des opérateurs logiques
-            # func.date_part('hour', date_export) renvoie que la partie heure de la date
-            # func.lower(validity) renvoie la borne basse du range validity
-            # date_trunc('day', '2022-02-05 14:28:00') renvoie '2022-02-05 00:00:00'
-            or_(
-                and_(
-                    func.date_part('hour', vigilance_t.c.date_export) < 16,
-                    func.lower(vigilance_t.c.validity) < (func.date_trunc('day', vigilance_t.c.date_export) + text(f"'{cls.ajout_avant_16h}h'")),
-                ),
-                and_(
-                    func.date_part('hour', vigilance_t.c.date_export) >= 16,
-                    func.lower(vigilance_t.c.validity) < (func.date_trunc('day', vigilance_t.c.date_export) + text(f"'{cls.ajout_apres_16h}h'"))
+            vigilance_t.c.validity.overlaps(
+                DateTimeTZRange(
+                    cls.make_start_date(date_=datetime_),
+                    cls.make_end_date(date_=datetime_)
                 )
-            )
+            ),
+            # Permet de ne pas selectionner des vigilances publiées il y a trop longtemps
+            # ça donne des données parcelaires dont on ne veut pas.
+            func.date_trunc('day', vigilance_t.c.date_export) + case(
+                ((func.date_part('hour', vigilance_t.c.date_export) < 6), text(f"'{cls.hours_to_add_before_6}h'::interval")),
+                ((func.date_part('hour', vigilance_t.c.date_export) < 16), text(f"'{cls.hours_to_add_before_16}h'::interval")),
+                else_=text(f"'{cls.hours_to_add_after_16}h'::interval")
+            ) > datetime_
         ).order_by(
             vigilance_t.c.date_export.desc()
         )
@@ -156,7 +151,7 @@ class VigilanceMeteo(db.Model):
             commune_t = Commune.__table__
             statement = statement.join(
                 commune_t, departement_t.c.id == commune_t.c.departement_id
-            ).filter(Commune.insee == insee)
+            ).filter(commune_t.c.insee == insee)
         elif departement_code:
             statement = statement.filter(departement_t.c.code == departement_code)
 
@@ -187,12 +182,28 @@ class VigilanceMeteo(db.Model):
     def make_label(cls, max_couleur=None):
         return VigilanceMeteo.labels.get(max_couleur, '')
 
-    # Toutes les vigilances sont supposées avoir la même date d’export
-    # Renvoie date_export + J+1 à 6h si l’heure de la date d’export est < 16, J+1 à 16h sinon
     @classmethod
-    def make_end_date(cls, vigilances):
-        if not isinstance(vigilances, list) or len(vigilances) < 1:
+    def make_start_date(cls, vigilances=None, date_=None):
+        if isinstance(date_, datetime):
+            return cls.make_end_date(date_=date_) - timedelta(days=1)
+        if isinstance(vigilances, list):
+            return vigilances[0].date_export
+        return None
+
+    @classmethod
+    def make_end_date(cls, vigilances=None, date_=None):
+        if date_ is None:
+            if not isinstance(vigilances, list) or len(vigilances) < 1:
+                return None
+            date_ = vigilances[0].date_export
+        if not isinstance(date_, datetime):
             return None
-        date_export = vigilances[0].date_export
-        hours_to_add = cls.ajout_avant_16h if date_export.hour < 16 else cls.ajout_apres_16h
-        return date_export.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(hours=hours_to_add)
+
+        if date_.hour < 6:
+            hours_to_add = cls.hours_to_add_before_6
+        elif date_.hour < 16:
+            hours_to_add = cls.hours_to_add_before_16
+        else:
+            hours_to_add = cls.hours_to_add_after_16
+
+        return date_.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(hours=hours_to_add)
