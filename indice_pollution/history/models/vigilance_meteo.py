@@ -186,7 +186,7 @@ class VigilanceMeteo(db.Model):
     def make_start_date(cls, vigilances=None, date_=None):
         if isinstance(date_, datetime):
             return cls.make_end_date(date_=date_) - timedelta(days=1)
-        if isinstance(vigilances, list):
+        if isinstance(vigilances, list) and len(vigilances) > 0:
             return vigilances[0].date_export
         return None
 
