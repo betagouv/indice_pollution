@@ -60,16 +60,16 @@ class VigilanceMeteo(db.Model):
     hours_to_add_after_16 = 40
 
     @staticmethod
-    def get_departement_code(code):
+    def get_departement_codes(code):
         if code == "20":
-            return "2A"
+            return ["2A"]
         elif code == "120":
-            return "2B"
+            return ["2B"]
         elif code == "175":
-            return "75"
+            return ["75", "92", "93", "94"]
         elif code == "99":
-            return None
-        return code
+            return [None]
+        return [code]
 
     @classmethod
     def save_all(cls):
@@ -87,22 +87,22 @@ class VigilanceMeteo(db.Model):
                     return
 
                 for phenomene in x.getElementsByTagName("PHENOMENE"):
-                    departement_code = cls.get_departement_code(phenomene.attributes['departement'].value)
-                    if not departement_code:
-                        continue
-                    departement = Departement.get(departement_code)
-                    if not departement:
-                        continue
-                    debut = convert_datetime(phenomene.attributes['dateDebutEvtTU'])
-                    fin = convert_datetime(phenomene.attributes['dateFinEvtTU'])
-                    obj = cls(
-                        zone_id=departement.zone_id,
-                        phenomene_id=int(phenomene.attributes['phenomene'].value),
-                        date_export=date_export,
-                        couleur_id=int(phenomene.attributes['couleur'].value),
-                        validity=DateTimeTZRange(debut, fin),
-                    )
-                    db.session.add(obj)
+                    for departement_code in cls.get_departement_codes(phenomene.attributes['departement'].value):
+                        if not departement_code:
+                            continue
+                        departement = Departement.get(departement_code)
+                        if not departement:
+                            continue
+                        debut = convert_datetime(phenomene.attributes['dateDebutEvtTU'])
+                        fin = convert_datetime(phenomene.attributes['dateFinEvtTU'])
+                        obj = cls(
+                            zone_id=departement.zone_id,
+                            phenomene_id=int(phenomene.attributes['phenomene'].value),
+                            date_export=date_export,
+                            couleur_id=int(phenomene.attributes['couleur'].value),
+                            validity=DateTimeTZRange(debut, fin),
+                        )
+                        db.session.add(obj)
                 db.session.commit()
 
     # Cette requête selectionne les vigilances météo du dernier export fait avant date_ & time_
