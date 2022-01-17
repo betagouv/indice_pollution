@@ -11,7 +11,7 @@ from indice_pollution.history.models.raep import RAEP
 from indice_pollution.history.models.vigilance_meteo import VigilanceMeteo
 
 from .helpers import today
-from .extensions import celery, cache, manage_webpack, db, migrate
+from .extensions import celery, cache, db, migrate
 from importlib import import_module
 from kombu import Queue
 from celery.schedules import crontab
@@ -94,14 +94,12 @@ def create_app(test_config=None):
     app.config['CELERY_BROKER_URL'] = os.getenv('CELERY_BROKER_URL') or f"sqla+{app.config['SQLALCHEMY_DATABASE_URI']}"
 
     CORS(app, send_wildcard=True)
-    manage_webpack.init_app(app)
 
     init_app(app)
     migrate.init_app(app, db)
 
     with app.app_context():
         import indice_pollution.api
-        import indice_pollution.web
         import indice_pollution.history
 
     return app
