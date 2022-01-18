@@ -167,7 +167,16 @@ class ServiceMixin(object):
                         [v['zone_code'] for v in values]
                     )
                 )
-            ).on_conflict_do_nothing()
+            )
+            primary_cols = self.DB_OBJECT.__table__.primary_key
+            ins = ins.on_conflict_do_update(
+                index_elements=primary_cols,
+                set_={
+                    cname: getattr(ins.excluded, cname)
+                    for cname in self.DB_OBJECT.__table__.c.keys()
+                    if cname not in [c.name for c in primary_cols]
+                }
+            )
             db.session.execute(ins)
         db.session.commit()
 
@@ -350,7 +359,7 @@ class ForecastMixin(ServiceMixin):
             "o3" :properties.get('code_o3'),
             "pm10" :properties.get('code_pm10'),
             "pm25" :properties.get('code_pm25'),
-            "valeur" :properties.get('code_qual') or properties['valeur']
+            "valeur" :properties.get('code_qual',properties.get('valeur'))
         }
 
 class EpisodeMixin(ServiceMixin):
