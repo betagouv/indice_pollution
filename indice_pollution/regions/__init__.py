@@ -359,7 +359,7 @@ class ForecastMixin(ServiceMixin):
             "o3" :properties.get('code_o3'),
             "pm10" :properties.get('code_pm10'),
             "pm25" :properties.get('code_pm25'),
-            "valeur" :properties.get('code_qual') or properties['valeur']
+            "valeur" :properties.get('code_qual',properties.get('valeur'))
         }
 
 class EpisodeMixin(ServiceMixin):
