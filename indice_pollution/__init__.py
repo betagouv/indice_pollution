@@ -1,3 +1,4 @@
+from itertools import groupby
 from sqlalchemy.orm import joinedload
 from indice_pollution.history.models.commune import Commune
 from indice_pollution.history.models.indice_atmo import IndiceATMO
@@ -167,7 +168,17 @@ def get_all(date_):
             r.zone_id: r
             for r in RAEP.get_all()
         }
-    return (indices, episodes, allergenes_par_departement)
+    vigilances_par_departement = {
+        zone_id: list(vigilances)
+        for zone_id, vigilances in groupby(
+            sorted(
+                VigilanceMeteo.get_all(date_=date_),
+                key=lambda v: v.zone_id
+            ),
+            lambda v: v.zone_id
+        )
+    }
+    return (indices, episodes, allergenes_par_departement, vigilances_par_departement)
 
 def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_allergenes=False):
     from indice_pollution.history.models import IndiceATMO, EpisodePollution
