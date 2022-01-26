@@ -112,8 +112,6 @@ class VigilanceMeteo(db.Model):
     #  * le date & time passés et date_export J+1 16h si l’heure dans le date export est >= 16
     @classmethod
     def get_query(cls, departement_code, insee, date_, time_):
-        if not departement_code and not insee:
-            return []
         if not isinstance(date_, date):
             datetime_ = datetime.now()
         else:
@@ -160,6 +158,11 @@ class VigilanceMeteo(db.Model):
     @classmethod
     def get(cls, departement_code=None, insee=None, date_=None, time_=None):
         orms_obj = select(cls).from_statement(cls.get_query(departement_code, insee, date_, time_))
+        return list(db.session.execute(orms_obj).scalars())
+
+    @classmethod
+    def get_all(cls, date_=None, time_=None):
+        orms_obj = select(cls).from_statement(cls.get_query(None, None, date_, time_))
         return list(db.session.execute(orms_obj).scalars())
 
     @property
