@@ -10,4 +10,5 @@ from .episode_pollution import EpisodePollution #noqa
 from .potentiel_radon import PotentielRadon #noqa
 from .raep import RAEP #noqa
 from .bassin_dair import BassinDAir #noqa
-from .vigilance_meteo import VigilanceMeteo
+from .vigilance_meteo import VigilanceMeteo #noqa
+from .indice_uv import IndiceUv #noqa
