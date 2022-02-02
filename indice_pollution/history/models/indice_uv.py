@@ -4,11 +4,8 @@ from indice_pollution.history.models.commune import Commune
 from dataclasses import dataclass
 from datetime import datetime
 from sqlalchemy.dialects.postgresql import insert as pg_insert
-import os, logging, csv
-
-
 from ftplib import FTP
-import io
+import os, logging, csv, io
 
 @dataclass
 class IndiceUv(db.Model):
@@ -26,21 +23,20 @@ class IndiceUv(db.Model):
 
         def get_ftp_content():
             if not os.getenv('FS_BUCKET_URL') or not os.getenv('FS_BUCKET_USERNAME') or not os.getenv('FS_BUCKET_PASSWORD'):
+                logging.error('The following env vars are required: FS_BUCKET_URL, FS_BUCKET_USERNAME and FS_BUCKET_PASSWORD')
                 return None
             try:
                 ftp = FTP(os.getenv('FS_BUCKET_URL'))
                 ftp.login(os.getenv('FS_BUCKET_USERNAME'), os.getenv('FS_BUCKET_PASSWORD'))
                 bio = io.BytesIO()
-                def handle_binary(data):
-                    bio.write(data)
                 filename = f'{today().strftime("%Y%m%d")}'
-                ftp.retrbinary(f'RETR {filename}.csv', callback=handle_binary)
+                ftp.retrbinary(f'RETR {filename}.csv', callback=bio.write)
                 b = bio.getvalue()
                 decoded_content = b.decode('UTF-8')
+                return decoded_content
             except Exception as e:
                 logging.error(e)
                 return None
-            return decoded_content
 
         decoded_content = get_ftp_content()
         if decoded_content is None:
@@ -68,14 +64,14 @@ class IndiceUv(db.Model):
         # file header: insee;commune;date;UV_J0;UV_J1;UV_J2;UV_J3
         for row in reader:
             insee = format_insee(row['insee'])
-            oudated_communes = []
-            if insee and insee not in oudated_communes:
+            outdated_communes = []
+            if insee and insee not in outdated_communes:
                 departement_code = f'{insee:0>2}'
                 if departement_code == '20': # Corse: 20 in file, 2A or 2B in db
-                    insee_2a = insee.replace('20', '2A')
+                    insee_2a = insee.replace('20', '2A', 1)
                     commune = Commune.get(insee_2a)
                     if commune is None:
-                        insee_2b = insee.replace('20', '2B')
+                        insee_2b = insee.replace('20', '2B', 1)
                         commune = Commune.get(insee_2b)
                 else:
                     commune = Commune.get(insee)
@@ -105,7 +101,7 @@ class IndiceUv(db.Model):
     @classmethod
     def get(cls, insee, date_=None):
         date_ = date_ or today()
-        query = cls.query.join(Commune, Commune.zone_id == cls.zone_id).filter(Commune.insee == insee, IndiceUv.date==date_).order_by(IndiceUv.date.desc())
+        query = cls.query.join(Commune, Commune.zone_id == cls.zone_id).filter(Commune.insee == insee, IndiceUv.date==date_)
         return query.first()
 
     @property
