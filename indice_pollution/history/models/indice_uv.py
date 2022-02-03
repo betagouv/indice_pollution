@@ -108,19 +108,18 @@ class IndiceUv(db.Model):
     def label(self):
         if type(self.uv_j0) == int:
             if self.uv_j0 >= 11:
-                label = 'Risque extrême'
+                label = 'Extrême'
             elif self.uv_j0 >= 8:
-                label = 'Risque très\u00a0fort' # unbreakable space
+                label = 'Très\u00a0fort' # unbreakable space
             elif self.uv_j0 >= 6:
-                label = 'Risque fort'
+                label = 'Fort'
             elif self.uv_j0 >= 3:
-                label = 'Risque modéré'
+                label = 'Modéré'
             elif self.uv_j0 >= 1:
-                label = 'Risque faible'
+                label = 'Faible'
             else:
-                label = 'Risque nul'
-                return label
-            label += f'\u00a0({self.uv_j0})' # unbreakable space
+                label = 'Nul'
+            label += f' (UV\u00a0{self.uv_j0})' # unbreakable space
         else:
             label = None
         return label
