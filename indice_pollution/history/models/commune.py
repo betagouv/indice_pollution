@@ -56,7 +56,7 @@ class Commune(db.Model):
     def get(cls, insee):
         if insee is None:
             return None
-        return cls.get_query(insee).first() or cls.get_and_init_from_api(insee)
+        return cls.get_query(insee).first()
 
     @classmethod
     def get_query(cls, insee=None, code=None):

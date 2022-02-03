@@ -2,6 +2,7 @@ from sqlalchemy.orm import joinedload
 from indice_pollution.history.models.commune import Commune
 from indice_pollution.history.models.indice_atmo import IndiceATMO
 from indice_pollution.history.models.episode_pollution import EpisodePollution
+from indice_pollution.history.models.indice_uv import IndiceUv
 from flask import Flask
 from flask_cors import CORS
 from datetime import date
@@ -325,3 +326,4 @@ def save_all():
         logger.info(f'Saving of {region} ended')
     RAEP.save_all()
     VigilanceMeteo.save_all()
+    IndiceUv.save_all()
