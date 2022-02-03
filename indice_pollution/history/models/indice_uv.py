@@ -66,7 +66,7 @@ class IndiceUv(db.Model):
             insee = format_insee(row['insee'])
             outdated_communes = []
             if insee and insee not in outdated_communes:
-                departement_code = f'{insee:0>2}'
+                departement_code = f'{insee[:2]}'
                 if departement_code == '20': # Corse: 20 in file, 2A or 2B in db
                     insee_2a = insee.replace('20', '2A', 1)
                     commune = Commune.get(insee_2a)
