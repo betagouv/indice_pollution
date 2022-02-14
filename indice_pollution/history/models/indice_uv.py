@@ -104,6 +104,15 @@ class IndiceUv(db.Model):
         query = cls.query.join(Commune, Commune.zone_id == cls.zone_id).filter(Commune.insee == insee, IndiceUv.date==date_)
         return query.first()
 
+    @classmethod
+    def get_all_query(cls, date_):
+        return db.session.query(Commune.id, IndiceUv).join(Commune, Commune.zone_id == cls.zone_id).filter(IndiceUv.date==date_)
+
+    @classmethod
+    def get_all(cls, date_=None):
+        date_ = date_ or today()
+        return dict(cls.get_all_query(date_).all())
+
     @property
     def label(self):
         if type(self.uv_j0) == int:
@@ -123,3 +132,10 @@ class IndiceUv(db.Model):
         else:
             label = None
         return label
+
+    def dict(self):
+        return {
+            'label': self.label,
+            'value': self.uv_j0,
+            'date': self.date.isoformat(),
+        }
