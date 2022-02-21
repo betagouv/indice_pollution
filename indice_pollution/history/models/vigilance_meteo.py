@@ -115,7 +115,7 @@ class VigilanceMeteo(db.Model):
         if not isinstance(date_, date):
             datetime_ = datetime.now()
         else:
-            datetime_ = datetime.combine(date_, datetime.now().time)
+            datetime_ = datetime.combine(date_, datetime.now().time())
         if isinstance(time_, time):
             datetime_ = datetime.combine(date_, time_)
 
