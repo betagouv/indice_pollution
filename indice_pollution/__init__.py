@@ -179,7 +179,8 @@ def get_all(date_):
             lambda v: v.zone_id
         )
     }
-    return (indices, episodes, allergenes_par_departement, vigilances_par_departement)
+    indices_uv = IndiceUv.get_all(date_)
+    return (indices, episodes, allergenes_par_departement, vigilances_par_departement, indices_uv)
 
 def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_allergenes=False):
     from indice_pollution.history.models import IndiceATMO, EpisodePollution
