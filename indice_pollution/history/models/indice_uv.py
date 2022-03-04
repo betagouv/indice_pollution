@@ -132,10 +132,3 @@ class IndiceUv(db.Model):
         else:
             label = None
         return label
-
-    def dict(self):
-        return {
-            'label': self.label,
-            'value': self.uv_j0,
-            'date': self.date.isoformat(),
-        }
