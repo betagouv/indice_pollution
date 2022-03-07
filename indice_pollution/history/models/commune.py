@@ -5,6 +5,7 @@ from sqlalchemy.orm import joinedload, relationship
 import requests
 import json
 from flask import current_app
+import unicodedata, re
 
 class Commune(db.Model):
     __table_args__ = {"schema": "indice_schema"}
@@ -118,3 +119,14 @@ class Commune(db.Model):
         if self.departement:
             return self.departement.nom
         return ""
+
+    @property
+    def slug(self):
+        # lower, replace whitespace and apostrophe by hyphen, replace œ by oe
+        slug = self.nom.lower()\
+            .replace(' ', '-')\
+            .replace('\'', '-').replace(u'\u2019', '-')\
+            .replace(u'\u0153', 'oe')
+        # remove diacritics
+        slug = re.sub(r'[\u0300-\u036f]', '', unicodedata.normalize('NFD', slug))
+        return slug
