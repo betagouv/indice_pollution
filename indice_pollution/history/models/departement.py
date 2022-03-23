@@ -1,9 +1,10 @@
 from indice_pollution.extensions import db
 from indice_pollution.history.models.region import Region
+from indice_pollution.history.models.tncc import TNCC
 from sqlalchemy.orm import relation, relationship
 import requests
 
-class Departement(db.Model):
+class Departement(db.Model, TNCC):
     __table_args__ = {"schema": "indice_schema"}
     __tablename__ = 'departement'
 
