@@ -1,11 +1,14 @@
 from typing import List
 from sqlalchemy.orm import relationship
-from sqlalchemy import func
+from sqlalchemy import func, select
+from indice_pollution.history.models import commune
 from indice_pollution.history.models.commune import Commune
 from indice_pollution.extensions import db
 from datetime import datetime
 from indice_pollution.helpers import today
 from sqlalchemy import  Date, text
+
+from indice_pollution.history.models.epci import EPCI
 
 class EpisodePollution(db.Model):
     __table_args__ = {"schema": "indice_schema"}
@@ -20,17 +23,27 @@ class EpisodePollution(db.Model):
     com_long: str = db.Column(db.String)
 
     @classmethod
-    def get(cls, insee=None, code_epci=None, date_=None):
-        if insee:
-            zone_subquery = Commune.get_query(insee=insee).limit(1).with_entities(Commune.zone_pollution_id).subquery()
+    def get_query(cls, insee=None, code_epci=None, date_=None):
+        table_ = cls.__table__
+        commune_table = Commune.__table__
         date_ = date_ or today()
-        query = \
-            cls.query.filter(
-                cls.date_ech.cast(Date)==date_,
-                cls.zone_id.in_(zone_subquery)
-            )\
-            .order_by(cls.date_dif.desc())
-        return query.all()
+        statement = select(table_)
+        if insee:
+            statement = statement.join(
+                commune_table,
+                table_.c.zone_id == commune_table.c.zone_pollution_id
+            ).filter(
+                commune_table.c.insee == insee
+            )
+        return statement.filter(
+            table_.c.date_ech.cast(Date) == date_
+        ).order_by(table_.c.date_dif.desc()
+        ).fetch(1, with_ties=True)
+
+    @classmethod
+    def get(cls, insee=None, code_epci=None, date_=None):
+        orms_obj = select(cls).from_statement(cls.get_query(insee, code_epci, date_))
+        return list(db.session.execute(orms_obj).scalars())
 
     @classmethod
     def bulk_query(cls, insees=None, codes_epci=None, date_=None):
