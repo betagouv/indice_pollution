@@ -1,5 +1,6 @@
 from indice_pollution.extensions import db, cache
 from indice_pollution.history.models.departement import Departement
+from indice_pollution.history.models.tncc import TNCC
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import joinedload, relationship
 import requests
@@ -7,7 +8,7 @@ import json
 from flask import current_app
 import unicodedata, re
 
-class Commune(db.Model):
+class Commune(db.Model, TNCC):
     __table_args__ = {"schema": "indice_schema"}
 
     id = db.Column(db.Integer, primary_key=True)
