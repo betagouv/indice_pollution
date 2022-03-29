@@ -86,7 +86,7 @@ class IndiceATMO(db.Model):
             ).filter(
                 func.date(IndiceATMO.date_ech) == date_
             ).order_by(
-                IndiceATMO.date_ech
+                IndiceATMO.date_ech, commune_id, IndiceATMO.date_dif.desc()
             ).distinct(
                 IndiceATMO.date_ech, commune_id
             )
