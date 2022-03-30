@@ -1,4 +1,5 @@
 from setuptools import find_packages, setup
+from time import time
 
 DEPENDENCIES = [
     'alembic',
@@ -23,9 +24,10 @@ DEPENDENCIES = [
     'redis',
 ]
 
+
 setup(
     name='indice_pollution',
-    version='0.31.1',
+    version=f'0.40.{int(time())}',
     description='API giving air pollution level in France',
     url='https://github.com/l-vincent-l/indice_pollution',
     download_url='https://github.com/l-vincent-l/indice_pollution/archive/0.1.2.tar.gz',
@@ -39,6 +41,6 @@ setup(
     ],
     keywords='air quality aasqa atmo iqa',
     packages=find_packages(),
-    install_requires=DEPENDENCIES
+    install_requires=DEPENDENCIES,
 )
 
