@@ -14,5 +14,18 @@ class TNCC:
         8: {"article": "los ", "charniere": "de los "}
     }
 
+    @property
+    def charniere(self):
+        return self.tncc_codes[self.tncc]['charniere']
+
+    @property
+    def article(self):
+        return self.tncc_codes[self.tncc]['article']
+
+    @property
     def nom_charniere(self):
-        return f"{self.tncc_codes[self.tncc]['charniere']}{self.nom}"
+        return f"{self.charniere}{self.nom}"
+
+    @property
+    def nom_article(self):
+        return f"{self.article}{self.nom}"
