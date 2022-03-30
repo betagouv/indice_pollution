@@ -1,5 +1,4 @@
-from setuptools import setup
-from time import time
+from setuptools import find_packages, setup
 
 def time_scheme(version):
         res = ".".join([
