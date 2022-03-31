@@ -2,6 +2,7 @@ from indice_pollution.extensions import db
 
 class TNCC:
     tncc = db.Column(db.Integer)
+    nccenr = db.Column(db.String)
     tncc_codes= {
         0: {"article": " ",    "charniere": "de "},
         1: {"article": " ", 	  "charniere": "d'"},
@@ -24,8 +25,8 @@ class TNCC:
 
     @property
     def nom_charniere(self):
-        return f"{self.charniere}{self.nom}"
+        return f"{self.charniere}{self.nccenr}"
 
     @property
     def nom_article(self):
-        return f"{self.article}{self.nom}"
+        return f"{self.article}{self.nccenr}"
