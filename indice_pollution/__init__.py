@@ -338,7 +338,8 @@ def raep(insee, date_=None, extended=False):
     return {
         "departement": {
             "nom": departement.nom,
-            "code": departement.code
+            "code": departement.code,
+            "charniere": departement.charniere
         },
         "data": data.to_dict() if data else None
     }

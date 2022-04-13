@@ -9,6 +9,14 @@ class Zone(db.Model):
     type = db.Column(db.String)
     code = db.Column(db.String)
 
+    libtypes = {
+        "region": {"article": "la ", "preposition": "région", "module": "region", "clsname": "Region"},
+        "epci": {"article": "l’", "preposition": "EPCI" , "module": "epci", "clsname": "EPCI"},
+        "departement": {"article": "le ", "preposition": "département", "module": "departement", "clsname": "Departement"},
+        "bassin_dair": {"article": "le ", "preposition": "bassin d’air", "module": "bassin_dair", "clsname": "BassinDAir"},
+        "commune": {"article": "la ", "preposition": "commune", "module": "commune", "clsname": "Commune"},
+    }
+
     @classmethod
     def get(cls, code, type_):
         return Zone.query.filter_by(code=code, type=type_).first()
@@ -16,19 +24,10 @@ class Zone(db.Model):
     @property
     @cache.memoize(timeout=0)
     def lib(self, with_preposition=True, with_article=True):
-        types = {
-            "region": {"article": "la ", "preposition": "région", "module": "region", "clsname": "Region"},
-            "epci": {"article": "l’", "preposition": "EPCI" , "module": "epci", "clsname": "EPCI"},
-            "departement": {"article": "le ", "preposition": "département", "module": "departement", "clsname": "Departement"},
-            "bassin_dair": {"article": "le ", "preposition": "bassin d’air", "module": "bassin_dair", "clsname": "BassinDAir"},
-            "commune": {"article": "la ", "preposition": "commune", "module": "commune", "clsname": "Commune"},
-        }
-        t = types.get(self.type)
+        t = self.libtypes.get(self.type)
         if not t:
             return ""
-        m = import_module(f"indice_pollution.history.models.{t['module']}")
-        c = getattr(m, t["clsname"])
-        o = db.session.query(c).filter(c.zone_id == self.id).first()
+        o = self.attached_obj
         if not o:
             return ""
         r = ""
@@ -37,8 +36,16 @@ class Zone(db.Model):
                 r = t["article"]
             r += t["preposition"] + " "
         if hasattr(o, "preposition"):
-            r += o.preposition + " "
-        r += o.nom
+            r += o.preposition or "" + " "
+        r += o.nom or ""
         return r
 
-
+    @property
+    @cache.memoize(timeout=0)
+    def attached_obj(self, with_preposition=True, with_article=True):
+        t = self.libtypes.get(self.type)
+        if not t:
+            return None
+        m = import_module(f"indice_pollution.history.models.{t['module']}")
+        c = getattr(m, t["clsname"])
+        return db.session.query(c).filter(c.zone_id == self.id).first()
