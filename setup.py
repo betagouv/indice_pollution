@@ -1,12 +1,6 @@
-from setuptools import find_packages, setup
-
-
-def get_version():
-    from setuptools_scm import get_version
-    return get_version()
+from setuptools import setup
+from time import time
 
 if __name__ == '__main__':
-    setup(
-        version=get_version()
-    )
+    setup()
 
