@@ -21,3 +21,6 @@ yarn-error.log*
 *.sln
 *.sw?
 
+*.eggs/
+*.egg-info*
+build/
