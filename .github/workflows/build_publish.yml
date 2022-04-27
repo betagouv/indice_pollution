@@ -17,15 +17,16 @@ jobs:
         run: pip install setuptools_scm
       - name: Build package
         run: python setup.py sdist
-      - name: Publish distribution 📦 to Test PyPI
-        uses: pypa/gh-action-pypi-publish@master
-        with:
-          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
       - name: Extract branch name
         shell: bash
         run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         id: extract_branch
+      - name: Publish distribution 📦 to Test PyPI
+        if: ${{ steps.extract_branch.outputs.branch  == 'master' }}
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
       - name: Publish distribution 📦 to PyPI
         if: ${{ steps.extract_branch.outputs.branch  == 'master' }}
         uses: pypa/gh-action-pypi-publish@master
