@@ -1,5 +1,6 @@
-from setuptools import find_packages, setup
+from setuptools import dist, find_packages, setup
 from time import time
+from pkginfo import UnpackedSDist
 
 DEPENDENCIES = [
     'alembic',
@@ -17,6 +18,7 @@ DEPENDENCIES = [
     'pytz',
     'beautifulsoup4',
     'html5lib',
+    'pkginfo',
     'psycopg2',
     'unidecode',
     'sentry-sdk[flask]',
@@ -25,9 +27,16 @@ DEPENDENCIES = [
 ]
 
 
+dist.Distribution(dict(setup_requires='pkginfo'))
+try:
+    d = UnpackedSDist(__file__)
+    VERSION = d.version
+except ValueError:
+    VERSION = f'0.41.{int(time())}'
+
 setup(
     name='indice_pollution',
-    version=f'0.40.{int(time())}',
+    version=VERSION,
     description='API giving air pollution level in France',
     url='https://github.com/l-vincent-l/indice_pollution',
     download_url='https://github.com/l-vincent-l/indice_pollution/archive/0.1.2.tar.gz',
