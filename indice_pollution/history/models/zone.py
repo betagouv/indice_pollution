@@ -23,7 +23,7 @@ class Zone(db.Model):
 
     @property
     @cache.memoize(timeout=0)
-    def lib(self, with_preposition=True, with_article=True):
+    def lib(self, with_preposition=True, with_article=True, nom_charniere=True):
         t = self.libtypes.get(self.type)
         if not t:
             return ""
@@ -35,8 +35,10 @@ class Zone(db.Model):
             if with_article:
                 r = t["article"]
             r += t["preposition"] + " "
+        if nom_charniere and hasattr(o, 'nom_charniere'):
+            return r + o.nom_charniere
         if hasattr(o, "preposition"):
-            r += o.preposition or "" + " "
+            r += (o.preposition or "") + " "
         r += o.nom or ""
         return r
 
