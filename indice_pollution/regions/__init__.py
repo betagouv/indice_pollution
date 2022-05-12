@@ -429,6 +429,8 @@ class EpisodeMixin(ServiceMixin):
         code = properties['code_zone']
         if type(code) == int:
             code = f"{code:02}"
+        if properties.get('code_pol') == None:
+            return None
         return {
             "zone_code": code,
             "zone_type": cls.zone_type,
