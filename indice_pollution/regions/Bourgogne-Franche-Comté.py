@@ -25,8 +25,8 @@ class Forecast(Service, ForecastMixin):
             'CQL_FILTER': f"date_ech >= '{date_}T00:00:00Z' AND code_zone={insee}"
         }
 
-    @property
-    def params_fetch_all(self):
+    @classmethod
+    def params_fetch_all(cls):
         return {
             'service': 'WFS',
             'version': '2.0.0',
@@ -56,11 +56,12 @@ class Episode(Service, EpisodeMixin):
             'geometryType': 'esriGeometryPoint',
         }
 
-    def getter(self, attributes):
+    @classmethod
+    def getter(cls, attributes):
         return super().getter({'code_pol': attributes['id_poll_ue'], **attributes})
 
-    @property
-    def params_fetch_all(self):
+    @classmethod
+    def params_fetch_all(cls):
         return {
             'service': 'WFS',
             'version': '2.0.0',

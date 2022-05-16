@@ -44,7 +44,8 @@ class Episode(Service, EpisodeMixin):
     def attributes_getter(self, feature):
         return feature['properties']
 
-    def getter(self, attributes):
+    @classmethod
+    def getter(cls, attributes):
         polluant_code_pol = {
             "O3": "7",
             "NO2": "8",
@@ -71,8 +72,8 @@ class Forecast(Service, ForecastMixin):
             'outputFormat': 'json',
         }
 
-    @property
-    def params_fetch_all(self):
+    @classmethod
+    def params_fetch_all(cls):
         filter_date_ech = f'<PropertyIsGreaterThanOrEqualTo><PropertyName>date_ech</PropertyName><Literal>{date.today()}T00:00:00Z</Literal></PropertyIsGreaterThanOrEqualTo>'
         return {
             'service': 'wfs',
@@ -82,7 +83,8 @@ class Forecast(Service, ForecastMixin):
             'outputFormat': 'json',
         }
 
-    def get_from_scraping(self, previous_results, date_, insee):
+    @classmethod
+    def get_from_scraping(cls, previous_results, date_, insee):
         url = f'https://www.atmo-nouvelleaquitaine.org/monair/commune/{insee}'
         try:
             r = requests.get(url)
@@ -101,7 +103,7 @@ class Forecast(Service, ForecastMixin):
         days = controls[0].find_all('a', class_='raster-control-link')
 
         return [
-            self.getter({
+            cls.getter({
                 "date": str(datetime.fromtimestamp(int(day.attrs.get('data-rasterid'))).date()),
                 "indice": int(day.attrs.get('data-index')) - 1,
             })

@@ -46,6 +46,7 @@ class RAEP(db.Model):
     )
     liste_allergenes = ["cypres", "noisetier", "aulne", "peuplier", "saule", "frene", "charme", "bouleau", "platane", "chene", "olivier", "tilleul", "chataignier", "rumex", "graminees", "plantain", "urticacees", "armoises", "ambroisies"]
 
+
     @classmethod
     def save_all(cls):
         if not os.getenv('ALLERGIES_URL'):

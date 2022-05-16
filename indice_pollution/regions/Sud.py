@@ -26,13 +26,13 @@ class Episode(Service, EpisodeMixin):
             'geometryType': 'esriGeometryPoint',
         }
 
-    @property
-    def params_fetch_all(self):
+    @classmethod
+    def params_fetch_all(cls):
         date_ = date.today()
         tomorrow_date = date_ + timedelta(days=1)
 
-        fr_date = date_.strftime(self.fr_date_format)
-        fr_tomorrow = tomorrow_date.strftime(self.fr_date_format)
+        fr_date = date_.strftime(cls.fr_date_format)
+        fr_tomorrow = tomorrow_date.strftime(cls.fr_date_format)
 
         return {
             'service': 'WFS',
@@ -66,13 +66,13 @@ class Forecast(Service, ForecastMixin):
             'outputFormat': 'json'
         }
 
-    @property
-    def params_fetch_all(self):
+    @classmethod
+    def params_fetch_all(cls):
         date_ = date.today()
         tomorrow_date = date_ + timedelta(days=1)
 
-        fr_date = date_.strftime(self.fr_date_format)
-        fr_tomorrow = tomorrow_date.strftime(self.fr_date_format)
+        fr_date = date_.strftime(cls.fr_date_format)
+        fr_tomorrow = tomorrow_date.strftime(cls.fr_date_format)
 
         return {
             'service': 'WFS',

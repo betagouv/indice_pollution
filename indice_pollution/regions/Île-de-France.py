@@ -31,8 +31,8 @@ class Forecast(Service, ForecastMixin):
             'CQL_FILTER': f"date_ech >= '{date_}T00:00:00Z' AND code_zone={insee}"
         }
 
-    @property
-    def params_fetch_all(self):
+    @classmethod
+    def params_fetch_all(cls):
         return {
             'service': 'WFS',
             'version': '2.0.0',
@@ -42,7 +42,8 @@ class Forecast(Service, ForecastMixin):
             'CQL_FILTER': f'(date_dif >= {date.today()}) OR (date_ech = {date.today()})'
         }
 
-    def get_from_scraping(self, previous_results, date_, insee):
+    @classmethod
+    def get_from_scraping(cls, previous_results, date_, insee):
         api_key = os.getenv('AIRPARIF_API_KEY')
         if not api_key:
             return []
@@ -55,7 +56,7 @@ class Forecast(Service, ForecastMixin):
         to_return = []
         for _k, indices in r.json().items():
             to_return = [
-                self.getter({
+                cls.getter({
                     "date": indice["date"],
                     "lib_qual": indice["indice"],
                 })
@@ -71,7 +72,8 @@ class Episode(Service, EpisodeMixin):
     fetch_only_from_scraping = True
     zone_type = 'region'
 
-    def get_from_scraping(self, to_return=[], date_=None, insee=None):
+    @classmethod
+    def get_from_scraping(cls, to_return=[], date_=None, insee=None):
         api_key = os.getenv('AIRPARIF_API_KEY')
         polluant_code_pol = {
             "O3": "7",
