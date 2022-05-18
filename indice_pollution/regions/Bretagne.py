@@ -221,15 +221,13 @@ class Forecast(Service, ForecastMixin):
             'CQL_FILTER': f"code_zone = {epci} AND date_ech>='{date_}'"
         }
 
-    @property
-    def params_fetch_all(self):
-        return {
-                'service': 'WFS',
-                'version': '1.0.0',
-                'request': 'GetFeature',
-                'typeName': 'ind_bretagne:ind_bretagne_j1',
-                'outputFormat': 'application/json',
-            }
+    params_fetch_all= {
+        'service': 'WFS',
+        'version': '1.0.0',
+        'request': 'GetFeature',
+        'typeName': 'ind_bretagne:ind_bretagne_j1',
+        'outputFormat': 'application/json',
+    }
 
 class Episode(Service, EpisodeMixin):
     url = 'https://data.airbreizh.asso.fr/geoserver/alrt3j_bretagne/ows'
@@ -251,12 +249,10 @@ class Episode(Service, EpisodeMixin):
             'Filter': f'<Filter>{filter_zone}</Filter>',
         }
 
-    @property
-    def params_fetch_all(self):
-        return {
-                'service': 'WFS',
-                'version': '1.0.0',
-                'request': 'GetFeature',
-                'typeName': 'alrt3j_bretagne',
-                'outputFormat': 'application/json',
-            }
+    params_fetch_all = {
+        'service': 'WFS',
+        'version': '1.0.0',
+        'request': 'GetFeature',
+        'typeName': 'alrt3j_bretagne',
+        'outputFormat': 'application/json',
+    }

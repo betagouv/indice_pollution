@@ -27,8 +27,9 @@ class Forecast(Service, ForecastMixin):
             'outSR': '4326'
         }
 
-    def get_from_scraping(self, previous_results, date_, insee):
-        url = self.get_url(insee)
+    @classmethod
+    def get_from_scraping(cls, previous_results, date_, insee):
+        url = cls.get_url(insee)
         if not url:
             return []
         r = requests.get(url)
@@ -37,14 +38,15 @@ class Forecast(Service, ForecastMixin):
         j = json.loads(script.contents[0])
         city_iqa = j['atmo_mesures']['city_iqa']
         return [
-            self.getter({
+            cls.getter({
                 "indice": int(v['iqa']) - 1,
                 "date": str(parse(v['date']).date())
             })
             for v in city_iqa
         ]
 
-    def get_url(self, insee):
+    @classmethod
+    def get_url(cls, insee):
         r = requests.get(f'https://geo.api.gouv.fr/communes/{insee}',
                 params={
                     "fields": "codesPostaux",

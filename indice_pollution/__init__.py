@@ -8,7 +8,6 @@ from flask import Flask
 from flask_cors import CORS
 from datetime import date
 import os
-import logging
 from indice_pollution.history.models.raep import RAEP
 from indice_pollution.history.models.vigilance_meteo import VigilanceMeteo
 
@@ -17,6 +16,7 @@ from .extensions import celery, cache, db, migrate
 from importlib import import_module
 from kombu import Queue
 from celery.schedules import crontab
+from functools import partial
 
 def configure_celery(flask_app):
     """Configure tasks.celery:
@@ -63,18 +63,59 @@ def configure_cache(app):
         conf["CACHE_THRESHOLD"] = 100000
     cache.init_app(app, conf)
 
-@celery.task()
-def save_all_indices():
-    save_all()
+@celery.task(bind=True)
+def save_all_indices(self, module_name, class_name):
+    self.update_state(f"Saving {module_name}.{class_name}")
+    module = import_module(module_name)
+    if hasattr(module, "Service") and hasattr(module.Service, "is_active") and not module.Service.is_active:
+        self.update_state(f"{module_name} is not active")
+        return f"{module_name} is not active"
+    if not hasattr(module, class_name):
+        self.update_state(f"No class {class_name} in {module_name}")
+        return f"No class {class_name} in {module_name}"
+    getattr(module, class_name).save_all()
+    self.update_state(f"{module_name}.{class_name} saved")
+    return f"{module_name}.{class_name} saved"
+
 
 @celery.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(
-        crontab(minute='0', hour='*/1'),
-        save_all_indices.s(),
+    add_periodic_task = partial(
+        sender.add_periodic_task,
+        schedule=crontab(minute='0', hour='*/1'),
         queue='save_indices',
         routing_key='save_indices.save_all'
     )
+
+    regions = [
+        'Auvergne-Rhône-Alpes',
+        'Bourgogne-Franche-Comté',
+        'Bretagne',
+        'Centre-Val de Loire',
+        'Corse',
+        'Grand Est',
+        'Guadeloupe',
+        'Guyane',
+        'Hauts-de-France',
+        'Île-de-France',
+        'Martinique',
+        'Mayotte',
+        'Normandie',
+        'Nouvelle-Aquitaine',
+        'Occitanie',
+        'Pays de la Loire',
+        "Réunion",
+        "Sud"
+    ]
+    for region in regions:
+        add_periodic_task(sig=save_all_indices.s(f"indice_pollution.regions.{region}", "Forecast"))
+        add_periodic_task(sig=save_all_indices.s(f"indice_pollution.regions.{region}", "Episode"))
+
+    add_periodic_task(sig=save_all_indices.s("indice_pollution.history.models.raep", "RAEP"))
+    add_periodic_task(sig=save_all_indices.s("indice_pollution.history.models.vigilance_meteo", "VigilanceMeteo"))
+
+    add_periodic_task(sig=save_all_indices.s("indice_pollution.history.models.indice_uv", "IndiceUv"))
+
 
 def init_app(app):
     db.init_app(app)
@@ -301,41 +342,3 @@ def raep(insee, date_=None, extended=False):
         },
         "data": data.to_dict() if data else None
     }
-
-
-def save_all():
-    logger = logging.getLogger(__name__)
-    logger.info('Begin of "save_all" task')
-    regions = [
-        'Auvergne-Rhône-Alpes',
-        'Bourgogne-Franche-Comté',
-        'Bretagne',
-        'Centre-Val de Loire',
-        'Corse',
-        'Grand Est',
-        'Guadeloupe',
-        'Guyane',
-        'Hauts-de-France',
-        'Île-de-France',
-        'Martinique',
-        'Mayotte',
-        'Normandie',
-        'Nouvelle-Aquitaine',
-        'Occitanie',
-        'Pays de la Loire',
-        "Réunion",
-        "Sud"
-    ]
-    for region in regions:
-        logger.info(f'Saving {region} region')
-        module = import_module(f"indice_pollution.regions.{region}")
-        if not module.Service.is_active:
-            continue
-        logger.info(f'Saving Forecast of {region}')
-        module.Forecast().save_all()
-        logger.info(f'Saving Episode of {region}')
-        module.Episode().save_all()
-        logger.info(f'Saving of {region} ended')
-    RAEP.save_all()
-    VigilanceMeteo.save_all()
-    IndiceUv.save_all()

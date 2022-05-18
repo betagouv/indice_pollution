@@ -22,7 +22,8 @@ class Forecast(Service, ForecastMixin):
             'outSR': '4326'
         }
 
-    def getter(self, attributes):
+    @classmethod
+    def getter(cls, attributes):
         return super().getter(
             {
                 'couleur': attributes.get('coul_qual'),
@@ -30,8 +31,9 @@ class Forecast(Service, ForecastMixin):
             }
         )
 
-    def get_from_scraping(self, previous_results, date_, insee):
-        r = requests.get(f'http://www.ligair.fr/commune/{self.get_nom_ville(insee)}')
+    @classmethod
+    def get_from_scraping(cls, previous_results, date_, insee):
+        r = requests.get(f'http://www.ligair.fr/commune/{cls.get_nom_ville(insee)}')
         soup = BeautifulSoup(r.text, "html.parser")
         indices = soup.find_all('div', class_='atmo-index-legend')
         legend = indices[0]
@@ -41,7 +43,7 @@ class Forecast(Service, ForecastMixin):
         today_text = next(filter(lambda v: "Aujourd'hui" in v.find_next('strong').text, labels)).text
         indice = today_text[len("Aujourd'hui : "):].lower()
         return previous_results + [
-            self.getter({
+            cls.getter({
                 "date": str(date_), 
                 "indice": indice,
             })

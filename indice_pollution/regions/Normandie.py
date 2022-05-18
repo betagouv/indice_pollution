@@ -49,7 +49,8 @@ class Forecast(Service, ForecastMixin):
             return None
         return r
 
-    def get_one_attempt_fetch_all(self, url, params):
+    @classmethod
+    def get_one_attempt_fetch_all(cls, url, params):
         params = {'project': 'flux_indice_atmo_normandie', 'repository': 'dindice'}
         data = {
             'OUTPUTFORMAT': 'GeoJSON',
@@ -62,11 +63,11 @@ class Forecast(Service, ForecastMixin):
         try:
             r = requests.post(url, params=params, data=data)
         except requests.exceptions.ConnectionError as e:
-            logging.error(f'Impossible de se connecter à {self.url}')
+            logging.error(f'Impossible de se connecter à {cls.url}')
             logging.error(e)
             return None
         except requests.exceptions.SSLError as e:
-            logging.error(f'Erreur ssl {self.url}')
+            logging.error(f'Erreur ssl {cls.url}')
             logging.error(e)
             return None
         try:

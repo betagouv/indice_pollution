@@ -13,7 +13,8 @@ class Forecast(Service, ForecastMixin):
     get_only_from_scraping = True
     url = 'https://services3.arcgis.com/o7Q3o5SkiSeZD5LK/arcgis/rest/services/Indice_ATMO/FeatureServer/0/query'
 
-    def get_from_scraping(self, previous_results, date_, insee):
+    @classmethod
+    def get_from_scraping(cls, previous_results, date_, insee):
         api_key = os.getenv('AURA_API_KEY')
         if not api_key:
             return []
@@ -25,7 +26,7 @@ class Forecast(Service, ForecastMixin):
             current_app.logger.error(e)
             return []
         return [
-            self.getter({
+            cls.getter({
                 "date": indice['date_echeance'],
                 "lib_qual": indice['qualificatif']
             })

@@ -29,8 +29,8 @@ class Episode(Service, EpisodeMixin):
             "CQL_FILTER": f"date_ech >= {date_}T00:00:00Z AND code_zone='{commune.departement.code}'"
         }
 
-    @property
-    def params_fetch_all(self):
+    @classmethod
+    def params_fetch_all(cls):
         return {
             "version": "2.0.0",
             "typeName": "alrt3j_pays_de_la_loire:alrt3j_pays_de_la_loire",
@@ -53,8 +53,8 @@ class Forecast(Service, ForecastMixin):
             "export": "json"
         }
 
-    @property
-    def params_fetch_all(self):
+    @classmethod
+    def params_fetch_all(cls):
         return {
             "version": "2.0.0",
             "typeName": "ind_pays_de_la_loire:ind_pays_de_la_loire ",
@@ -64,13 +64,16 @@ class Forecast(Service, ForecastMixin):
             "CQL_FILTER": f"date_ech >= {date.today()}T00:00:00Z AND type_zone='EPCI'"
         }
 
-    def features(self, r):
+    @classmethod
+    def features(cls, r):
         return r.json().get('results', [])
 
-    def attributes_getter(self, feature):
+    @classmethod
+    def attributes_getter(cls, feature):
         return feature
 
-    def getter(self, feature):
+    @classmethod
+    def getter(cls, feature):
         return super().getter({
             "sous_indices": feature.get('sous_indice'),
             **feature

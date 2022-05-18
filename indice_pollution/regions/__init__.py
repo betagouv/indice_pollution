@@ -28,9 +28,10 @@ class ServiceMixin(object):
 
     HTTPAdapter = requests.adapters.HTTPAdapter
 
-    def get_one_attempt(self, url, params):
+    @classmethod
+    def get_one_attempt(cls, url, params):
         s = requests.Session()
-        s.mount('https://', self.HTTPAdapter())
+        s.mount('https://', cls.HTTPAdapter())
         try:
             r = s.get(url, params=params)
         except requests.exceptions.ConnectionError as e:
@@ -129,8 +130,9 @@ class ServiceMixin(object):
             raise e
 
 
-    def date_getter(self, attributes):
-        return self.date_parser(attributes.get('date_ech', attributes.get('date')))
+    @classmethod
+    def date_getter(cls, attributes):
+        return cls.date_parser(attributes.get('date_ech', attributes.get('date')))
 
     @classmethod
     def date_parser(cls, date_field):
@@ -147,16 +149,17 @@ class ServiceMixin(object):
                 logging.error(e)
                 return
 
-    def save_all(self):
-        indices = filter(lambda v: v, map(self.make_indice_dict, itertools.chain(*self.fetch_all())))
+    @classmethod
+    def save_all(cls):
+        indices = filter(lambda v: v, map(cls.make_indice_dict, itertools.chain(*cls.fetch_all())))
 
-        attrs =  [k for k in self.DB_OBJECT.__mapper__.attrs.keys() if not k.startswith('zone')]
+        attrs =  [k for k in cls.DB_OBJECT.__mapper__.attrs.keys() if not k.startswith('zone')]
         def sorter(d):
             return [d.get(a) for a in attrs]
         for k, g in itertools.groupby(sorted(indices, key=sorter), key=sorter):
             values = list(g)
             ins = pg_insert(
-                self.DB_OBJECT
+                cls.DB_OBJECT
             ).from_select(
                 attrs + ['zone_id'],
                 select(
@@ -168,12 +171,12 @@ class ServiceMixin(object):
                     )
                 )
             )
-            primary_cols = self.DB_OBJECT.__table__.primary_key
+            primary_cols = cls.DB_OBJECT.__table__.primary_key
             ins = ins.on_conflict_do_update(
                 index_elements=primary_cols,
                 set_={
                     cname: getattr(ins.excluded, cname)
-                    for cname in self.DB_OBJECT.__table__.c.keys()
+                    for cname in cls.DB_OBJECT.__table__.c.keys()
                     if cname not in [c.name for c in primary_cols]
                 }
             )
@@ -188,16 +191,17 @@ class ServiceMixin(object):
         'outSR': '4326'
     }
 
-    def fetch_all(self):
-        url = self.url_fetch_all if hasattr(self, "url_fetch_all") else self.url
-        if hasattr(self, 'fetch_only_from_scraping'):
-            j =  self.get_from_scraping()
+    @classmethod
+    def fetch_all(cls):
+        url = cls.url_fetch_all if hasattr(cls, "url_fetch_all") else cls.url
+        if hasattr(cls, 'fetch_only_from_scraping'):
+            j =  cls.get_from_scraping()
             yield j
         else:
-            get_one_attempt = self.get_one_attempt_fetch_all if hasattr(self, "get_one_attempt_fetch_all") else self.get_one_attempt
+            get_one_attempt = cls.get_one_attempt_fetch_all if hasattr(cls, "get_one_attempt_fetch_all") else cls.get_one_attempt
             response = get_one_attempt(
                 url,
-                self.params_fetch_all
+                cls.params_fetch_all() if callable(cls.params_fetch_all) else cls.params_fetch_all
             )
             if not response:
                 yield []
@@ -205,16 +209,16 @@ class ServiceMixin(object):
             try:
                 j = response.json()
             except json.JSONDecodeError:
-                logging.error(f"Unable to decode {url} {self.params_fetch_all}")
+                logging.error(f"Unable to decode {url} {cls.params_fetch_all}")
                 yield []
                 return
             yield j['features']
             i = len(j['features'])
             while j.get('exceededTransferLimit'):
                 j = get_one_attempt(
-                    self.url_fetch_all if hasattr(self, "url_fetch_all") else self.url,
+                    cls.url_fetch_all if hasattr(cls, "url_fetch_all") else cls.url,
                     {
-                        **self.params_fetch_all,
+                        **cls.params_fetch_all,
                         **{
                             'resultOffset': i
                         }
@@ -241,11 +245,12 @@ class ForecastMixin(ServiceMixin):
             'outSR': '4326'
         }
 
-    def getter(self, attributes):
-        dt = self.date_getter(attributes)
-        qualif = self.indice_getter(attributes)
-        label = self.label_getter(qualif)
-        couleur = self.couleur_getter(attributes, qualif)
+    @classmethod
+    def getter(cls, attributes):
+        dt = cls.date_getter(attributes)
+        qualif = cls.indice_getter(attributes)
+        label = cls.label_getter(qualif)
+        couleur = cls.couleur_getter(attributes, qualif)
 
         return {
             'indice': qualif,
@@ -253,10 +258,11 @@ class ForecastMixin(ServiceMixin):
             'couleur': couleur,
             'sous_indices': attributes.get('sous_indices'),
             'date': str(dt.date()),
-            **{k: attributes[k] for k in self.outfields if k in attributes}
+            **{k: attributes[k] for k in cls.outfields if k in attributes}
         }
 
-    def indice_getter(self, attributes):
+    @classmethod
+    def indice_getter(cls, attributes):
         # On peut avoir un indice à 0, ce qui nous empêche de faire
         # indice = attributes.get('indice) or attributes.get('valeur)
         # car attributes.get('indice') sera truthy
@@ -291,7 +297,8 @@ class ForecastMixin(ServiceMixin):
             }.get(attributes['lib_qual'])
 
 
-    def label_getter(self, indice):
+    @classmethod
+    def label_getter(cls, indice):
         if not indice:
             return
         return {
@@ -308,7 +315,8 @@ class ForecastMixin(ServiceMixin):
             indice.strip()
         )
 
-    def couleur_getter(self, attributes, indice):
+    @classmethod
+    def couleur_getter(cls, attributes, indice):
         couleur = attributes.get('couleur') or attributes.get('coul_qual')
         if couleur:
             return couleur
@@ -368,9 +376,10 @@ class EpisodeMixin(ServiceMixin):
     outfields = ['date_ech', 'lib_zone', 'code_zone', 'date_dif', 'code_pol',
      'lib_pol', 'etat', 'com_court', 'com_long']
     
-    def getter(self, attributes):
+    @classmethod
+    def getter(cls, attributes):
         try:
-            date_ech = self.date_getter(attributes)
+            date_ech = cls.date_getter(attributes)
         except KeyError as e:
             logging.error(f"Unable to get key 'date_ech' or 'date_dif' in {attributes.keys()}")
             logging.error(e)
@@ -380,7 +389,7 @@ class EpisodeMixin(ServiceMixin):
 
         return {
             'date': str(date_ech.date()),
-            **{k: attributes[k] for k in self.outfields if k in attributes},
+            **{k: attributes[k] for k in cls.outfields if k in attributes},
         }
 
     def centre(self, insee):
