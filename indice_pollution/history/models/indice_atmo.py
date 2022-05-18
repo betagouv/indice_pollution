@@ -112,12 +112,14 @@ class IndiceATMO(db.Model):
     @classmethod
     def couleur_from_valeur(cls, valeur):
         return {
+            "indisponible": "#DDDDDD",
             "bon": "#50F0E6",
             "moyen": "#50CCAA",
             "degrade" :"#F0E641",
             "mauvais": "#FF5050",
             "tres_mauvais": "#960032",
             "extrement_mauvais": "#960032",
+            "evenement": "#888888"
         }.get(cls.indice_from_valeur(valeur))
     @property
     def couleur(self):
@@ -126,12 +128,14 @@ class IndiceATMO(db.Model):
     @classmethod
     def label_from_valeur(cls, valeur):
         return {
+            "indisponible": "Indisponible",
             "bon": "Bon",
             "moyen": "Moyen",
             "degrade": "Dégradé",
             "mauvais": "Mauvais",
             "tres_mauvais": "Très mauvais",
             "extrement_mauvais": "Extrêment mauvais",
+            "evenement": "Événement"
         }.get(cls.indice_from_valeur(valeur))
     @property
     def label(self):
@@ -140,13 +144,15 @@ class IndiceATMO(db.Model):
     @classmethod
     def indice_from_valeur(cls, valeur):
         return [
+            "indisponible",
             "bon",
             "moyen",
             "degrade",
             "mauvais",
             "tres_mauvais",
             "extrement_mauvais",
-        ][valeur - 1]
+            "evenement"
+        ][valeur]
     @property
     def indice(self):
         return self.indice_from_valeur(self.valeur)
