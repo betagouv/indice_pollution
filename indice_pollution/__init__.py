@@ -201,6 +201,7 @@ def chunks(lst, n):
     for i in range(0, len(lst), n):
         yield lst[i:i + n]
 
+
 def get_all(date_):
     from indice_pollution.history.models import IndiceATMO, EpisodePollution
     date_ = date_ or today()
@@ -223,70 +224,6 @@ def get_all(date_):
     indices_uv = IndiceUv.get_all(date_)
     return (indices, episodes, allergenes_par_departement, vigilances_par_departement, indices_uv)
 
-def bulk(insee_region_names: dict(), date_=None, fetch_episodes=False, fetch_allergenes=False):
-    from indice_pollution.history.models import IndiceATMO, EpisodePollution
-    from .regions.solvers import get_region
-    date_ = date_ or today()
-
-    insees = set(insee_region_names.keys())
-    insees_errors = set()
-    for insee in insees:
-        try:
-            region = get_region(region_name=insee_region_names[insee])
-            if not region.Service.is_active:
-                insees_errors.add(insee)
-                continue
-        except KeyError:
-            insees_errors.add(insee)
-            continue
-    for insee in insees_errors:
-        insees.remove(insee)
-        del insee_region_names[insee]
-
-    indices = dict()
-    episodes = dict()
-    for chunk in chunks(list(insees), 100):
-        indices.update(
-            {i['insee']: IndiceATMO.make_dict(i) for i in IndiceATMO.bulk(date_=date_, insees=chunk)}
-        )
-        if fetch_episodes:
-            episodes.update(
-                {e['insee']: dict(e) for e in EpisodePollution.bulk(date_=date_, insees=chunk)}
-            )
-    to_return = {
-        insee: {
-            "forecast": make_resp(
-                get_region(region_name=insee_region_names[insee]),
-                indices.get(insee, [])
-               ),
-            **({
-                "episode": make_resp(
-                    get_region(region_name=insee_region_names[insee]),
-                    episodes.get(insee, [])
-                )
-                } if fetch_episodes else {}
-            )
-        }
-        for insee in insees
-    }
-    if fetch_allergenes:
-        allergenes_par_departement = {
-            r.zone_id: r
-            for r in RAEP.get_all()
-        }
-        communes = {
-            c.insee: c
-            for c in Commune.query.options(
-                    joinedload(Commune.departement)
-                ).populate_existing(
-                ).all()
-        }
-        for insee in insees:
-            c = communes[insee]
-            if c.departement.zone_id in allergenes_par_departement:
-                to_return.setdefault(insee, {})
-                to_return[insee].update({'raep': allergenes_par_departement[c.departement.zone_id].to_dict()})
-    return to_return
 
 def episodes(insee, date_=None, use_make_resp=True):
     from .regions.solvers import get_region
