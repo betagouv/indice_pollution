@@ -328,7 +328,7 @@ def availability(insee):
         return False
 
 
-def raep(insee, date_=None, extended=False):
+def raep(insee, date_=None, extended=False, departement_as_dict=True):
     if insee is None:
         return {}
     departement = Commune.get(insee).departement
@@ -338,7 +338,8 @@ def raep(insee, date_=None, extended=False):
     return {
         "departement": {
             "nom": departement.nom,
-            "code": departement.code
-        },
+            "code": departement.code,
+            "charniere": departement.charniere
+        } if departement_as_dict else departement,
         "data": data.to_dict() if data else None
     }
