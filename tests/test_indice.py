@@ -18,3 +18,4 @@ def test_get(db_session, commune_commited):
     indice = IndiceATMO.get(insee=commune_commited.insee, date_=date_)
     assert indice
     assert indice.zone_id == commune_commited.zone_id
+
