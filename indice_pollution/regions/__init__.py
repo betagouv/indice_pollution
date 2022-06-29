@@ -8,9 +8,9 @@ import unidecode
 import itertools
 from datetime import datetime
 from dateutil import parser as dateutil_parser
-from sqlalchemy import and_, bindparam, select
-from sqlalchemy.dialects.postgresql import Insert, insert as pg_insert
-from indice_pollution.history.models import IndiceHistory, EpisodeHistory, IndiceATMO, Zone, Commune, EPCI, EpisodePollution
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert as pg_insert
+from indice_pollution.history.models import IndiceATMO, Zone, Commune, EPCI, EpisodePollution
 from indice_pollution.extensions import db
 
 class ServiceMixin(object):
