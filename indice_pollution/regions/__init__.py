@@ -151,12 +151,14 @@ class ServiceMixin(object):
 
     @classmethod
     def save_all(cls):
-        indices = filter(lambda v: v, map(cls.make_indice_dict, itertools.chain(*cls.fetch_all())))
+        indices = list(itertools.chain(*cls.fetch_all()))
+        indices_dicts = list(map(cls.make_indice_dict, indices))
+        indices_dicts_filtered = list(filter(lambda v: v, indices_dicts))
 
         attrs =  [k for k in cls.DB_OBJECT.__mapper__.attrs.keys() if not k.startswith('zone')]
         def sorter(d):
             return [d.get(a) for a in attrs]
-        for k, g in itertools.groupby(sorted(indices, key=sorter), key=sorter):
+        for k, g in itertools.groupby(sorted(indices_dicts_filtered, key=sorter), key=sorter):
             values = list(g)
             ins = pg_insert(
                 cls.DB_OBJECT
