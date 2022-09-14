@@ -26,6 +26,7 @@ def upgrade():
         sa.Column("nccenr", sa.String()),
         schema="indice_schema"
     )
+    op.execute("DROP TABLE IF EXISTS commune_temp")
     table_commune_temp = op.create_table('commune_temp',
         sa.Column('id', sa.Integer(), nullable=False),
         sa.Column('nccenr', sa.String(), nullable=True),
