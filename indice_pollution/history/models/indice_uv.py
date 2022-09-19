@@ -2,7 +2,7 @@ from indice_pollution.extensions import db
 from indice_pollution.helpers import today
 from indice_pollution.history.models.commune import Commune
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from ftplib import FTP
 import os, logging, csv, io
@@ -102,7 +102,14 @@ class IndiceUv(db.Model):
     def get(cls, insee, date_=None):
         date_ = date_ or today()
         query = cls.query.join(Commune, Commune.zone_id == cls.zone_id).filter(Commune.insee == insee, IndiceUv.date==date_)
-        return query.first()
+        if result := query.first():
+            return result
+        min_date = date_ - timedelta(days=3)
+        query = cls.query.join(Commune, Commune.zone_id == cls.zone_id).filter(Commune.insee == insee, IndiceUv.date<=date_, IndiceUv.date>=min_date).order_by(IndiceUv.date.desc())
+        if result := query.first():
+            delta = (date_ - result.date).days
+            return cls(zone_id=result.zone_id, date=date_, uv_j0=getattr(result, f"uv_j{delta}"))
+        return None
 
     @classmethod
     def get_all_query(cls, date_):
