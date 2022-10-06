@@ -52,7 +52,7 @@ def upgrade():
                 {
                     "insee": c['code'],
                     "nom": c['nom'],
-                    "departement_id": departements[c['codeDepartement']] if 'codeDepartement' in c else None
+                    "departement_id": departements.get(c.get('codeDepartement'))
                 }
                 for c in bucket
             ]
@@ -64,7 +64,7 @@ def upgrade():
             {
                 "insee": c['code'],
                 "nom": c['nom'],
-                "departement_id": departements[c['codeDepartement']] if 'codeDepartement' in c else None
+                "departement_id": departements.get(c.get('codeDepartement'))
             }
             for c in bucket
         ]
