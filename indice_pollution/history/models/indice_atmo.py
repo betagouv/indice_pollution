@@ -16,6 +16,7 @@ from operator import attrgetter, itemgetter
 @dataclass
 class IndiceATMO(db.Model):
     __table_args__ = {"schema": "indice_schema"}
+    __tablename__ = "indiceATMO"
 
     zone_id: int = db.Column(db.Integer, db.ForeignKey('indice_schema.zone.id'), primary_key=True, nullable=False)
     zone: Zone = relationship("indice_pollution.history.models.zone.Zone")
