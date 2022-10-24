@@ -186,7 +186,7 @@ class ServiceMixin(object):
         db.session.commit()
 
     params_fetch_all = {
-        'where': 'date_ech >= CURRENT_DATE',
+        'where': '(date_dif >= CURRENT_DATE) OR (date_ech >= CURRENT_DATE)',
         'outFields': "*",
         'f': 'json',
         'orderByFields': 'date_ech DESC',
