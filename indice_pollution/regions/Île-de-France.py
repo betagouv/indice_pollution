@@ -39,7 +39,7 @@ class Forecast(Service, ForecastMixin):
             'request': 'GetFeature',
             'typeName': f'DIDON:indice_atmo_2020',
             'outputFormat': 'application/json',
-            'CQL_FILTER': f'(date_dif >= {date.today()}) OR (date_ech = {date.today()})'
+            'CQL_FILTER': f'(date_dif >= {date.today()}) OR (date_ech >= {date.today()})'
         }
 
     @classmethod
