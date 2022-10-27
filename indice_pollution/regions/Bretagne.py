@@ -4,6 +4,7 @@ from . import EpisodeMixin, ForecastMixin
 from requests import adapters
 import ssl
 from urllib3 import poolmanager
+from datetime import date
 
 class TLSAdapter(adapters.HTTPAdapter):
 
@@ -221,12 +222,13 @@ class Forecast(Service, ForecastMixin):
             'CQL_FILTER': f"code_zone = {epci} AND date_ech>='{date_}'"
         }
 
-    params_fetch_all= {
+    params_fetch_all = {
         'service': 'WFS',
         'version': '1.0.0',
         'request': 'GetFeature',
-        'typeName': 'ind_bretagne:ind_bretagne_j1',
+        'typeName': f'ind_bretagne:ind_bretagne',
         'outputFormat': 'application/json',
+        'CQL_FILTER': f"date_ech>='{date.today()}'"
     }
 
 class Episode(Service, EpisodeMixin):
