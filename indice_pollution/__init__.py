@@ -74,10 +74,10 @@ def save_all_indices(self, module_name, class_name):
         self.update_state(f"No class {class_name} in {module_name}")
         return f"No class {class_name} in {module_name}"
     cls_ = getattr(module, class_name)
+    ping(cls_, "start")
     cls_.save_all()
     self.update_state(f"{module_name}.{class_name} saved")
-    if healthcheck_uuid := getattr(cls_, "healthcheck_uuid", None):
-        ping(healthcheck_uuid)
+    ping(cls_, "success")
     return f"{module_name}.{class_name} saved"
 
 
