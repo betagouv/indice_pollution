@@ -11,7 +11,7 @@ import os
 from indice_pollution.history.models.raep import RAEP
 from indice_pollution.history.models.vigilance_meteo import VigilanceMeteo
 
-from .helpers import today
+from .helpers import today, ping
 from .extensions import celery, cache, db, migrate
 from importlib import import_module
 from kombu import Queue
@@ -73,8 +73,14 @@ def save_all_indices(self, module_name, class_name):
     if not hasattr(module, class_name):
         self.update_state(f"No class {class_name} in {module_name}")
         return f"No class {class_name} in {module_name}"
-    getattr(module, class_name).save_all()
+    cls_ = getattr(module, class_name)
+    ping(cls_, "start")
+    try:
+        cls_.save_all()
+    except:
+        ping(cls_, "fail")
     self.update_state(f"{module_name}.{class_name} saved")
+    ping(cls_, "success")
     return f"{module_name}.{class_name} saved"
 
 
