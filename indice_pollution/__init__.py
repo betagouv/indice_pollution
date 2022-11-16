@@ -75,7 +75,10 @@ def save_all_indices(self, module_name, class_name):
         return f"No class {class_name} in {module_name}"
     cls_ = getattr(module, class_name)
     ping(cls_, "start")
-    cls_.save_all()
+    try:
+        cls_.save_all()
+    except:
+        ping(cls_, "fail")
     self.update_state(f"{module_name}.{class_name} saved")
     ping(cls_, "success")
     return f"{module_name}.{class_name} saved"
