@@ -12,7 +12,7 @@ from indice_pollution.history.models.raep import RAEP
 from indice_pollution.history.models.vigilance_meteo import VigilanceMeteo
 
 from .helpers import today, ping
-from .extensions import celery, cache, db, migrate
+from .extensions import celery, cache, db
 from importlib import import_module
 from kombu import Queue
 from celery.schedules import crontab
@@ -146,7 +146,6 @@ def create_app(test_config=None):
     CORS(app, send_wildcard=True)
 
     init_app(app)
-    migrate.init_app(app, db)
 
     with app.app_context():
         import indice_pollution.api
