@@ -37,13 +37,21 @@ def get_healthchecksio_slug(caller):
             raw_name = str_cls[len(cls_type["start"]):-(len(cls_type["end"]))]
             return cls_type["debut_slug"] + unidecode(raw_name.lower().replace(" ", "-"))
 
-
-def ping(caller, ping_type):
+def ping(caller, ping_type, launch_time=None):
     if not (slug := get_healthchecksio_slug(caller)):
         return
+    _ping(slug, ping_type, launch_time)
+    
+def _ping(slug, ping_type, launch_time):
+    data = None
+    if launch_time:
+        data = {
+            "launch_time": str(launch_time),
+            "since launch": str(datetime.now() - launch_time),
+        }
     ping_key = os.getenv("HEALTCHECKSIO_API_KEY")
     end_url = f"/{ping_type}" if ping_type != "success" else ""
     try:
-        requests.get(f"https://hc-ping.com/{ping_key}/{slug}{end_url}", timeout=10)
+        requests.post(f"https://hc-ping.com/{ping_key}/{slug}{end_url}", timeout=10,json=data)
     except requests.RequestException as e:
         current_app.logger.error(f"Ping to healthchecks.io failed: {e}")
