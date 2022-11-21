@@ -5,7 +5,6 @@ from indice_pollution.history.models.indice_atmo import IndiceATMO
 from indice_pollution.history.models.episode_pollution import EpisodePollution
 from indice_pollution.history.models.indice_uv import IndiceUv
 from flask import Flask
-from flask_cors import CORS
 from datetime import date, datetime
 import os
 from indice_pollution.history.models.raep import RAEP
@@ -142,8 +141,6 @@ def create_app(test_config=None):
     )
     app.config['CELERY_RESULT_BACKEND'] = os.getenv('CELERY_RESULT_BACKEND') or f"db+{app.config['SQLALCHEMY_DATABASE_URI']}"
     app.config['CELERY_BROKER_URL'] = os.getenv('CELERY_BROKER_URL') or f"sqla+{app.config['SQLALCHEMY_DATABASE_URI']}"
-
-    CORS(app, send_wildcard=True)
 
     init_app(app)
 
