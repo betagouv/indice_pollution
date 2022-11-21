@@ -1,10 +1,11 @@
 from datetime import datetime
 from time import sleep
 import pytz
-from flask import current_app
 import requests
 import os
 from unidecode import unidecode
+
+from indice_pollution.extensions import logger
 
 def today():
     zone = pytz.timezone('Europe/Paris')
@@ -23,7 +24,6 @@ def oxford_comma(items):
         return '{} et {}'.format(*items)
     else:
         return '{}, et {}'.format(', '.join(items[:-1]), items[-1])
-
 
 def get_healthchecksio_slug(caller):
     cls_types = [
@@ -69,8 +69,6 @@ def _ping(slug, ping_type, scheduled_datetime, launch_datetime, retry=0):
     ping_key = os.getenv("HEALTCHECKSIO_API_KEY")
     end_url = f"/{ping_type}" if ping_type != "success" else ""
     try:
-        requests.post(f"https://hc-ping.com/{ping_key}/{slug}{end_url}", timeout=10,json=data)
+        requests.get(f"https://hc-ping.com/{ping_key}/{slug}{end_url}", timeout=10)
     except requests.RequestException as e:
-        current_app.logger.error(f"Ping to healthchecks.io failed: {e}")
-        sleep(0.5)
-        _ping(slug, ping_type, scheduled_datetime, launch_datetime, retry+1)
+        logger.error(f"Ping to healthchecks.io failed: {e}")
