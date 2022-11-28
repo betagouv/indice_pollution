@@ -6,7 +6,7 @@ from indice_pollution.history.models.episode_pollution import EpisodePollution
 from indice_pollution.history.models.indice_uv import IndiceUv
 from flask import Flask
 from flask_cors import CORS
-from datetime import date
+from datetime import date, datetime
 import os
 from indice_pollution.history.models.raep import RAEP
 from indice_pollution.history.models.vigilance_meteo import VigilanceMeteo
@@ -64,7 +64,7 @@ def configure_cache(app):
     cache.init_app(app, conf)
 
 @celery.task(bind=True)
-def save_all_indices(self, module_name, class_name):
+def save_all_indices(self, module_name, class_name, scheduled_datetime=None):
     self.update_state(f"Saving {module_name}.{class_name}")
     module = import_module(module_name)
     if hasattr(module, "Service") and hasattr(module.Service, "is_active") and not module.Service.is_active:
@@ -74,13 +74,14 @@ def save_all_indices(self, module_name, class_name):
         self.update_state(f"No class {class_name} in {module_name}")
         return f"No class {class_name} in {module_name}"
     cls_ = getattr(module, class_name)
-    ping(cls_, "start")
+    launch_datetime = datetime.now()
+    ping(cls_, "start", scheduled_datetime, launch_datetime)
     try:
         cls_.save_all()
     except:
-        ping(cls_, "fail")
+        ping(cls_, "fail", scheduled_datetime, launch_datetime)
     self.update_state(f"{module_name}.{class_name} saved")
-    ping(cls_, "success")
+    ping(cls_, "success", scheduled_datetime, launch_datetime)
     return f"{module_name}.{class_name} saved"
 
 
@@ -113,14 +114,15 @@ def setup_periodic_tasks(sender, **kwargs):
         "Réunion",
         "Sud"
     ]
+    scheduled_datetime = datetime.now()
     for region in regions:
-        add_periodic_task(sig=save_all_indices.s(f"indice_pollution.regions.{region}", "Forecast"))
-        add_periodic_task(sig=save_all_indices.s(f"indice_pollution.regions.{region}", "Episode"))
+        add_periodic_task(sig=save_all_indices.s(f"indice_pollution.regions.{region}", "Forecast", scheduled_datetime))
+        add_periodic_task(sig=save_all_indices.s(f"indice_pollution.regions.{region}", "Episode", scheduled_datetime))
 
-    add_periodic_task(sig=save_all_indices.s("indice_pollution.history.models.raep", "RAEP"))
-    add_periodic_task(sig=save_all_indices.s("indice_pollution.history.models.vigilance_meteo", "VigilanceMeteo"))
+    add_periodic_task(sig=save_all_indices.s("indice_pollution.history.models.raep", "RAEP", scheduled_datetime))
+    add_periodic_task(sig=save_all_indices.s("indice_pollution.history.models.vigilance_meteo", "VigilanceMeteo", scheduled_datetime))
 
-    add_periodic_task(sig=save_all_indices.s("indice_pollution.history.models.indice_uv", "IndiceUv"))
+    add_periodic_task(sig=save_all_indices.s("indice_pollution.history.models.indice_uv", "IndiceUv", scheduled_datetime))
 
 
 def init_app(app):
