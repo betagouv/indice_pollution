@@ -1,4 +1,5 @@
 from datetime import datetime
+from time import sleep
 import pytz
 from flask import current_app
 import requests
@@ -23,6 +24,7 @@ def oxford_comma(items):
     else:
         return '{}, et {}'.format(', '.join(items[:-1]), items[-1])
 
+
 def get_healthchecksio_slug(caller):
     cls_types = [
         {"start": "<class 'indice_pollution.regions.", "end": ".Forecast'>", "debut_slug": "import-indice_atmo-"},
@@ -37,21 +39,34 @@ def get_healthchecksio_slug(caller):
             raw_name = str_cls[len(cls_type["start"]):-(len(cls_type["end"]))]
             return cls_type["debut_slug"] + unidecode(raw_name.lower().replace(" ", "-"))
 
-def ping(caller, ping_type, launch_time=None):
+
+def ping(caller, ping_type, scheduled_datetime=None, launch_datetime=None):
     if not (slug := get_healthchecksio_slug(caller)):
         return
-    _ping(slug, ping_type, launch_time)
-    
-def _ping(slug, ping_type, launch_time):
+    _ping(slug, ping_type, scheduled_datetime, launch_datetime)
+
+
+def _ping(slug, ping_type, scheduled_datetime, launch_datetime, retry=0):
+    if retry >= 3:
+        current_app.logger.error(f"Already retried 3 times to ping {slug} {ping_type} {scheduled_datetime}, we're not doing it another time.")
+        return
     data = None
-    if launch_time:
+    if scheduled_datetime:
         data = {
-            "launch_time": str(launch_time),
-            "since launch": str(datetime.now() - launch_time),
+            "scheduled_datetime": str(scheduled_datetime),
+            "since schedule": str(datetime.now() - scheduled_datetime),
         }
+    if launch_datetime:
+        data = data or dict()
+        data.update({
+            "launch_datetime": str(launch_datetime),
+            "since launch": str(datetime.now() - launch_datetime),  
+        })
     ping_key = os.getenv("HEALTCHECKSIO_API_KEY")
     end_url = f"/{ping_type}" if ping_type != "success" else ""
     try:
         requests.post(f"https://hc-ping.com/{ping_key}/{slug}{end_url}", timeout=10,json=data)
     except requests.RequestException as e:
         current_app.logger.error(f"Ping to healthchecks.io failed: {e}")
+        sleep(0.5)
+        _ping(slug, ping_type, scheduled_datetime, launch_datetime, retry+1)
