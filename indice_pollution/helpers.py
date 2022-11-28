@@ -47,6 +47,10 @@ def ping(caller, ping_type, scheduled_datetime=None, launch_datetime=None):
 
 
 def _ping(slug, ping_type, scheduled_datetime, launch_datetime, retry=0):
+    if isinstance(scheduled_datetime, str):
+        scheduled_datetime = datetime.fromisoformat(scheduled_datetime)
+    if isinstance(launch_datetime, str):
+        launch_datetime = datetime.fromisoformat(launch_datetime)
     if retry >= 3:
         current_app.logger.error(f"Already retried 3 times to ping {slug} {ping_type} {scheduled_datetime}, we're not doing it another time.")
         return
