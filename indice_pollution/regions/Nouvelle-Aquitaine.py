@@ -30,6 +30,7 @@ class Episode(Service, EpisodeMixin):
         'request': 'getfeature',
         'typeName': 'alrt3j_nouvelle_aquitaine:alrt3j_nouvelle_aquitaine',
         'outputFormat': 'json',
+        'PropertyName': 'code_zone,lib_zone,date_ech,date_dif,code_pol,lib_pol,etat,couleur,com_court,com_long',
     }
 
     def params(cls, date_, insee):
