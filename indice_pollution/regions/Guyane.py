@@ -1,5 +1,8 @@
 from indice_pollution.regions import EpisodeMixin, ServiceMixin, ForecastMixin
 from datetime import date
+import logging
+import os
+import requests
 
 class Service(ServiceMixin):
     is_active = True
@@ -52,3 +55,41 @@ class Episode(Service, EpisodeMixin):
         return {
             'withGeom': 'false', # permet de télécharger les données sans géométrie
         }
+
+    @classmethod
+    def atmodata_login(self):
+        if not os.getenv('ATMODATA_USERNAME') or not os.getenv('ATMODATA_PASSWORD'):
+            logging.error('The following env vars are required: ATMODATA_USERNAME and ATMODATA_PASSWORD')
+            return None
+        try:
+            headers = {
+                "Content-Type": "application/json",
+            }
+            data = {
+                "username": os.getenv('ATMODATA_USERNAME'),
+                "password": os.getenv('ATMODATA_PASSWORD')
+            }
+            r = requests.post(f"https://admindata.atmo-france.org/api/login", headers=headers, json=data)
+            r.raise_for_status()
+            token = r.json().get('token', None)
+            return token
+        except Exception as e:
+            logging.error(f"Error relative to Atmo Data login: {e}")
+            return None
+
+    @classmethod
+    def get_one_attempt_fetch_all(cls, url, params):
+        token = cls.atmodata_login()
+        if token is not None:
+            headers = {
+                "Authorization": f"Bearer {token}",
+            }
+            try:
+                r = requests.get(url, params, headers=headers)
+                r.raise_for_status()
+                return r
+            except Exception as e:
+                logging.error(f"Error relative to Atmo Data get: {e}")
+                return None
+        else:
+            return None
