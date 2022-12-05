@@ -1,5 +1,4 @@
 from celery import Celery
-from flask_caching import Cache
 import logging
 
 try:
@@ -10,5 +9,4 @@ else:
     db = SQLAlchemy()
 
 celery = Celery(__name__)
-cache = Cache()
 logger = logging.getLogger(__name__)

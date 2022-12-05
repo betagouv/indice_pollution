@@ -1,6 +1,6 @@
 from indice_pollution.extensions import db
 from importlib import import_module
-from indice_pollution.extensions import cache
+from functools import cached_property
 
 class Zone(db.Model):
     __table_args__ = {"schema": "indice_schema"}
@@ -21,8 +21,7 @@ class Zone(db.Model):
     def get(cls, code, type_):
         return Zone.query.filter_by(code=code, type=type_).first()
 
-    @property
-    @cache.memoize(timeout=0)
+    @cached_property
     def lib(self, with_preposition=True, with_article=True, nom_charniere=True):
         t = self.libtypes.get(self.type)
         if not t:
@@ -42,8 +41,7 @@ class Zone(db.Model):
         r += o.nom or ""
         return r
 
-    @property
-    @cache.memoize(timeout=0)
+    @cached_property
     def attached_obj(self, with_preposition=True, with_article=True):
         t = self.libtypes.get(self.type)
         if not t:
