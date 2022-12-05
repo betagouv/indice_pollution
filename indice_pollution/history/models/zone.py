@@ -1,10 +1,10 @@
-from sqlalchemy import Column, Integer, String
-from indice_pollution.extensions import db
+from sqlalchemy import Column, Integer, String, select
+from indice_pollution import db
 from importlib import import_module
 from functools import cached_property
 
-class Zone(db.Model):
-    __table_args__ = {"schema": "indice_schema"}
+class Zone(db.Base):
+    __tablename__ = "zone"
 
     id = Column(Integer, primary_key=True)
     type = Column(String)
@@ -49,4 +49,6 @@ class Zone(db.Model):
             return None
         m = import_module(f"indice_pollution.history.models.{t['module']}")
         c = getattr(m, t["clsname"])
-        return db.session.query(c).filter(c.zone_id == self.id).first()
+        stmt = select(c).where(c.zone_id == self.id)
+        if r := db.session.execute(stmt).first():
+            return r[0]

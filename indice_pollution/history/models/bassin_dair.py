@@ -1,10 +1,10 @@
 from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from indice_pollution.extensions import db
 
-class BassinDAir(db.Model):
-    __table_args__ = {"schema": "indice_schema"}
+from indice_pollution import db
 
+class BassinDAir(db.Base):
+    __tablename__ = "bassin_d_air"
     id = Column(Integer, primary_key=True)
     nom = Column(String)
     code = Column(String)

@@ -1,5 +1,4 @@
 from sqlalchemy import Column, Integer, String
-from indice_pollution.extensions import db
 
 class TNCC:
     tncc = Column(Integer)

@@ -1,5 +1,5 @@
-from sqlalchemy import Column, Date, ForeignKey, Integer
-from indice_pollution.extensions import db
+from sqlalchemy import Column, Date, ForeignKey, Integer, select
+from indice_pollution import db
 from indice_pollution.helpers import today
 from indice_pollution.history.models.commune import Commune
 from dataclasses import dataclass
@@ -9,8 +9,8 @@ from ftplib import FTP
 import os, logging, csv, io
 
 @dataclass
-class IndiceUv(db.Model):
-    __table_args__ = {"schema": "indice_schema"}
+class IndiceUv(db.Base):
+    __tablename__ = "indice_uv"
 
     zone_id: int = Column(Integer, ForeignKey('indice_schema.zone.id'), primary_key=True)
     date: datetime.date = Column(Date, primary_key=True, nullable=False)
@@ -97,29 +97,34 @@ class IndiceUv(db.Model):
             .values(indices)\
             .on_conflict_do_nothing()
         db.session.execute(ins)
-        db.session.commit()
 
     @classmethod
     def get(cls, insee, date_=None):
         date_ = date_ or today()
-        query = cls.query.join(Commune, Commune.zone_id == cls.zone_id).filter(Commune.insee == insee, IndiceUv.date==date_)
-        if result := query.first():
-            return result
+        stmt = select(cls).join(Commune, Commune.zone_id == cls.zone_id).where(Commune.insee == insee, IndiceUv.date==date_)
+        if result := db.session.execute(stmt).first():
+            return result[0]
         min_date = date_ - timedelta(days=3)
-        query = cls.query.join(Commune, Commune.zone_id == cls.zone_id).filter(Commune.insee == insee, IndiceUv.date<=date_, IndiceUv.date>=min_date).order_by(IndiceUv.date.desc())
-        if result := query.first():
+        stmt = select(cls).join(Commune, Commune.zone_id == cls.zone_id).where(Commune.insee == insee, IndiceUv.date<=date_, IndiceUv.date>=min_date).order_by(IndiceUv.date.desc())
+        if result := db.session.execute(stmt).first():
+            result = result[0]
             delta = (date_ - result.date).days
             return cls(zone_id=result.zone_id, date=date_, uv_j0=getattr(result, f"uv_j{delta}"))
         return None
 
     @classmethod
     def get_all_query(cls, date_):
-        return db.session.query(Commune.id, IndiceUv).join(Commune, Commune.zone_id == cls.zone_id).filter(IndiceUv.date==date_)
+        return select(Commune.id, IndiceUv
+            ).join(
+                Commune, Commune.zone_id == cls.zone_id
+            ).where(
+                IndiceUv.date==date_
+            )
 
     @classmethod
     def get_all(cls, date_=None):
         date_ = date_ or today()
-        return dict(cls.get_all_query(date_).all())
+        return dict(db.session.execute(cls.get_all_query(date_)).all())
 
     @property
     def label(self):

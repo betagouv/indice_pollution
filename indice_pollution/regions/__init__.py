@@ -11,7 +11,7 @@ from dateutil import parser as dateutil_parser
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from indice_pollution.history.models import IndiceATMO, Zone, Commune, EPCI, EpisodePollution
-from indice_pollution.extensions import db
+from indice_pollution import db
 
 class ServiceMixin(object):
     is_active = True
@@ -158,6 +158,7 @@ class ServiceMixin(object):
         attrs =  [k for k in cls.DB_OBJECT.__mapper__.attrs.keys() if not k.startswith('zone')]
         def sorter(d):
             return [d.get(a) for a in attrs]
+
         for k, g in itertools.groupby(sorted(indices_dicts_filtered, key=sorter), key=sorter):
             values = list(g)
             ins = pg_insert(

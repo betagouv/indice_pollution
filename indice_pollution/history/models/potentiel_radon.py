@@ -1,18 +1,20 @@
-from sqlalchemy import Column, ForeignKey, Integer
-from indice_pollution.extensions import db
+from sqlalchemy import Column, ForeignKey, Integer, select
+from indice_pollution import db
 from indice_pollution.history.models.commune import Commune
 from dataclasses import dataclass
 
 @dataclass
-class PotentielRadon(db.Model):
-    __table_args__ = {"schema": "indice_schema"}
+class PotentielRadon(db.Base):
+    __tablename__ = "potention_radon"
 
     zone_id: int = Column(Integer, ForeignKey('indice_schema.zone.id'), primary_key=True)
     classe_potentiel: int = Column(Integer)
 
     @classmethod
     def get(cls, insee):
-        return cls.query.join(Commune, Commune.zone_id == cls.zone_id).filter(Commune.insee == insee).first()
+        stmt = select(cls).join(Commune, cls.zone_id == Commune.zone_id).filter(Commune.insee == insee)
+        if r:= db.session.execute(stmt).first():
+            return r[0]
 
     @property
     def label(self):

@@ -1,17 +1,15 @@
 from typing import List
 from sqlalchemy.orm import relationship
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func, select
-from indice_pollution.history.models import commune
 from indice_pollution.history.models.commune import Commune
-from indice_pollution.extensions import db
+from indice_pollution import db
 from datetime import datetime
 from indice_pollution.helpers import today
 from sqlalchemy import  Date, text
 
-from indice_pollution.history.models.epci import EPCI
 
-class EpisodePollution(db.Model):
-    __table_args__ = {"schema": "indice_schema"}
+class EpisodePollution(db.Base):
+    __tablename__ = "episode_pollution"
 
     zone_id: int = Column(Integer, ForeignKey('indice_schema.zone.id'), primary_key=True, nullable=False)
     zone = relationship("indice_pollution.history.models.zone.Zone")

@@ -1,5 +1,5 @@
 from psycopg2.extras import DateTimeTZRange
-from sqlalchemy import Column, DateTime, ForeignKey, Integer
+from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, UniqueConstraint
 from sqlalchemy.dialects.postgresql import TSTZRANGE
 from sqlalchemy.sql.expression import case, select, text
 from sqlalchemy.sql import func
@@ -9,11 +9,12 @@ from io import BytesIO
 from xml.dom.minidom import parseString
 from datetime import date, datetime, time, timedelta
 
-from indice_pollution.extensions import db
+from indice_pollution import db
 from indice_pollution.history.models.departement import Departement
 from indice_pollution.history.models.commune import Commune
 
-class VigilanceMeteo(db.Model):
+class VigilanceMeteo(db.Base):
+    __tablename__ = "vigilance_meteo"
 
     id = Column(Integer, primary_key=True)
 
@@ -25,8 +26,8 @@ class VigilanceMeteo(db.Model):
     validity = Column(TSTZRANGE(), nullable=False)
 
     __table_args__ = (
-        db.Index('vigilance_zone_phenomene_date_export_idx', zone_id, phenomene_id, date_export),
-        db.UniqueConstraint(zone_id, phenomene_id, date_export, validity),
+        Index('vigilance_zone_phenomene_date_export_idx', zone_id, phenomene_id, date_export),
+        UniqueConstraint(zone_id, phenomene_id, date_export, validity),
         {"schema": "indice_schema"},
     )
 
@@ -104,7 +105,6 @@ class VigilanceMeteo(db.Model):
                             validity=DateTimeTZRange(debut, fin),
                         )
                         db.session.add(obj)
-                db.session.commit()
 
     # Cette requête selectionne les vigilances météo du dernier export fait avant date_ & time_
     # Et ne renvoie que les vigilances comprises entre :

@@ -1,12 +1,11 @@
 from sqlalchemy import Column, ForeignKey, Integer, String
-from indice_pollution.extensions import db
+from indice_pollution import db
 from indice_pollution.history.models.region import Region
 from indice_pollution.history.models.tncc import TNCC
-from sqlalchemy.orm import relation, relationship
+from sqlalchemy.orm import relationship
 import requests
 
-class Departement(db.Model, TNCC):
-    __table_args__ = {"schema": "indice_schema"}
+class Departement(db.Base, TNCC):
     __tablename__ = 'departement'
 
     id = Column(Integer, primary_key=True)
@@ -33,7 +32,6 @@ class Departement(db.Model, TNCC):
 
         r = cls(**res_api)
         db.session.add(r)
-        db.session.commit()
         return r
 
     @classmethod

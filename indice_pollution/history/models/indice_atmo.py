@@ -1,10 +1,10 @@
-from sqlalchemy.orm import relationship
+from sqlalchemy.orm import aliased, relationship
 from sqlalchemy.sql import and_
 from sqlalchemy.sql.functions import coalesce
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, func, select
 from indice_pollution.history.models.zone import Zone
 from requests.models import codes
-from indice_pollution.extensions import db
+from indice_pollution import db
 from indice_pollution.helpers import today
 from indice_pollution.history.models import Commune, EPCI
 from sqlalchemy import Date, text
@@ -14,8 +14,7 @@ from operator import attrgetter, itemgetter
 
 
 @dataclass
-class IndiceATMO(db.Model):
-    __table_args__ = {"schema": "indice_schema"}
+class IndiceATMO(db.Base):
     __tablename__ = "indiceATMO"
 
     zone_id: int = Column(Integer, ForeignKey('indice_schema.zone.id'), primary_key=True, nullable=False)
@@ -31,17 +30,18 @@ class IndiceATMO(db.Model):
 
     @classmethod
     def get(cls, insee=None, code_epci=None, date_=None):
-        zone_subquery = cls.zone_subquery(insee=insee, code_epci=code_epci).limit(1)
-        zone_subquery_or = cls.zone_subquery_or(insee=insee).limit(1)
-        zones_subquery = zone_subquery.union(zone_subquery_or)
+        zone_subquery = cls.zone_subquery(insee=insee, code_epci=code_epci)
+        zone_subquery_or = cls.zone_subquery_or(insee=insee)
+        zones_subquery = zone_subquery.union(zone_subquery_or).subquery()
         date_ = date_ or today()
-        query = IndiceATMO\
-            .query.filter(
+        stmt = select(cls)\
+            .where(
                 IndiceATMO.date_ech.cast(Date)==date_,
-               IndiceATMO.zone_id.in_(zones_subquery)
+               IndiceATMO.zone_id.in_([zones_subquery.c.zone_id])
             )\
             .order_by(IndiceATMO.date_dif.desc())
-        return query.first()
+        if r := db.session.execute(stmt).first():
+            return r[0]
 
     @classmethod
     def bulk_query(cls, insees=None, date_=None):
@@ -70,7 +70,7 @@ class IndiceATMO(db.Model):
 
     @classmethod
     def get_all_query(cls, date_):
-        commune_alias = db.aliased(Commune)
+        commune_alias = aliased(Commune)
         commune_id = coalesce(Commune.id, commune_alias.id)
         return db.session.query(
                 commune_id, IndiceATMO
@@ -99,16 +99,16 @@ class IndiceATMO(db.Model):
     @classmethod
     def zone_subquery(cls, insee=None, code_epci=None):
         if insee:
-            return Commune.get_query(insee=insee).with_entities(Commune.zone_id)
+            return Commune.select(select([Commune.zone_id]), insee=insee)
         elif code_epci:
-            return EPCI.get_query(code=code_epci).with_entities(EPCI.zone_id)
+            return EPCI.select(select([EPCI.zone_id]), code=code_epci)
 
     @classmethod
     def zone_subquery_or(cls, insee=None, code_epci=None):
         if insee:
-            return EPCI.get_query(insee=insee).with_entities(EPCI.zone_id)
+            return EPCI.select(select([EPCI.zone_id]), insee=insee)
         elif code_epci:
-            return Commune.get_query(code=code_epci).with_entities(Commune.zone_id)
+            return Commune.select(select([Commune.zone_id]), code=code_epci)
 
     @classmethod
     def couleur_from_valeur(cls, valeur):
