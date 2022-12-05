@@ -1,7 +1,7 @@
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import and_
 from sqlalchemy.sql.functions import coalesce
-from sqlalchemy import func
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, func
 from indice_pollution.history.models.zone import Zone
 from requests.models import codes
 from indice_pollution.extensions import db
@@ -18,16 +18,16 @@ class IndiceATMO(db.Model):
     __table_args__ = {"schema": "indice_schema"}
     __tablename__ = "indiceATMO"
 
-    zone_id: int = db.Column(db.Integer, db.ForeignKey('indice_schema.zone.id'), primary_key=True, nullable=False)
+    zone_id: int = Column(Integer, ForeignKey('indice_schema.zone.id'), primary_key=True, nullable=False)
     zone: Zone = relationship("indice_pollution.history.models.zone.Zone")
-    date_ech: datetime = db.Column(db.DateTime, primary_key=True, nullable=False)
-    date_dif: datetime = db.Column(db.DateTime, primary_key=True, nullable=False)
-    no2: int = db.Column(db.Integer)
-    so2: int = db.Column(db.Integer)
-    o3:int = db.Column(db.Integer)
-    pm10: int = db.Column(db.Integer)
-    pm25: int = db.Column(db.Integer)
-    valeur: int = db.Column(db.Integer)
+    date_ech: datetime = Column(DateTime, primary_key=True, nullable=False)
+    date_dif: datetime = Column(DateTime, primary_key=True, nullable=False)
+    no2: int = Column(Integer)
+    so2: int = Column(Integer)
+    o3:int = Column(Integer)
+    pm10: int = Column(Integer)
+    pm25: int = Column(Integer)
+    valeur: int = Column(Integer)
 
     @classmethod
     def get(cls, insee=None, code_epci=None, date_=None):

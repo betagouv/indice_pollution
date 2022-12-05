@@ -1,3 +1,4 @@
+from sqlalchemy import Column, ForeignKey, Integer, String
 from indice_pollution.extensions import db
 from indice_pollution.history.models.region import Region
 from indice_pollution.history.models.tncc import TNCC
@@ -8,13 +9,13 @@ class Departement(db.Model, TNCC):
     __table_args__ = {"schema": "indice_schema"}
     __tablename__ = 'departement'
 
-    id = db.Column(db.Integer, primary_key=True)
-    nom = db.Column(db.String)
-    code = db.Column(db.String)
-    region_id = db.Column(db.Integer, db.ForeignKey('indice_schema.region.id'))
+    id = Column(Integer, primary_key=True)
+    nom = Column(String)
+    code = Column(String)
+    region_id = Column(Integer, ForeignKey('indice_schema.region.id'))
     region = relationship("indice_pollution.history.models.region.Region")
-    preposition = db.Column(db.String)
-    zone_id = db.Column(db.Integer, db.ForeignKey('indice_schema.zone.id'))
+    preposition = Column(String)
+    zone_id = Column(Integer, ForeignKey('indice_schema.zone.id'))
     zone = relationship("indice_pollution.history.models.zone.Zone")
 
     def __init__(self, **kwargs):

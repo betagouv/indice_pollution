@@ -1,3 +1,4 @@
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
 from indice_pollution.extensions import db
 from indice_pollution.history.models.departement import Departement
 from indice_pollution.history.models.tncc import TNCC
@@ -13,21 +14,21 @@ import unicodedata, re
 class Commune(db.Model, TNCC):
     __table_args__ = {"schema": "indice_schema"}
 
-    id = db.Column(db.Integer, primary_key=True)
-    insee = db.Column(db.String)
-    nom = db.Column(db.String)
-    epci_id = db.Column(db.Integer, db.ForeignKey("indice_schema.epci.id"))
+    id = Column(Integer, primary_key=True)
+    insee = Column(String)
+    nom = Column(String)
+    epci_id = Column(Integer, ForeignKey("indice_schema.epci.id"))
     epci = relationship("indice_pollution.history.models.epci.EPCI")
-    departement_id = db.Column(db.Integer, db.ForeignKey("indice_schema.departement.id"))
+    departement_id = Column(Integer, ForeignKey("indice_schema.departement.id"))
     departement = relationship("indice_pollution.history.models.departement.Departement")
-    code_zone = db.Column(db.String)
-    zone_id = db.Column(db.Integer, db.ForeignKey("indice_schema.zone.id"))
+    code_zone = Column(String)
+    zone_id = Column(Integer, ForeignKey("indice_schema.zone.id"))
     zone = relationship("indice_pollution.history.models.zone.Zone", foreign_keys=zone_id)
-    _centre = db.Column('centre', db.String)
-    zone_pollution_id = db.Column(db.Integer, db.ForeignKey("indice_schema.zone.id"))
+    _centre = Column('centre', String)
+    zone_pollution_id = Column(Integer, ForeignKey("indice_schema.zone.id"))
     zone_pollution = relationship("indice_pollution.history.models.zone.Zone", foreign_keys=zone_pollution_id)
-    pollinarium_sentinelle = db.Column(db.Boolean)
-    codes_postaux = db.Column(postgresql.ARRAY(db.String))
+    pollinarium_sentinelle = Column(Boolean)
+    codes_postaux = Column(postgresql.ARRAY(String))
 
     def __init__(self, **kwargs):
         if 'code' in kwargs:

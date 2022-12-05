@@ -3,7 +3,7 @@ from indice_pollution.extensions import db
 from psycopg2.extras import DateRange
 from sqlalchemy.dialects.postgresql import DATERANGE
 from sqlalchemy.dialects.postgresql import insert as pg_insert
-from sqlalchemy import func
+from sqlalchemy import Column, ForeignKey, Integer, func
 from datetime import date, datetime, timedelta
 import os, requests, logging, csv, copy
 from indice_pollution.history.models.commune import Commune
@@ -14,30 +14,30 @@ from indice_pollution.history.models.departement import Departement
 class RAEP(db.Model):
     __tablename__ = "raep"
 
-    id: int = db.Column(db.Integer, primary_key=True)
-    zone_id: int = db.Column(db.Integer, db.ForeignKey('indice_schema.zone.id'), nullable=False)
-    validity = db.Column(DATERANGE(), nullable=False)
+    id: int = Column(Integer, primary_key=True)
+    zone_id: int = Column(Integer, ForeignKey('indice_schema.zone.id'), nullable=False)
+    validity = Column(DATERANGE(), nullable=False)
 
-    cypres: int = db.Column(db.Integer)
-    noisetier: int = db.Column(db.Integer)
-    aulne: int = db.Column(db.Integer)
-    peuplier: int = db.Column(db.Integer)
-    saule: int = db.Column(db.Integer)
-    frene: int = db.Column(db.Integer)
-    charme: int = db.Column(db.Integer)
-    bouleau: int = db.Column(db.Integer)
-    platane: int = db.Column(db.Integer)
-    chene: int = db.Column(db.Integer)
-    olivier: int = db.Column(db.Integer)
-    tilleul: int = db.Column(db.Integer)
-    chataignier: int = db.Column(db.Integer)
-    rumex: int = db.Column(db.Integer)
-    graminees: int = db.Column(db.Integer)
-    plantain: int = db.Column(db.Integer)
-    urticacees: int = db.Column(db.Integer)
-    armoises: int = db.Column(db.Integer)
-    ambroisies: int = db.Column(db.Integer)
-    total: int = db.Column(db.Integer)
+    cypres: int = Column(Integer)
+    noisetier: int = Column(Integer)
+    aulne: int = Column(Integer)
+    peuplier: int = Column(Integer)
+    saule: int = Column(Integer)
+    frene: int = Column(Integer)
+    charme: int = Column(Integer)
+    bouleau: int = Column(Integer)
+    platane: int = Column(Integer)
+    chene: int = Column(Integer)
+    olivier: int = Column(Integer)
+    tilleul: int = Column(Integer)
+    chataignier: int = Column(Integer)
+    rumex: int = Column(Integer)
+    graminees: int = Column(Integer)
+    plantain: int = Column(Integer)
+    urticacees: int = Column(Integer)
+    armoises: int = Column(Integer)
+    ambroisies: int = Column(Integer)
+    total: int = Column(Integer)
 
     __table_args__ = (
         db.Index('raep_zone_validity_idx', zone_id, validity),

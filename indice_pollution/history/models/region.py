@@ -1,3 +1,4 @@
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from indice_pollution.extensions import db
 import requests
@@ -7,12 +8,12 @@ class Region(db.Model, TNCC):
     __table_args__ = {"schema": "indice_schema"}
     __tablename__ = 'region'
 
-    id = db.Column(db.Integer, primary_key=True)
-    nom = db.Column(db.String)
-    code = db.Column(db.String)
-    aasqa_website = db.Column(db.String)
-    aasqa_nom = db.Column(db.String)
-    zone_id = db.Column(db.Integer, db.ForeignKey("indice_schema.zone.id"))
+    id = Column(Integer, primary_key=True)
+    nom = Column(String)
+    code = Column(String)
+    aasqa_website = Column(String)
+    aasqa_nom = Column(String)
+    zone_id = Column(Integer, ForeignKey("indice_schema.zone.id"))
     zone = relationship("indice_pollution.history.models.zone.Zone")
 
     @classmethod

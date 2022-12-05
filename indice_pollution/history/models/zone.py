@@ -1,3 +1,4 @@
+from sqlalchemy import Column, Integer, String
 from indice_pollution.extensions import db
 from importlib import import_module
 from functools import cached_property
@@ -5,9 +6,9 @@ from functools import cached_property
 class Zone(db.Model):
     __table_args__ = {"schema": "indice_schema"}
 
-    id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String)
-    code = db.Column(db.String)
+    id = Column(Integer, primary_key=True)
+    type = Column(String)
+    code = Column(String)
 
     libtypes = {
         "region": {"article": "la ", "preposition": "région", "module": "region", "clsname": "Region"},

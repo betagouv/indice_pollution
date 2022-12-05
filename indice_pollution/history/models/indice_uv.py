@@ -1,3 +1,4 @@
+from sqlalchemy import Column, Date, ForeignKey, Integer
 from indice_pollution.extensions import db
 from indice_pollution.helpers import today
 from indice_pollution.history.models.commune import Commune
@@ -11,12 +12,12 @@ import os, logging, csv, io
 class IndiceUv(db.Model):
     __table_args__ = {"schema": "indice_schema"}
 
-    zone_id: int = db.Column(db.Integer, db.ForeignKey('indice_schema.zone.id'), primary_key=True)
-    date: datetime.date = db.Column(db.Date, primary_key=True, nullable=False)
-    uv_j0: int = db.Column(db.Integer)
-    uv_j1: int = db.Column(db.Integer)
-    uv_j2: int = db.Column(db.Integer)
-    uv_j3: int = db.Column(db.Integer)
+    zone_id: int = Column(Integer, ForeignKey('indice_schema.zone.id'), primary_key=True)
+    date: datetime.date = Column(Date, primary_key=True, nullable=False)
+    uv_j0: int = Column(Integer)
+    uv_j1: int = Column(Integer)
+    uv_j2: int = Column(Integer)
+    uv_j3: int = Column(Integer)
 
     @classmethod
     def save_all(cls):

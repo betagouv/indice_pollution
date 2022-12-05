@@ -1,4 +1,5 @@
 from psycopg2.extras import DateTimeTZRange
+from sqlalchemy import Column, DateTime, ForeignKey, Integer
 from sqlalchemy.dialects.postgresql import TSTZRANGE
 from sqlalchemy.sql.expression import case, select, text
 from sqlalchemy.sql import func
@@ -14,14 +15,14 @@ from indice_pollution.history.models.commune import Commune
 
 class VigilanceMeteo(db.Model):
 
-    id = db.Column(db.Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
 
-    zone_id = db.Column(db.Integer, db.ForeignKey('indice_schema.zone.id'))
-    phenomene_id = db.Column(db.Integer)
-    date_export = db.Column(db.DateTime)
+    zone_id = Column(Integer, ForeignKey('indice_schema.zone.id'))
+    phenomene_id = Column(Integer)
+    date_export = Column(DateTime)
 
-    couleur_id = db.Column(db.Integer)
-    validity = db.Column(TSTZRANGE(), nullable=False)
+    couleur_id = Column(Integer)
+    validity = Column(TSTZRANGE(), nullable=False)
 
     __table_args__ = (
         db.Index('vigilance_zone_phenomene_date_export_idx', zone_id, phenomene_id, date_export),

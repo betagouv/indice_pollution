@@ -1,3 +1,4 @@
+from sqlalchemy import Column, ForeignKey, Integer, String
 from indice_pollution.extensions import db
 from sqlalchemy.orm import relationship
 from indice_pollution.history.models import Commune
@@ -6,12 +7,12 @@ class EPCI(db.Model):
     __table_args__ = {"schema": "indice_schema"}
     __tablename__ = "epci"
 
-    id = db.Column(db.Integer, primary_key=True)
-    code = db.Column(db.String())
-    label = db.Column(db.String())
-    departement_id = db.Column(db.Integer, db.ForeignKey("indice_schema.departement.id"))
+    id = Column(Integer, primary_key=True)
+    code = Column(String())
+    label = Column(String())
+    departement_id = Column(Integer, ForeignKey("indice_schema.departement.id"))
     departement = relationship("indice_pollution.history.models.departement.Departement")
-    zone_id = db.Column(db.Integer, db.ForeignKey("indice_schema.zone.id"))
+    zone_id = Column(Integer, ForeignKey("indice_schema.zone.id"))
     zone = relationship("indice_pollution.history.models.zone.Zone")
 
     @classmethod
