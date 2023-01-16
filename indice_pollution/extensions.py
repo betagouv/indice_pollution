@@ -1,6 +1,6 @@
 from celery import Celery
-from flask_migrate import Migrate
 from flask_caching import Cache
+import logging
 
 try:
     from flask_sqlalchemy import SQLAlchemy
@@ -11,4 +11,4 @@ else:
 
 celery = Celery(__name__)
 cache = Cache()
-migrate = Migrate()
+logger = logging.getLogger(__name__)

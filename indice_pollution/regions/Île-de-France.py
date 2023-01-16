@@ -1,9 +1,8 @@
 from indice_pollution.history.models.zone import Zone
+from indice_pollution.extensions import logger
 from . import ForecastMixin, EpisodeMixin
 import os
 import requests
-import itertools
-from flask import current_app
 from datetime import date, timedelta
 
 class Service(object):
@@ -91,12 +90,12 @@ class Episode(Service, EpisodeMixin):
         try:
             r.raise_for_status()
         except requests.HTTPError as e:
-            current_app.logger.error(e)
+            logger.error(e)
             return []
         try:
             r.json()
         except ValueError as e:
-            current_app.logger.error(e)
+            logger.error(e)
             return []
         for k, d in [('jour', date.today()), ('demain', date.today() + timedelta(days=1))]:
             for polluant in r.json()[k]['polluants']:

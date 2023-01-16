@@ -1,8 +1,9 @@
 from indice_pollution.history.models.zone import Zone
+from indice_pollution.extensions import logger
 from . import ForecastMixin, EpisodeMixin
 import os
 import requests
-from flask import current_app
+
 
 class Service(object):
     is_active = True
@@ -23,7 +24,7 @@ class Forecast(Service, ForecastMixin):
         try:
             r.raise_for_status()
         except requests.HTTPError as e:
-            current_app.logger.error(e)
+            logger.error(e)
             return []
         return [
             cls.getter({

@@ -1,11 +1,12 @@
 from indice_pollution.extensions import db, cache
 from indice_pollution.history.models.departement import Departement
 from indice_pollution.history.models.tncc import TNCC
+from indice_pollution.extensions import logger
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import joinedload, relationship
 import requests
 import json
-from flask import current_app
+
 import unicodedata, re
 
 class Commune(db.Model, TNCC):
@@ -100,10 +101,10 @@ class Commune(db.Model, TNCC):
         try:
             r.raise_for_status()
         except requests.HTTPError as e:
-            current_app.logger.error(f"HTTP Error getting commune: '{insee}' {e}")
+            logger.error(f"HTTP Error getting commune: '{insee}' {e}")
             return None
         if not 'codeDepartement' in r.json() or not 'centre' in r.json():
-            current_app.logger.error(f'Error getting info about: "{insee}" we need "codeDepartement" and "centre" in "{r.json()}"')
+            logger.error(f'Error getting info about: "{insee}" we need "codeDepartement" and "centre" in "{r.json()}"')
             return None
         j = r.json()
         if 'codesPostaux' in j:
