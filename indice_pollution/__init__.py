@@ -11,7 +11,7 @@ from indice_pollution.history.models.raep import RAEP
 from indice_pollution.history.models.vigilance_meteo import VigilanceMeteo
 
 from .helpers import today, ping
-from .extensions import celery, cache, db
+from .extensions import celery, db
 from importlib import import_module
 from kombu import Queue
 from celery.schedules import crontab
@@ -47,20 +47,6 @@ def configure_celery(flask_app):
 
     celery.Task = ContextTask
 
-def configure_cache(app):
-    conf = {
-        "CACHE_TYPE": os.getenv("CACHE_TYPE", "SimpleCache"),
-        "CACHE_DEFAULT_TIMEOUT": os.getenv("CACHE_DEFAULT_TIMEOUT", 86400),
-    }
-    if conf["CACHE_TYPE"] == "RedisCache":
-        conf["CACHE_REDIS_HOST"] = os.getenv("REDIS_HOST")
-        conf["CACHE_REDIS_PASSWORD"] = os.getenv("REDIS_PASSWORD")
-        conf["CACHE_REDIS_PORT"] = os.getenv("REDIS_PORT")
-        conf["CACHE_REDIS_TOKEN"] = os.getenv("REDIS_TOKEN")
-        conf["CACHE_REDIS_URL"] = os.getenv("REDIS_URL")
-    elif conf["CACHE_TYPE"] == "SimpleCache":
-        conf["CACHE_THRESHOLD"] = 100000
-    cache.init_app(app, conf)
 
 @celery.task(bind=True)
 def save_all_indices(self, module_name, class_name, scheduled_datetime=None):
@@ -127,7 +113,6 @@ def setup_periodic_tasks(sender, **kwargs):
 def init_app(app):
     db.init_app(app)
     configure_celery(app)
-    configure_cache(app)
 
 def create_app(test_config=None):
     app = Flask(

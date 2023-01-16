@@ -1,4 +1,4 @@
-from indice_pollution.extensions import db, cache
+from indice_pollution.extensions import db
 from indice_pollution.history.models.departement import Departement
 from indice_pollution.history.models.tncc import TNCC
 from indice_pollution.extensions import logger
@@ -7,6 +7,7 @@ from sqlalchemy.orm import joinedload, relationship
 import requests
 import json
 
+from functools import lru_cache
 import unicodedata, re
 
 class Commune(db.Model, TNCC):
@@ -44,7 +45,7 @@ class Commune(db.Model, TNCC):
         self._centre = json.dumps(value)
 
     @classmethod
-    @cache.memoize(timeout=0)
+    @lru_cache(maxsize=None)
     def get_from_id(cls, id):
         return db.session.query(
             cls
