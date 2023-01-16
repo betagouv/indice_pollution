@@ -1,8 +1,8 @@
-from indice_pollution.extensions import db
+from sqlalchemy import Column, Integer, String
 
 class TNCC:
-    tncc = db.Column(db.Integer)
-    nccenr = db.Column(db.String)
+    tncc = Column(Integer)
+    nccenr = Column(String)
     tncc_codes= {
         0: {"article": " ",    "charniere": "de "},
         1: {"article": " ", 	  "charniere": "d'"},

@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-from indice_pollution.extensions import db
+from indice_pollution import db
 from psycopg2.extras import DateRange
 from sqlalchemy.dialects.postgresql import DATERANGE
 from sqlalchemy.dialects.postgresql import insert as pg_insert
-from sqlalchemy import func
+from sqlalchemy import Column, ForeignKey, Index, Integer, UniqueConstraint, func, select
 from datetime import date, datetime, timedelta
 import os, requests, logging, csv, copy
 from indice_pollution.history.models.commune import Commune
@@ -11,37 +11,37 @@ from indice_pollution.history.models.commune import Commune
 from indice_pollution.history.models.departement import Departement
 
 @dataclass
-class RAEP(db.Model):
+class RAEP(db.Base):
     __tablename__ = "raep"
 
-    id: int = db.Column(db.Integer, primary_key=True)
-    zone_id: int = db.Column(db.Integer, db.ForeignKey('indice_schema.zone.id'), nullable=False)
-    validity = db.Column(DATERANGE(), nullable=False)
+    id: int = Column(Integer, primary_key=True)
+    zone_id: int = Column(Integer, ForeignKey('indice_schema.zone.id'), nullable=False)
+    validity = Column(DATERANGE(), nullable=False)
 
-    cypres: int = db.Column(db.Integer)
-    noisetier: int = db.Column(db.Integer)
-    aulne: int = db.Column(db.Integer)
-    peuplier: int = db.Column(db.Integer)
-    saule: int = db.Column(db.Integer)
-    frene: int = db.Column(db.Integer)
-    charme: int = db.Column(db.Integer)
-    bouleau: int = db.Column(db.Integer)
-    platane: int = db.Column(db.Integer)
-    chene: int = db.Column(db.Integer)
-    olivier: int = db.Column(db.Integer)
-    tilleul: int = db.Column(db.Integer)
-    chataignier: int = db.Column(db.Integer)
-    rumex: int = db.Column(db.Integer)
-    graminees: int = db.Column(db.Integer)
-    plantain: int = db.Column(db.Integer)
-    urticacees: int = db.Column(db.Integer)
-    armoises: int = db.Column(db.Integer)
-    ambroisies: int = db.Column(db.Integer)
-    total: int = db.Column(db.Integer)
+    cypres: int = Column(Integer)
+    noisetier: int = Column(Integer)
+    aulne: int = Column(Integer)
+    peuplier: int = Column(Integer)
+    saule: int = Column(Integer)
+    frene: int = Column(Integer)
+    charme: int = Column(Integer)
+    bouleau: int = Column(Integer)
+    platane: int = Column(Integer)
+    chene: int = Column(Integer)
+    olivier: int = Column(Integer)
+    tilleul: int = Column(Integer)
+    chataignier: int = Column(Integer)
+    rumex: int = Column(Integer)
+    graminees: int = Column(Integer)
+    plantain: int = Column(Integer)
+    urticacees: int = Column(Integer)
+    armoises: int = Column(Integer)
+    ambroisies: int = Column(Integer)
+    total: int = Column(Integer)
 
     __table_args__ = (
-        db.Index('raep_zone_validity_idx', zone_id, validity),
-        db.UniqueConstraint(zone_id, validity),
+        Index('raep_zone_validity_idx', zone_id, validity),
+        UniqueConstraint(zone_id, validity),
         {"schema": "indice_schema"},
     )
     liste_allergenes = ["cypres", "noisetier", "aulne", "peuplier", "saule", "frene", "charme", "bouleau", "platane", "chene", "olivier", "tilleul", "chataignier", "rumex", "graminees", "plantain", "urticacees", "armoises", "ambroisies"]
@@ -81,7 +81,6 @@ class RAEP(db.Model):
                 **{allergene: int(r[allergene]) for allergene in cls.liste_allergenes}
             })
             if departement_code == "2A":
-                departement = Departement.get("2B")
                 r = copy.deepcopy(risques[-1])
                 r["zone_id"] = Departement.get("2B").zone_id
                 risques.append(r)
@@ -89,7 +88,6 @@ class RAEP(db.Model):
             .values(risques)\
             .on_conflict_do_nothing()
         db.session.execute(ins)
-        db.session.commit()
 
     @classmethod
     def get(cls, insee=None, zone_id=None, date_=None):
@@ -103,22 +101,25 @@ class RAEP(db.Model):
                 return None
         elif zone_id is None:
             return None
-        return cls.query.filter(
+        stmt = select(cls).where(
             cls.zone_id == zone_id,
             cls.validity.contains(date_)
         ).order_by(
             func.upper(cls.validity).desc()
-        ).first()
+        )
+        if r := db.session.execute(stmt).first():
+            return r[0]
 
     @classmethod
     def get_all(cls):
-        return cls.query.filter(
+        stmt = select(cls).where(
             cls.validity.contains(date.today())
         ).distinct(cls.zone_id
         ).order_by(
             cls.zone_id,
             func.upper(cls.validity).desc()
-        ).all()
+        )
+        return db.session.execute(stmt).all()
 
     def to_dict(self):
         date_format = "%d/%m/%Y"

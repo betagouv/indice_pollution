@@ -1,9 +1,11 @@
 from itertools import groupby
-from sqlalchemy.orm import joinedload
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker
 from indice_pollution.history.models.commune import Commune
 from indice_pollution.history.models.indice_atmo import IndiceATMO
 from indice_pollution.history.models.episode_pollution import EpisodePollution
 from indice_pollution.history.models.indice_uv import IndiceUv
+from indice_pollution.extensions import logger
 from flask import Flask
 from datetime import date, datetime
 import os
@@ -11,13 +13,27 @@ from indice_pollution.history.models.raep import RAEP
 from indice_pollution.history.models.vigilance_meteo import VigilanceMeteo
 
 from .helpers import today, ping
-from .extensions import celery, db
+from .extensions import celery
+from indice_pollution import db
 from importlib import import_module
 from kombu import Queue
 from celery.schedules import crontab
 from functools import partial
 
-def configure_celery(flask_app):
+
+def configure_db(*, app=None, conn_uri=None, force=False):
+    if hasattr(app, 'extensions') and 'sqlalchemy' in app.extensions:
+        db.engine = app.extensions['sqlalchemy'].db.engine
+        db.session = app.extensions['sqlalchemy'].db.session
+    else:
+        if db.engine is None or force:
+            db.engine = create_engine(conn_uri or os.getenv('SQLALCHEMY_DATABASE_URI') or os.getenv('POSTGRESQL_ADDON_URI'))
+            db.session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=db.engine))
+    db.metadata.bind = db.engine
+
+
+
+def configure_celery(flask_app=None):
     """Configure tasks.celery:
     * read configuration from flask_app.config and update celery config
     * create a task context so tasks can access flask.current_app
@@ -26,11 +42,21 @@ def configure_celery(flask_app):
     """
     # Settings list:
     # https://docs.celeryproject.org/en/stable/userguide/configuration.html
-    celery_conf = {
-        key[len('CELERY_'):].lower(): value
-        for key, value in flask_app.config.items()
-        if key.startswith('CELERY_')
-    }
+    if flask_app:
+        celery_conf = {
+            key[len('CELERY_'):].lower(): value
+            for key, value in flask_app.config.items()
+            if key.startswith('CELERY_')
+        }
+    else:
+        celery_conf = {
+            key[len('CELERY_'):].lower(): value
+            for key, value in os.environ.items()
+            if key.startswith('CELERY_')
+        }
+    celery_conf.setdefault('result_backend', "db+" + os.getenv('SQLALCHEMY_DATABASE_URI'))
+    celery_conf.setdefault('broker_url', "sqla+" + os.getenv('SQLALCHEMY_DATABASE_URI'))
+
     celery.conf.update(celery_conf)
     celery.conf.task_queues = (
         Queue("default", routing_key='task.#'),
@@ -40,12 +66,15 @@ def configure_celery(flask_app):
     celery.conf.task_default_exchange_type = 'topic'
     celery.conf.task_default_routing_key = 'task.default'
 
-    class ContextTask(celery.Task):
-        def __call__(self, *args, **kwargs):
-            with flask_app.app_context():
-                return self.run(*args, **kwargs)
+    class SqlAlchemyTask(celery.Task):
+        """An abstract Celery Task that ensures that the connection the the
+        database is closed on task completion"""
+        abstract = True
 
-    celery.Task = ContextTask
+        def after_return(self, status, retval, task_id, args, kwargs, einfo):
+            db.session.remove()
+
+    celery.Task = SqlAlchemyTask
 
 
 @celery.task(bind=True)
@@ -63,7 +92,8 @@ def save_all_indices(self, module_name, class_name, scheduled_datetime=None):
     ping(cls_, "start", scheduled_datetime, launch_datetime)
     try:
         cls_.save_all()
-    except:
+    except Exception as e:
+        logger.error(e)
         ping(cls_, "fail", scheduled_datetime, launch_datetime)
     self.update_state(f"{module_name}.{class_name} saved")
     ping(cls_, "success", scheduled_datetime, launch_datetime)
@@ -111,8 +141,8 @@ def setup_periodic_tasks(sender, **kwargs):
 
 
 def init_app(app):
-    db.init_app(app)
     configure_celery(app)
+    configure_db(app=app)
 
 def create_app(test_config=None):
     app = Flask(

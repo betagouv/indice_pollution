@@ -1,26 +1,24 @@
 from typing import List
 from sqlalchemy.orm import relationship
-from sqlalchemy import func, select
-from indice_pollution.history.models import commune
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, func, select
 from indice_pollution.history.models.commune import Commune
-from indice_pollution.extensions import db
+from indice_pollution import db
 from datetime import datetime
 from indice_pollution.helpers import today
 from sqlalchemy import  Date, text
 
-from indice_pollution.history.models.epci import EPCI
 
-class EpisodePollution(db.Model):
-    __table_args__ = {"schema": "indice_schema"}
+class EpisodePollution(db.Base):
+    __tablename__ = "episode_pollution"
 
-    zone_id: int = db.Column(db.Integer, db.ForeignKey('indice_schema.zone.id'), primary_key=True, nullable=False)
+    zone_id: int = Column(Integer, ForeignKey('indice_schema.zone.id'), primary_key=True, nullable=False)
     zone = relationship("indice_pollution.history.models.zone.Zone")
-    date_ech: datetime = db.Column(db.DateTime, primary_key=True, nullable=False)
-    date_dif: datetime = db.Column(db.DateTime, primary_key=True, nullable=False)
-    code_pol: int = db.Column(db.Integer, primary_key=True, nullable=False)
-    etat: str = db.Column(db.String)
-    com_court: str = db.Column(db.String)
-    com_long: str = db.Column(db.String)
+    date_ech: datetime = Column(DateTime, primary_key=True, nullable=False)
+    date_dif: datetime = Column(DateTime, primary_key=True, nullable=False)
+    code_pol: int = Column(Integer, primary_key=True, nullable=False)
+    etat: str = Column(String)
+    com_court: str = Column(String)
+    com_long: str = Column(String)
 
     @classmethod
     def get_query(cls, insee=None, code_epci=None, date_=None):

@@ -1,7 +1,8 @@
-from indice_pollution.extensions import db
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, select
 from indice_pollution.history.models.departement import Departement
 from indice_pollution.history.models.tncc import TNCC
 from indice_pollution.extensions import logger
+from indice_pollution import db
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import joinedload, relationship
 import requests
@@ -10,30 +11,28 @@ import json
 from functools import lru_cache
 import unicodedata, re
 
-class Commune(db.Model, TNCC):
-    __table_args__ = {"schema": "indice_schema"}
+class Commune(db.Base, TNCC):
+    __tablename__ = "commune"
 
-    id = db.Column(db.Integer, primary_key=True)
-    insee = db.Column(db.String)
-    nom = db.Column(db.String)
-    epci_id = db.Column(db.Integer, db.ForeignKey("indice_schema.epci.id"))
+    id = Column(Integer, primary_key=True)
+    insee = Column(String)
+    nom = Column(String)
+    epci_id = Column(Integer, ForeignKey("indice_schema.epci.id"))
     epci = relationship("indice_pollution.history.models.epci.EPCI")
-    departement_id = db.Column(db.Integer, db.ForeignKey("indice_schema.departement.id"))
+    departement_id = Column(Integer, ForeignKey("indice_schema.departement.id"))
     departement = relationship("indice_pollution.history.models.departement.Departement")
-    code_zone = db.Column(db.String)
-    zone_id = db.Column(db.Integer, db.ForeignKey("indice_schema.zone.id"))
+    code_zone = Column(String)
+    zone_id = Column(Integer, ForeignKey("indice_schema.zone.id"))
     zone = relationship("indice_pollution.history.models.zone.Zone", foreign_keys=zone_id)
-    _centre = db.Column('centre', db.String)
-    zone_pollution_id = db.Column(db.Integer, db.ForeignKey("indice_schema.zone.id"))
+    _centre = Column('centre', String)
+    zone_pollution_id = Column(Integer, ForeignKey("indice_schema.zone.id"))
     zone_pollution = relationship("indice_pollution.history.models.zone.Zone", foreign_keys=zone_pollution_id)
-    pollinarium_sentinelle = db.Column(db.Boolean)
-    codes_postaux = db.Column(postgresql.ARRAY(db.String))
+    pollinarium_sentinelle = Column(Boolean)
+    codes_postaux = Column(postgresql.ARRAY(String))
 
     def __init__(self, **kwargs):
         if 'code' in kwargs:
             kwargs['insee'] = kwargs.pop('code')
-        if 'codeDepartement' in kwargs:
-            kwargs['departement'] = Departement.get(kwargs.pop('codeDepartement'))
         super().__init__(**kwargs)
 
     @property
@@ -60,17 +59,25 @@ class Commune(db.Model, TNCC):
     def get(cls, insee):
         if insee is None:
             return None
-        return cls.get_query(insee).first()
+        if r:= db.session.execute(cls.get_query(insee, with_joins=True)).first():
+            return r[0]
 
     @classmethod
-    def get_query(cls, insee=None, code=None):
+    def select(cls, s, insee=None, code=None, with_joins=False):
+        if with_joins:
+            s = s.join(cls.departement, isouter=True).join(cls.zone, isouter=True).join(cls.epci, isouter=True)
         if insee:
-            return db.session.query(cls).filter_by(insee=insee).limit(1)
+            return s.where(cls.insee==insee).limit(1)
         elif code:
             from indice_pollution.history.models.epci import EPCI
             subquery = EPCI.get_query(code=code).with_entities(EPCI.id).limit(1).subquery()
-            return cls.query.filter(cls.epci_id==subquery).limit(1)
+            return s.where(cls.epci_id==subquery).limit(1)
 
+
+    @classmethod
+    def get_query(cls, insee=None, code=None, with_joins=False):
+        return cls.select(select(cls), insee, code, with_joins)
+        
     @classmethod
     def bulk_query(cls, insees=None, codes=None):
         if insees:
@@ -87,7 +94,6 @@ class Commune(db.Model, TNCC):
             return None
         o = cls(**res_api)
         db.session.add(o)
-        db.session.commit()
         return o
 
     @classmethod

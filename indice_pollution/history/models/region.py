@@ -1,18 +1,18 @@
+from sqlalchemy import Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
-from indice_pollution.extensions import db
+from indice_pollution import db
 import requests
 from indice_pollution.history.models.tncc import TNCC
 
-class Region(db.Model, TNCC):
-    __table_args__ = {"schema": "indice_schema"}
+class Region(db.Base, TNCC):
     __tablename__ = 'region'
 
-    id = db.Column(db.Integer, primary_key=True)
-    nom = db.Column(db.String)
-    code = db.Column(db.String)
-    aasqa_website = db.Column(db.String)
-    aasqa_nom = db.Column(db.String)
-    zone_id = db.Column(db.Integer, db.ForeignKey("indice_schema.zone.id"))
+    id = Column(Integer, primary_key=True)
+    nom = Column(String)
+    code = Column(String)
+    aasqa_website = Column(String)
+    aasqa_nom = Column(String)
+    zone_id = Column(Integer, ForeignKey("indice_schema.zone.id"))
     zone = relationship("indice_pollution.history.models.zone.Zone")
 
     @classmethod
@@ -22,9 +22,8 @@ class Region(db.Model, TNCC):
     @classmethod
     def get_and_init_from_api(cls, code):
         res_api = cls.get_from_api(code)
-        r = cls(**res_api)        
+        r = cls(**res_api)
         db.session.add(r)
-        db.session.commit()
         return r
 
     @classmethod
