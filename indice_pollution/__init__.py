@@ -1,16 +1,10 @@
 from itertools import groupby
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-from indice_pollution.history.models.commune import Commune
-from indice_pollution.history.models.indice_atmo import IndiceATMO
-from indice_pollution.history.models.episode_pollution import EpisodePollution
-from indice_pollution.history.models.indice_uv import IndiceUv
 from indice_pollution.extensions import logger
 from flask import Flask
 from datetime import date, datetime
 import os
-from indice_pollution.history.models.raep import RAEP
-from indice_pollution.history.models.vigilance_meteo import VigilanceMeteo
 
 from .helpers import today, ping
 from .extensions import celery
@@ -159,10 +153,6 @@ def create_app(test_config=None):
 
     init_app(app)
 
-    with app.app_context():
-        import indice_pollution.api
-        import indice_pollution.history
-
     return app
 
 def make_resp(r, result, date_=None):
@@ -188,6 +178,8 @@ def make_metadata(r):
     }
 
 def forecast(insee, date_=None, use_make_resp=True):
+    from indice_pollution.history.models.commune import Commune
+    from indice_pollution.history.models.indice_atmo import IndiceATMO
     from .regions.solvers import get_region
     date_ = date_ or today()
     try:
@@ -221,7 +213,8 @@ def chunks(lst, n):
 
 
 def get_all(date_):
-    from indice_pollution.history.models import IndiceATMO, EpisodePollution
+    from indice_pollution.history.models import IndiceATMO, EpisodePollution, IndiceUv, RAEP, VigilanceMeteo
+
     date_ = date_ or today()
     indices = IndiceATMO.get_all(date_)
     episodes = EpisodePollution.get_all(date_)
@@ -245,6 +238,8 @@ def get_all(date_):
 
 def episodes(insee, date_=None, use_make_resp=True):
     from .regions.solvers import get_region
+    from indice_pollution.history.models import Commune, EpisodePollution
+
     date_ = date_ or today()
     if type(date_) == str:
         date_ = date.fromisoformat(date_)
@@ -284,6 +279,7 @@ def availability(insee):
 
 
 def raep(insee, date_=None, extended=False, departement_as_dict=True):
+    from indice_pollution.history.models import Commune, RAEP
     if insee is None:
         return {}
     departement = Commune.get(insee).departement
