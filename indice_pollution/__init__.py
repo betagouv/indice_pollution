@@ -8,7 +8,6 @@ import os
 
 from .helpers import today, ping
 from .extensions import celery
-from indice_pollution import db
 from importlib import import_module
 from kombu import Queue
 from celery.schedules import crontab
@@ -16,6 +15,7 @@ from functools import partial
 
 
 def configure_db(*, app=None, conn_uri=None, force=False):
+    from indice_pollution import db
     if hasattr(app, 'extensions') and 'sqlalchemy' in app.extensions:
         db.engine = app.extensions['sqlalchemy'].db.engine
         db.session = app.extensions['sqlalchemy'].db.session
@@ -28,6 +28,7 @@ def configure_db(*, app=None, conn_uri=None, force=False):
 
 
 def configure_celery(flask_app=None):
+    from indice_pollution import db
     """Configure tasks.celery:
     * read configuration from flask_app.config and update celery config
     * create a task context so tasks can access flask.current_app
