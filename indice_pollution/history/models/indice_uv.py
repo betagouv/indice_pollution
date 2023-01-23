@@ -97,6 +97,7 @@ class IndiceUv(db.Base):
             .values(indices)\
             .on_conflict_do_nothing()
         db.session.execute(ins)
+        db.session.commit()
 
     @classmethod
     def get(cls, insee, date_=None):
