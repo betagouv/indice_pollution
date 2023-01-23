@@ -9,7 +9,7 @@ from io import BytesIO
 from xml.dom.minidom import parseString
 from datetime import date, datetime, time, timedelta
 
-from indice_pollution import db
+from indice_pollution import db, logger
 from indice_pollution.history.models.departement import Departement
 from indice_pollution.history.models.commune import Commune
 
@@ -86,6 +86,7 @@ class VigilanceMeteo(db.Base):
                 x = parseString(f.read())
                 date_export = convert_datetime(x.getElementsByTagName('SIV_MENHIR')[0].attributes['dateExportTU'])
                 if db.session.query(func.max(cls.date_export)).first() == (date_export,):
+                    logger.warn("Import déjà fait aujourd’hui")
                     return
 
                 for phenomene in x.getElementsByTagName("PHENOMENE"):
@@ -94,6 +95,7 @@ class VigilanceMeteo(db.Base):
                             continue
                         departement = Departement.get(departement_code)
                         if not departement:
+                            logger.error(f"Pas de département pour : {departement_code}")
                             continue
                         debut = convert_datetime(phenomene.attributes['dateDebutEvtTU'])
                         fin = convert_datetime(phenomene.attributes['dateFinEvtTU'])
@@ -105,6 +107,7 @@ class VigilanceMeteo(db.Base):
                             validity=DateTimeTZRange(debut, fin),
                         )
                         db.session.add(obj)
+                db.session.commit()
 
     # Cette requête selectionne les vigilances météo du dernier export fait avant date_ & time_
     # Et ne renvoie que les vigilances comprises entre :
