@@ -88,6 +88,7 @@ class RAEP(db.Base):
             .values(risques)\
             .on_conflict_do_nothing()
         db.session.execute(ins)
+        db.session.commit()
 
     @classmethod
     def get(cls, insee=None, zone_id=None, date_=None):
