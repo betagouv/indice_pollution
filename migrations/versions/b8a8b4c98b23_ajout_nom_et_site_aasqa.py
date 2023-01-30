@@ -50,10 +50,11 @@ def upgrade():
                 SET aasqa_nom = :aasqa_nom, aasqa_website = :aasqa_website
                 WHERE nom = :nom
                 """
-            ),
-            aasqa_nom = module.Service.nom_aasqa,
-            aasqa_website = module.Service.website,
-            nom=region
+            ).bindparams(
+                aasqa_nom=module.Service.nom_aasqa,
+                aasqa_website=module.Service.website,
+                nom=region
+            )
         )
 
 
