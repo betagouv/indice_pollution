@@ -27,8 +27,8 @@ def upgrade():
         schema="indice_schema"
     )
 
-    zone_id = op.get_bind().execute("SELECT id FROM indice_schema.zone WHERE id = (SELECT zone_id FROM indice_schema.commune WHERE insee = '69123');").first()
-    departement_id = op.get_bind().execute("SELECT id FROM indice_schema.departement WHERE code ='69'").first()
+    zone_id = op.get_bind().execute(sa.text("SELECT id FROM indice_schema.zone WHERE id = (SELECT zone_id FROM indice_schema.commune WHERE insee = '69123');")).first()
+    departement_id = op.get_bind().execute(sa.text("SELECT id FROM indice_schema.departement WHERE code ='69'")).first()
 
     arrondissements_lyon = [f"6938{i}" for i in range(1, 10)]
     op.bulk_insert(
