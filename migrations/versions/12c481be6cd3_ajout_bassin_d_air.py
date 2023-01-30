@@ -45,9 +45,10 @@ def upgrade():
                 SET zone_pollution_id = :zone
                 WHERE insee = ANY(:communes)
                 """
+            ).bindparams(
+                 zone=zones_bassins_dair[code],
+                communes=[b['commune'] for b in insees]
             ),
-            zone=zones_bassins_dair[code],
-            communes=[b['commune'] for b in insees]
         )
     op.execute(sa.text(
         """
