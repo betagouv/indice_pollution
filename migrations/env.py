@@ -101,6 +101,7 @@ def run_migrations_online():
         )
 
         with context.begin_transaction():
+            context.execute("CREATE SCHEMA IF NOT EXISTS indice_schema;")
             context.run_migrations()
 
 
