@@ -56,7 +56,7 @@ def upgrade():
             op.execute(
                 insert(potentiel_radon).values(
                     {
-                        "zone_id": sa.select((commune_table.c.zone_id,)).where(commune_table.c.insee==insee, commune_table.c.zone_id != None).scalar_subquery(),
+                        "zone_id": sa.select(commune_table.c.zone_id).where(commune_table.c.insee==insee, commune_table.c.zone_id != None).scalar_subquery(),
                         "classe_potentiel": int(row[3])
                     }
                 ).on_conflict_do_nothing()
