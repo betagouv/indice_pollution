@@ -31,10 +31,10 @@ def upgrade():
         [{"code": v[0], "nom": v[1]} for v in data]
     )
     connection = op.get_bind()
-    connection.execute("""
+    connection.execute(sa.text("""
     UPDATE indice_schema.bassin_d_air b
     SET zone_id = (SELECT id FROM indice_schema.zone WHERE type='bassin_dair' AND code=b.code)
-    """)
+    """))
 
 
 def downgrade():
