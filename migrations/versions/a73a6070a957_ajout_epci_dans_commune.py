@@ -27,7 +27,7 @@ def upgrade():
 
     departements = dict(op.get_bind().execute(sa.text("SELECT code, id FROM indice_schema.departement")).fetchall())
 
-    res = op.get_bind().execute(sa.text('SELECT insee FROM indice_schema.commune)').fetchall()
+    res = op.get_bind().execute(sa.text('SELECT insee FROM indice_schema.commune')).fetchall()
     insees = [r[0] for r in res]
     commune_table = sa.Table(
         "commune",
