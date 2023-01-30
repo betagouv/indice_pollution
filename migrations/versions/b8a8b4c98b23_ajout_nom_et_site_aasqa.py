@@ -51,8 +51,8 @@ def upgrade():
                 WHERE nom = :nom
                 """
             ).bindparams(
-                aasqa_nom=module.Service.nom_aasqa,
-                aasqa_website=module.Service.website,
+                aasqa_nom=str(module.Service.nom_aasqa),
+                aasqa_website=str(module.Service.website),
                 nom=region
             )
         )
