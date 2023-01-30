@@ -49,7 +49,7 @@ def upgrade():
             zone=zones_bassins_dair[code],
             communes=[b['commune'] for b in insees]
         )
-    op.execute(sa.text()
+    op.execute(sa.text(
         """
         UPDATE indice_schema.commune c
         SET zone_pollution_id = 
