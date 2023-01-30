@@ -12,10 +12,6 @@ from sqlalchemy.dialects.postgresql import insert
 import requests
 import csv
 
-from sqlalchemy.sql.expression import bindparam, select, text
-from sqlalchemy.sql.selectable import subquery
-
-
 # revision identifiers, used by Alembic.
 revision = '51c45c33b356'
 down_revision = '60d538317728'
