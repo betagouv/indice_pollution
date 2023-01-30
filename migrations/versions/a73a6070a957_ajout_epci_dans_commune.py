@@ -25,9 +25,9 @@ def upgrade():
     op.add_column('commune', sa.Column('epci_id', sa.Integer(), nullable=True), schema='indice_schema')
     op.create_foreign_key('commune_epci_id_fkey', 'commune', 'epci', ['epci_id'], ['id'], source_schema='indice_schema', referent_schema='indice_schema')
 
-    departements = dict(op.get_bind().execute("SELECT code, id FROM indice_schema.departement").fetchall())
+    departements = dict(op.get_bind().execute(sa.text("SELECT code, id FROM indice_schema.departement")).fetchall())
 
-    res = op.get_bind().execute('SELECT insee FROM indice_schema.commune').fetchall()
+    res = op.get_bind().execute(sa.text('SELECT insee FROM indice_schema.commune)').fetchall()
     insees = [r[0] for r in res]
     commune_table = sa.Table(
         "commune",
