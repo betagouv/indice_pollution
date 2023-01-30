@@ -36,7 +36,7 @@ def upgrade():
         schema='indice_schema'
     )
     conn = op.get_bind()
-    res = conn.execute("SELECT code, id FROM indice_schema.departement")
+    res = conn.execute(sa.text("SELECT code, id FROM indice_schema.departement"))
     results = res.fetchall()
     departements = dict(results)
 
