@@ -35,8 +35,10 @@ def upgrade():
         sa.PrimaryKeyConstraint('id'),
         schema='indice_schema'
     )
-
-    departements = dict(op.get_bind().execute("SELECT code, id FROM indice_schema.departement").fetchall())
+    conn = op.get_bind()
+    res = conn.execute("SELECT code, id FROM indice_schema.departement")
+    results = res.fetchall()
+    departements = dict(results)
 
     op.execute("TRUNCATE indice_schema.epci")
 
