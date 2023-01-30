@@ -36,7 +36,7 @@ def upgrade():
             for code in codes_bassins_dair
         ]
     )
-    zones_bassins_dair = dict(op.get_bind().execute("SELECT code, id FROM indice_schema.zone WHERE type='bassin_dair'").fetchall())
+    zones_bassins_dair = dict(op.get_bind().execute(sa.text("SELECT code, id FROM indice_schema.zone WHERE type='bassin_dair'")).fetchall())
     for code, insees in groupby(bassins_dair, lambda b: b['zone']):
         op.get_bind().execute(
             sa.text(
@@ -49,7 +49,7 @@ def upgrade():
             zone=zones_bassins_dair[code],
             communes=[b['commune'] for b in insees]
         )
-    op.execute(
+    op.execute(sa.text()
         """
         UPDATE indice_schema.commune c
         SET zone_pollution_id = 
@@ -62,14 +62,14 @@ def upgrade():
             )
         WHERE zone_pollution_id IS NULL
         """
-    )
-        
+    ))
+  
 
 
 
 def downgrade():
-    op.execute("UPDATE indice_schema.commune SET zone_pollution_id = NULL")
-    op.execute("DELETE FROM indice_schema.zone WHERE type='bassin_dair'")
+    op.execute(sa.text("UPDATE indice_schema.commune SET zone_pollution_id = NULL"))
+    op.execute(sa.text("DELETE FROM indice_schema.zone WHERE type='bassin_dair'"))
 
 bassins_dair = [
     {'commune': '01001', 'zone': '2006'},
