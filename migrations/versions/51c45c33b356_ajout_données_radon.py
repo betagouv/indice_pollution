@@ -46,7 +46,7 @@ def upgrade():
         except ValueError:
             return i
     conn = op.get_bind()
-    res = conn.execute("select insee from indice_schema.commune where zone_id IS NOT NULL")
+    res = conn.execute(sa.text("select insee from indice_schema.commune where zone_id IS NOT NULL"))
     good_communes_insees = set([r[0] for r in res.fetchall()])
     def insert_potentiel(rows):
         for row in rows:
