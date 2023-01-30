@@ -19,14 +19,14 @@ depends_on = None
 def upgrade():
     op.add_column('departement', sa.Column('zone_id', sa.Integer(), nullable=True), schema='indice_schema')
     op.create_foreign_key(None, 'departement', 'zone', ['zone_id'], ['id'], source_schema='indice_schema', referent_schema='indice_schema')
-    op.get_bind().execute("""
+    op.get_bind().execute(sa.text("""
     UPDATE indice_schema.departement
     SET zone_id = z.id
     FROM (
         SELECT id, code from indice_schema.zone WHERE type='departement'
     ) AS z
     WHERE departement.code = z.code
-    """)
+    """))
 
 def downgrade():
     op.drop_constraint(None, 'departement', schema='indice_schema', type_='foreignkey')
