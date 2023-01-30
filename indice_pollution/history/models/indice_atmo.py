@@ -1,4 +1,4 @@
-from sqlalchemy.orm import aliased, relationship
+from sqlalchemy.orm import aliased, relationship, Mapped
 from sqlalchemy.sql import and_
 from sqlalchemy.sql.functions import coalesce
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, func, select
@@ -18,7 +18,7 @@ class IndiceATMO(db.Base):
     __tablename__ = "indiceATMO"
 
     zone_id: int = Column(Integer, ForeignKey('indice_schema.zone.id'), primary_key=True, nullable=False)
-    zone: Zone = relationship("indice_pollution.history.models.zone.Zone")
+    zone: Mapped["Zone"] = relationship("indice_pollution.history.models.zone.Zone")
     date_ech: datetime = Column(DateTime, primary_key=True, nullable=False)
     date_dif: datetime = Column(DateTime, primary_key=True, nullable=False)
     no2: int = Column(Integer)
