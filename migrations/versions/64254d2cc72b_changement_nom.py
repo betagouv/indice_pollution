@@ -37,12 +37,12 @@ def upgrade():
         reader = csv.reader(f)
         next(reader)
         op.bulk_insert(table_commune_temp, [{"id": dict_communes[l[1]], "nccenr": l[8]} for l in reader if l[1] in dict_communes])
-    op.execute("""
+    op.execute(sa.text("""
     UPDATE indice_schema.commune c 
     SET nccenr = ct.nccenr
     FROM commune_temp ct
     WHERE c.id = ct.id
-    """)
+    """))
 
     op.add_column('departement', sa.Column('nccenr', sa.String(), nullable=True), schema='indice_schema')
     table_departement = sa.Table(
