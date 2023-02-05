@@ -4,6 +4,7 @@ from psycopg2.extras import DateRange
 from sqlalchemy.dialects.postgresql import DATERANGE
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy import Column, ForeignKey, Index, Integer, UniqueConstraint, func, select
+from sqlalchemy.engine.row import Row
 from datetime import date, datetime, timedelta
 import os, requests, logging, csv, copy
 from indice_pollution.history.models.commune import Commune
@@ -120,7 +121,7 @@ class RAEP(db.Base):
             cls.zone_id,
             func.upper(cls.validity).desc()
         )
-        return db.session.execute(stmt).all()
+        return [v[0] if isinstance(v, Row) else v for v in db.session.execute(stmt).all()]
 
     def to_dict(self):
         date_format = "%d/%m/%Y"
