@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 @dataclass
 class PotentielRadon(db.Base):
-    __tablename__ = "potention_radon"
+    __tablename__ = "potentiel_radon"
 
     zone_id: int = Column(Integer, ForeignKey('indice_schema.zone.id'), primary_key=True)
     classe_potentiel: int = Column(Integer)
