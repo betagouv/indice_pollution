@@ -99,14 +99,17 @@ class VigilanceMeteo(db.Base):
                             continue
                         debut = convert_datetime(phenomene.attributes['dateDebutEvtTU'])
                         fin = convert_datetime(phenomene.attributes['dateFinEvtTU'])
-                        obj = cls(
-                            zone_id=departement.zone_id,
-                            phenomene_id=int(phenomene.attributes['phenomene'].value),
-                            date_export=date_export,
-                            couleur_id=int(phenomene.attributes['couleur'].value),
-                            validity=DateTimeTZRange(debut, fin),
-                        )
-                        db.session.add(obj)
+                        if debut < fin:
+                            obj = cls(
+                                zone_id=departement.zone_id,
+                                phenomene_id=int(phenomene.attributes['phenomene'].value),
+                                date_export=date_export,
+                                couleur_id=int(phenomene.attributes['couleur'].value),
+                                validity=DateTimeTZRange(debut, fin),
+                            )
+                            db.session.add(obj)
+                        else:
+                            logger.error(f"Impossible d’enregistrer le phénomène: {phenomene}")
                 db.session.commit()
 
     # Cette requête selectionne les vigilances météo du dernier export fait avant date_ & time_
